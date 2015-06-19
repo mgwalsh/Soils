@@ -28,7 +28,7 @@ colnames(profile.laea) <- c("x","y")
 profile <- cbind(profile, profile.laea)
 
 # Generate AfSIS grid cell ID's (GID)
-# these are included to decluster profiles measured within a distance 1 km of each other
+# these are included to decluster profiles measured within a distance of 1 km of each other
 res.pixel <- 1000
 xgid <- ceiling(abs(profile$x)/res.pixel)
 ygid <- ceiling(abs(profile$y)/res.pixel)
@@ -39,8 +39,8 @@ profile.gid <- cbind(profile, GID)
 cmdat <- merge(profile.gid, samples, by="PID")
 
 #+ Multilevel models ------------------------------------------------------
-# Profile ID's (PID) are nested within Grid Cell ID's (GID)
 # Random intercept model for cumulative soil mass (CSM) with depth (Bot) in profile
+# note Profile ID's (PID) variance components are nested within Grid Cell ID's (GID)
 csmd.lmer <- lmer(log(CSM)~log(Bot)+(1|GID)+(1|PID:GID), data=cmdat)
 display(csmd.lmer)
 plot(log(CSM)~fitted(csmd.lmer), cmdat)
