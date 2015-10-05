@@ -1,5 +1,5 @@
-#' Multivariate soil nutrient benchmarks & archetype classification,
-#' with AfSIS-1 data: C,N and Mehlich-3 P,K,S,Ca & Mg from 60 sentinel sites
+#' Multivariate soil nutrient balances & archetype classification,
+#' with AfSIS-1 data: C,N and Mehlich-3 P,K,S,Ca & Mg, from 60 sentinel sites
 #' M. Walsh, Oct. 2015
 
 # install.packages(c("rgdal","compositions","archetypes","arm"), dependencies=T)
@@ -45,16 +45,14 @@ screeplot(idata.arc)
 idata.arc7 <- bestModel(idata.arc[[7]])
 invarc <- ilrInv(parameters(idata.arc7), V=bpart)
 
-# Classify ilr's by "dominant archetypes" (DA's)
+# Classify by "dominant archetypes" (DA's)
 arc <- predict(idata.arc7, idata)
 DA <- apply(arc, 1, which.max)
 nb60 <- cbind(nb60, idata, DA)
 write.csv(nb60, "nb60_comp.csv", row.names=F)
 
-
-
-
-
-
-
+# Tables of DA occurrences and DA's cross-tabulated by sentinel sites ...
+table(nb60$DA)/length(nb60$DA)
+table(nb60$Site, nb60$DA)
+table(nb60$DA, nb60$Depth)
 
