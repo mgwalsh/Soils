@@ -55,4 +55,3 @@ write.csv(nb60, "nb60_comp.csv", row.names=F)
 table(nb60$DA)/length(nb60$DA)
 table(nb60$Site, nb60$DA)
 table(nb60$DA, nb60$Depth)
-
