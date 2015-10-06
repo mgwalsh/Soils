@@ -1,5 +1,5 @@
 #' Soil nutrient mass balances & archetype classification,
-#' with AfSIS-1 data: C,N and Mehlich-3 P,K,S,Ca & Mg, from 60 sentinel sites
+#' with AfSIS-1 data: C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites
 #' M. Walsh, Oct. 2015
 
 # install.packages(c("downloader","compositions","archetypes","arm"), dependencies=T)
@@ -97,7 +97,7 @@ V6.lmer <- lmer(V6~I(Depth/100)*factor(DA)+(1|Site), data=nb60)
 summary(V6.lmer)
 V6.ranef <- ranef(V6.lmer)
 V6.se <- se.coef(V6.lmer)
-coefplot(V6.ranef$Site[,1], V6.se$Site[,1], varnames=rownames(V6.ranef$Site), xlim=c(-1,1), CI=2, cex.var=0.6, cex.pts=0.9, main="ilr [C | N]")
+coefplot(V6.ranef$Site[,1], V6.se$Site[,1], varnames=rownames(V6.ranef$Site), xlim=c(-0.6,0.6), CI=2, cex.var=0.6, cex.pts=0.9, main="ilr [C | N]")
 
 # Fill value (Fv)
 nb60$Fv <- 1000000-rowSums(nb60[fpart]) ## calculates "fill value" (Fv), in mg/kg soil
