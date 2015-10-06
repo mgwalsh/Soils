@@ -23,7 +23,6 @@ dat <- read.table("Nutbal_60.csv", header=T, sep=",")
 vars <- c("Site","Lat","Lon","Depth","C","N","P","K","S","Ca","Mg")
 nb60 <- na.omit(dat[vars])
 fpart <- c("C","N","P","K","S","Ca","Mg")
-nb60$Fv <- 1000000-rowSums(nb60[nuts]) ## calculates "fill value" (Fv), in mg/kg soil
 
 # Sequential binary partion & integrated log ratio (ilr) transform
 cdata <- acomp(nb60[fpart])
@@ -100,3 +99,11 @@ summary(V6.lmer)
 V6.ranef <- ranef(V6.lmer)
 V6.se <- se.coef(V6.lmer)
 coefplot(V6.ranef$Site[,1], V6.se$Site[,1], varnames=rownames(V6.ranef$Site), xlim=c(-1,1), CI=2, cex.var=0.6, cex.pts=0.9, main="")
+
+# Fill value (Fv)
+nb60$Fv <- 1000000-rowSums(nb60[fpart]) ## calculates "fill value" (Fv), in mg/kg soil
+Fv.lmer <- lmer(log(Fv)~I(Depth/100)+(1|Site), data=nb60)
+summary(Fv.lmer)
+Fv.ranef <- ranef(Fv.lmer)
+Fv.se <- se.coef(Fv.lmer)
+coefplot(Fv.ranef$Site[,1], Fv.se$Site[,1], varnames=rownames(Fv.ranef$Site), xlim=c(-0.06,0.06), CI=2, cex.var=0.6, cex.pts=0.9, main="")
