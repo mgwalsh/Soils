@@ -1,4 +1,4 @@
-#' Multivariate soil nutrient mass balances & archetype classification,
+#' Soil nutrient mass balances & archetype classification,
 #' with AfSIS-1 data: C,N and Mehlich-3 P,K,S,Ca & Mg, from 60 sentinel sites
 #' M. Walsh, Oct. 2015
 
