@@ -2,9 +2,8 @@
 #' with AfSIS-1 data: C,N and Mehlich-3 P,K,S,Ca & Mg, from 60 sentinel sites
 #' M. Walsh, Oct. 2015
 
-# install.packages(c("rgdal","compositions","archetypes","arm"), dependencies=T)
+# install.packages(c("downloader","compositions","archetypes","arm"), dependencies=T)
 require(downloader)
-require(rgdal)
 require(compositions)
 require(archetypes)
 require(arm)
