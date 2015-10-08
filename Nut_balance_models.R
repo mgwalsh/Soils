@@ -33,7 +33,7 @@ bpart <- t(matrix(c( 1, 1, 1, 1, 1, 1, 1,-1,
                      0, 0, 1, 0,-1, 0, 0, 0,
                      0, 0, 0, 0, 0, 1,-1, 0,
                      1,-1, 0, 0, 0, 0, 0, 0), ncol=8, nrow=7, byrow=T))
-CoDaDendrogram(X=acomp(cdata), signary=bpart)  				
+CoDaDendrogram(X=acomp(cdata), signary=bpart) ## mass balance mobile graph				
 idata <- as.data.frame(ilr(cdata, V=bpart))
 nb60 <- cbind(nb60, idata)
 write.csv(nb60, "nb60_comp.csv", row.names=F)
