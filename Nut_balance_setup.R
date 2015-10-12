@@ -18,7 +18,7 @@ unzip("Nutbal_60.csv.zip", overwrite=T)
 dat <- read.table("Nutbal_60.csv", header=T, sep=",")
 
 # Compositional analysis setup
-vars <- c("Site","Lat","Lon","Depth","C","N","P","K","S","Ca","Mg")
+vars <- c("SSN","Site","Lat","Lon","Depth","C","N","P","K","S","Ca","Mg")
 nb60 <- na.omit(dat[vars])
 fpart <- c("C","N","P","K","S","Ca","Mg") ## all values in mg/kg
 nb60$Fv <- 1000000-rowSums(nb60[fpart]) ## calculates "fill value" (Fv), in mg/kg soil
@@ -36,7 +36,6 @@ bpart <- t(matrix(c( 1, 1, 1, 1, 1, 1, 1,-1,
 CoDaDendrogram(X=acomp(cdata), signary=bpart) ## mass balance mobile graph				
 idata <- as.data.frame(ilr(cdata, V=bpart))
 nb60 <- cbind(nb60, idata)
-write.csv(nb60, "nb60_comp.csv", row.names=F)
 
 # Site level summaries / expected values ----------------------------------
 # V1 = ilr[C,N,P,K,S,Ca,Mg|Fv]
@@ -89,3 +88,30 @@ summary(V7.lmer)
 V7.ranef <- ranef(V7.lmer)
 V7.se <- se.coef(V7.lmer)
 coefplot(V7.ranef$Site[,1], V7.se$Site[,1], varnames=rownames(V7.ranef$Site), xlim=c(-0.6,0.6), CI=2, cex.var=0.6, cex.pts=1.0, main="ilr [C | N]")
+
+# Topsoil / Subsoil contrast ----------------------------------------------
+tsc.glmer <- glmer(factor(Depth)~V1+V2+V3+V4+V5+V6+V7+(1|Site), family="binomial"(link=logit), data=nb60)
+summary(tsc.glmer)
+tsc.ranef <- ranef(tsc.glmer)
+tsc.se <- se.coef(tsc.glmer)
+coefplot(tsc.ranef$Site[,1], tsc.se$Site[,1], varnames=rownames(tsc.ranef$Site), xlim=c(-3,3), CI=2, cex.var=0.6, cex.pts=1.0, main="Topsoil / Subsoil contrast")
+
+# Sufficiency landmarks ---------------------------------------------------
+# CNLS example (sufficient if value > critical value)
+crit <- c(15000,2000,20,120,30,1900,190) ## critical C,N,P,K,S,Ca & Mg values in ppm
+crit <- append(crit, 1000000-sum(crit)) ## appends "fill value" (Fv)
+ccrit <- acomp(crit) 
+icrit <- ilr(ccrit, V=bpart)
+
+# Aitchison distances from landmark values
+attach(nb60)
+nb60$V1d <- V1-icrit[1]
+nb60$V2d <- V2-icrit[2]
+nb60$V3d <- V3-icrit[3]
+nb60$V4d <- V4-icrit[4]
+nb60$V5d <- V5-icrit[5]
+nb60$V6d <- V6-icrit[6]
+nb60$V7d <- V7-icrit[7]
+detach(nb60)
+
+write.csv(nb60, "nb60_comp.csv", row.names=F)
