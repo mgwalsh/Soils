@@ -89,13 +89,6 @@ V7.ranef <- ranef(V7.lmer)
 V7.se <- se.coef(V7.lmer)
 coefplot(V7.ranef$Site[,1], V7.se$Site[,1], varnames=rownames(V7.ranef$Site), xlim=c(-0.6,0.6), CI=2, cex.var=0.6, cex.pts=1.0, main="ilr [C | N]")
 
-# Topsoil / Subsoil contrast ----------------------------------------------
-tsc.glmer <- glmer(factor(Depth)~V1+V2+V3+V4+V5+V6+V7+(1|Site), family="binomial"(link=logit), data=nb60)
-summary(tsc.glmer)
-tsc.ranef <- ranef(tsc.glmer)
-tsc.se <- se.coef(tsc.glmer)
-coefplot(tsc.ranef$Site[,1], tsc.se$Site[,1], varnames=rownames(tsc.ranef$Site), xlim=c(-3,3), CI=2, cex.var=0.6, cex.pts=1.0, main="Topsoil / Subsoil contrast")
-
 # Sufficiency landmarks ---------------------------------------------------
 # CNLS example (sufficient if value > critical value)
 crit <- c(15000,2000,20,120,30,1900,190) ## critical C,N,P,K,S,Ca & Mg values in ppm
@@ -105,13 +98,56 @@ icrit <- ilr(ccrit, V=bpart)
 
 # Aitchison distances from landmark values
 attach(nb60)
-nb60$V1d <- V1-icrit[1]
-nb60$V2d <- V2-icrit[2]
-nb60$V3d <- V3-icrit[3]
-nb60$V4d <- V4-icrit[4]
-nb60$V5d <- V5-icrit[5]
-nb60$V6d <- V6-icrit[6]
-nb60$V7d <- V7-icrit[7]
+nb60$V1c <- V1-icrit[1]
+nb60$V2c <- V2-icrit[2]
+nb60$V3c <- V3-icrit[3]
+nb60$V4c <- V4-icrit[4]
+nb60$V5c <- V5-icrit[5]
+nb60$V6c <- V6-icrit[6]
+nb60$V7c <- V7-icrit[7]
 detach(nb60)
 
+# Topsoil / subsoil contrast
+tsc.glmer <- glmer(factor(Depth)~V1c+V2c+V4c+V5c+(1|Site), family="binomial"(link=logit), data=nb60)
+summary(tsc.glmer)
+tsc.ranef <- ranef(tsc.glmer)
+tsc.se <- se.coef(tsc.glmer)
+coefplot(tsc.ranef$Site[,1], tsc.se$Site[,1], varnames=rownames(tsc.ranef$Site), xlim=c(-3,3), CI=2, cex.var=0.6, cex.pts=1.0, main="Topsoil / Subsoil contrast")
+fix <- fixef(tsc.glmer) ## extract mean effects
+
+# Proposed soil nutrient balance / fertility index (SFI), based on topsoil/subsoil contrast 
+attach(nb60)
+nb60$SFI <- (V1c*fix[2]+V2c*fix[3]+V4c*fix[4]+V5c*fix[5]+fix[1])*-1
+detach(nb60)
+
+# Topsoil / subsoil contrast ecdf plots
+top <- subset(nb60, Depth==10, select=c(V1c,V2c,V4c,V5c,SFI)) 
+sub <- subset(nb60, Depth==35, select=c(V1c,V2c,V4c,V5c,SFI))
+
+# V1c = [C,N,P,K,S,Ca,Mg|Fv]
+plot(ecdf(top$V1c), main="", xlab="ilr [C,N,P,K,S,Ca,Mg|Fv]", ylab="Cum. proportion of observations", xlim=c(-4,4), verticals=T, lty=1, lwd=2, col="red", do.points=F)
+abline(0.5,0, lty=2, col="grey")
+plot(ecdf(sub$V1c), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
+
+# V2c = [P,K,S,Ca,Mg|C,N]
+plot(ecdf(top$V2c), main="", xlab="ilr [P,K,S,Ca,Mg|C,N]", ylab="Cum. proportion of observations", xlim=c(-8,8), verticals=T, lty=1, lwd=2, col="red", do.points=F)
+abline(0.5,0, lty=2, col="grey")
+plot(ecdf(sub$V2c), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
+
+# V4c = [K|Ca,Mg]
+plot(ecdf(top$V4c), main="", xlab="ilr [K|Ca,Mg]", ylab="Cum. proportion of observations", xlim=c(-4,4), verticals=T, lty=1, lwd=2, col="red", do.points=F)
+abline(0.5,0, lty=2, col="grey")
+plot(ecdf(sub$V4c), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
+
+# V5c = [P|S]
+plot(ecdf(top$V5c), main="", xlab="ilr [P|S]", ylab="Cum. proportion of observations", xlim=c(-4,4), verticals=T, lty=1, lwd=2, col="red", do.points=F)
+abline(0.5,0, lty=2, col="grey")
+plot(ecdf(sub$V5c), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
+
+# SFI
+plot(ecdf(top$SFI), main="", xlab="SFI", ylab="Cum. proportion of observations", xlim=c(-4,4), verticals=T, lty=1, lwd=2, col="red", do.points=F)
+abline(0.5,0, lty=2, col="grey")
+plot(ecdf(sub$SFI), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
+
+# write data file
 write.csv(nb60, "nb60_comp.csv", row.names=F)
