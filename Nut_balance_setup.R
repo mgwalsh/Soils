@@ -105,8 +105,6 @@ detach(nb60)
 # Topsoil / subsoil contrast ecdf plots
 top <- subset(nb60, Depth==10, select=c(SFI)) 
 sub <- subset(nb60, Depth==35, select=c(SFI))
-
-# SFI ecdf plot
 plot(ecdf(top$SFI), main="", xlab="SFI", ylab="Cum. proportion of observations", xlim=c(-4,4), verticals=T, lty=1, lwd=2, col="red", do.points=F)
 abline(0.5,0, lty=2, col="grey")
 plot(ecdf(sub$SFI), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
