@@ -104,11 +104,35 @@ detach(nb60)
 
 # Topsoil / subsoil contrast ecdf plot
 top <- subset(nb60, Depth==10, select=c(V1,V2,V3,V4,V5,V6,V7,SFI))
-quantile(top$SFI) ## value above 50% topsoil SFI quantile ~ high fertility soils
+quantile(top$SFI) ## value above the 50% topsoil SFI quantile ~ high fertility soils
 sub <- subset(nb60, Depth==35, select=c(SFI))
 plot(ecdf(top$SFI), main="", xlab="SFI", ylab="Cum. proportion of observations", xlim=c(-4,4), verticals=T, lty=1, lwd=2, col="red", do.points=F)
 abline(0.5,0, lty=2, col="grey")
 plot(ecdf(sub$SFI), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
+
+# Critical test value interpretation --------------------------------------
+# Critical value definitions
+Ccrit <- 15000
+Pcrit <- 30
+Kcrit <- 120
+Scrit <- 20
+
+# C test interpretation viz depth in profile & SFI
+Ccrit.glmer <- glmer(I(C<Ccrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
+summary(Ccrit.glmer)
+
+
+# P test interpretation viz depth in profile & SFI
+Pcrit.glmer <- glmer(I(P<Pcrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
+summary(Pcrit.glmer)
+                     
+# K test interpretation viz depth in profile & SFI
+Kcrit.glmer <- glmer(I(K<Kcrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
+summary(Kcrit.glmer)
+
+# S test interpretation viz depth in profile & SFI
+Scrit.glmer <- glmer(I(S<Scrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
+summary(Scrit.glmer)
 
 # write data file
 write.csv(nb60, "nb60_comp.csv", row.names=F)
