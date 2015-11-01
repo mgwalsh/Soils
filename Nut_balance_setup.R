@@ -94,7 +94,7 @@ tsc.glmer <- glmer(factor(Depth)~V1+V2+V4+V5+(1|Site), family="binomial"(link=lo
 summary(tsc.glmer)
 tsc.ranef <- ranef(tsc.glmer)
 tsc.se <- se.coef(tsc.glmer)
-coefplot(tsc.ranef$Site[,1], tsc.se$Site[,1], varnames=rownames(tsc.ranef$Site), xlim=c(-3,3), CI=2, cex.var=0.6, cex.pts=1.0, main="Topsoil / Subsoil contrast")
+coefplot(tsc.ranef$Site[,1], tsc.se$Site[,1], varnames=rownames(tsc.ranef$Site), xlim=c(-3,3), CI=2, cex.var=0.6, cex.pts=1.0, main="SFI")
 fix <- fixef(tsc.glmer) ## extract mean effects
 
 # Proposed soil nutrient balance / fertility index (SFI), based on topsoil/subsoil contrast 
