@@ -6,6 +6,7 @@
 require(downloader)
 require(compositions)
 require(arm)
+require(rgdal)
 
 # Data setup --------------------------------------------------------------
 # Create a data folder in your current working directory
@@ -133,5 +134,20 @@ summary(Kcrit.glmer)
 Scrit.glmer <- glmer(I(S<Scrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
 summary(Scrit.glmer)
 
+# Add grid coordinates ----------------------------------------------------
+# Project to Africa LAEA from LonLat
+nb60.laea <- as.data.frame(project(cbind(nb60$Lon, nb60$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
+colnames(nb60.laea) <- c("x","y")
+nb60 <- cbind(nb60.laea, nb60)
+
+# Generate AfSIS 100m resolution grid cell ID's (GID)
+res.pixel <- 100 ## set pixel resolution in m
+xgid <- ceiling(abs(nb60$x)/res.pixel)
+ygid <- ceiling(abs(nb60$y)/res.pixel)
+gidx <- ifelse(nb60$x<0, paste("W", xgid, sep=""), paste("E", xgid, sep=""))
+gidy <- ifelse(nb60$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
+GID <- paste(gidx, gidy, sep="-")
+nb60.gid <- cbind(GID, nb60)
+
 # write data file
-write.csv(nb60, "nb60_comp.csv", row.names=F)
+write.csv(nb60.gid, "nb60_gid.csv", row.names=F)
