@@ -114,13 +114,12 @@ plot(ecdf(sub$SFI), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
 # Critical value definitions
 Ccrit <- 15000
 Pcrit <- 30
-Kcrit <- 120
+Kcrit <- 200
 Scrit <- 20
 
 # C test interpretation viz depth in profile & SFI
 Ccrit.glmer <- glmer(I(C<Ccrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
 summary(Ccrit.glmer)
-
 
 # P test interpretation viz depth in profile & SFI
 Pcrit.glmer <- glmer(I(P<Pcrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
