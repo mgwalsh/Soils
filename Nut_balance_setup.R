@@ -1,8 +1,8 @@
-#' Soil nutrient mass balances with AfSIS-1 data:
+#' Exploratory soil nutrient mass balances with AfSIS-1 data:
 #' C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites
 #' M. Walsh, Oct. 2015
 
-# install.packages(c("downloader","compositions","arm"), dependencies=T)
+# install.packages(c("downloader","compositions","arm","rgdal"), dependencies=T)
 require(downloader)
 require(compositions)
 require(arm)
@@ -103,7 +103,7 @@ attach(nb60)
 nb60$SFI <- (V1*fix[2]+V2*fix[3]+V4*fix[4]+V5*fix[5]+fix[1])*-1
 detach(nb60)
 
-# Topsoil / subsoil contrast ecdf plot
+# Topsoil / subsoil (SFI) contrast ecdf plot
 top <- subset(nb60, Depth==10, select=c(V1,V2,V3,V4,V5,V6,V7,SFI))
 quantile(top$SFI) ## value above the 50% topsoil SFI quantile ~ high fertility soils
 sub <- subset(nb60, Depth==35, select=c(SFI))
@@ -111,16 +111,16 @@ plot(ecdf(top$SFI), main="", xlab="SFI", ylab="Cum. proportion of observations",
 abline(0.5,0, lty=2, col="grey")
 plot(ecdf(sub$SFI), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
 
-# Critical test value interpretation --------------------------------------
+# Critical test value interpretations --------------------------------------
 # Critical value definitions
 Ccrit <- 15000
 Pcrit <- 30
 Kcrit <- 200
 Scrit <- 20
 
-# C test interpretation viz depth in profile & SFI
-Ccrit.glmer <- glmer(I(C<Ccrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
-summary(Ccrit.glmer)
+# SOC test interpretation viz depth in profile & SFI
+SOCcrit.glmer <- glmer(I(C<Ccrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
+summary(SOCcrit.glmer)
 
 # P test interpretation viz depth in profile & SFI
 Pcrit.glmer <- glmer(I(P<Pcrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
@@ -149,5 +149,9 @@ gidy <- ifelse(nb60$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
 GID <- paste(gidx, gidy, sep="-")
 nb60.gid <- cbind(GID, nb60)
 
-# write data file
-write.csv(nb60.gid, "nb60_gid.csv", row.names=F)
+# Write data files --------------------------------------------------------
+write.csv(nb60.gid, "nb60.csv", row.names=F)
+
+# nb60 locations in LonLat
+nb60_loc <- subset(nb60.gid, Depth==10, select=c(Lat,Lon))
+write.csv(nb60_loc, "nb60_loc.csv", row.names=F)
