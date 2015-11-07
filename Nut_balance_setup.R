@@ -14,9 +14,11 @@ dir.create("NB60_data", showWarnings=F)
 setwd("./NB60_data")
 
 # Download
-download("https://www.dropbox.com/s/wxmd9cx5m9h5b4r/Nutbal_60.csv.zip?dl=0", "Nutbal_60.csv.zip", mode="wb")
-unzip("Nutbal_60.csv.zip", overwrite=T)
-dat <- read.table("Nutbal_60.csv", header=T, sep=",")
+download("https://www.dropbox.com/s/k9pti8a4fvaxjlm/Nutbal60.zip?dl=0", "Nutbal60.zip", mode="wb")
+unzip("Nutbal60.zip", overwrite=T)
+prof <- read.table("Profiles.csv", header=T, sep=",")
+samp <- read.table("Samples.csv", header=T, sep=",")
+dat <- merge(prof, samp, by="PID")
 
 # Compositional analysis setup
 vars <- c("SSN","Site","Lat","Lon","Depth","C","N","P","K","S","Ca","Mg")
@@ -110,29 +112,6 @@ sub <- subset(nb60, Depth==35, select=c(SFI))
 plot(ecdf(top$SFI), main="", xlab="SFI", ylab="Cum. proportion of observations", xlim=c(-4,4), verticals=T, lty=1, lwd=2, col="red", do.points=F)
 abline(0.5,0, lty=2, col="grey")
 plot(ecdf(sub$SFI), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
-
-# Critical test value interpretations --------------------------------------
-# Critical value definitions
-Ccrit <- 15000
-Pcrit <- 30
-Kcrit <- 200
-Scrit <- 20
-
-# SOC test interpretation viz depth in profile & SFI
-SOCcrit.glmer <- glmer(I(C<Ccrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
-summary(SOCcrit.glmer)
-
-# P test interpretation viz depth in profile & SFI
-Pcrit.glmer <- glmer(I(P<Pcrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
-summary(Pcrit.glmer)
-                     
-# K test interpretation viz depth in profile & SFI
-Kcrit.glmer <- glmer(I(K<Kcrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
-summary(Kcrit.glmer)
-
-# S test interpretation viz depth in profile & SFI
-Scrit.glmer <- glmer(I(S<Scrit)~I(Depth/100)*SFI+(1|Site), family=binomial(link="logit"), data=nb60)
-summary(Scrit.glmer)
 
 # Add grid coordinates ----------------------------------------------------
 # Project to Africa LAEA from LonLat
