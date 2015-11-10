@@ -18,6 +18,7 @@ download("https://www.dropbox.com/s/k9pti8a4fvaxjlm/Nutbal60.zip?dl=0", "Nutbal6
 unzip("Nutbal60.zip", overwrite=T)
 prof <- read.table("Profiles.csv", header=T, sep=",") ## profile locations and site names
 samp <- read.table("Samples.csv", header=T, sep=",") ## sample data
+geos <- read.table("nb60_GS.csv", header=T, sep=",") ## GeoSurvey data
 dat <- merge(prof, samp, by="PID")
 
 # Compositional analysis setup
