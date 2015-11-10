@@ -55,10 +55,3 @@ gidx <- ifelse(nb60$x<0, paste("W", xgid, sep=""), paste("E", xgid, sep=""))
 gidy <- ifelse(nb60$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
 GID <- paste(gidx, gidy, sep="-")
 nb60.gid <- cbind(GID, nb60)
-
-# Write data files --------------------------------------------------------
-write.csv(nb60.gid, "nb60.csv", row.names=F)
-
-# nb60 locations in LonLat
-nb60_loc <- subset(nb60.gid, Depth==10, select=c(Lat,Lon))
-write.csv(nb60_loc, "nb60_loc.csv", row.names=F)
