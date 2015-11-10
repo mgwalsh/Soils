@@ -41,27 +41,6 @@ CoDaDendrogram(X=acomp(cdata), signary=bpart) ## mass balance mobile graph
 idata <- as.data.frame(ilr(cdata, V=bpart))
 nb60 <- cbind(nb60, idata)
 
-# Topsoil / subsoil contrast ----------------------------------------------
-tsc.glmer <- glmer(factor(Depth)~V1+V2+V4+V5+(1|Site), family="binomial"(link=logit), data=nb60)
-summary(tsc.glmer)
-tsc.ranef <- ranef(tsc.glmer)
-tsc.se <- se.coef(tsc.glmer)
-coefplot(tsc.ranef$Site[,1], tsc.se$Site[,1], varnames=rownames(tsc.ranef$Site), xlim=c(-3,3), CI=2, cex.var=0.6, cex.pts=1.0, main="SFI")
-fix <- fixef(tsc.glmer) ## extract mean effects
-
-# Proposed soil nutrient balance / fertility index (SFI), based on topsoil/subsoil contrast 
-attach(nb60)
-nb60$SFI <- (V1*fix[2]+V2*fix[3]+V4*fix[4]+V5*fix[5]+fix[1])*-1
-detach(nb60)
-
-# Topsoil / subsoil (SFI) contrast ecdf plot
-top <- subset(nb60, Depth==10, select=c(V1,V2,V3,V4,V5,V6,V7,SFI))
-quantile(top$SFI) ## value above the 50% topsoil SFI quantile ~ high fertility soils
-sub <- subset(nb60, Depth==35, select=c(SFI))
-plot(ecdf(top$SFI), main="", xlab="SFI", ylab="Cum. proportion of observations", xlim=c(-4,4), verticals=T, lty=1, lwd=2, col="red", do.points=F)
-abline(0.5,0, lty=2, col="grey")
-plot(ecdf(sub$SFI), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
-
 # Add grid coordinates ----------------------------------------------------
 # Project to Africa LAEA from LonLat
 nb60.laea <- as.data.frame(project(cbind(nb60$Lon, nb60$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
