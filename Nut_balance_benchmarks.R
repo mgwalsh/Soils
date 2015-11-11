@@ -99,9 +99,5 @@ plot(ecdf(top$SFI), main="", xlab="SFI", ylab="Cum. proportion of observations",
 abline(0.5,0, lty=2, col="grey")
 plot(ecdf(sub$SFI), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
 
-# GeoSurvey variable influences on SFI
-sfi.lmer <- lmer(SFI~I(Depth/100)+BP+CP+WP+(1|Site), data=nb60)
-summary(sfi.lmer)
-
 # Write data files --------------------------------------------------------
 write.csv(nb60, "nb60.csv", row.names=F)
