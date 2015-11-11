@@ -105,6 +105,3 @@ summary(sfi.lmer)
 
 # Write data files --------------------------------------------------------
 write.csv(nb60, "nb60.csv", row.names=F)
-
-
-
