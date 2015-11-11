@@ -92,7 +92,7 @@ nb60$SFI <- (V1*fix[2]+V2*fix[3]+V4*fix[4]+V5*fix[5]+fix[1])*-1
 detach(nb60)
 
 # Topsoil / subsoil (SFI) contrast ecdf plot
-top <- subset(nb60, Depth==10, select=c(V1,V2,V3,V4,V5,V6,V7,SFI))
+top <- subset(nb60, Depth==10, select=c(SFI))
 quantile(top$SFI) ## value above the 50% topsoil SFI quantile ~ high fertility soils
 sub <- subset(nb60, Depth==35, select=c(SFI))
 plot(ecdf(top$SFI), main="", xlab="SFI", ylab="Cum. proportion of observations", xlim=c(-4,4), verticals=T, lty=1, lwd=2, col="red", do.points=F)
