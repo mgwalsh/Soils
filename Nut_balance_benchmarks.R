@@ -1,6 +1,6 @@
 #' Exploratory soil nutrient mass balance benchmarks with AfSIS-1 data:
 #' C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites
-#' M. Walsh, Nov. 2015
+#' M. Walsh & J. Chen Nov. 2015
 
 # install.packages(c("devtools"), dependencies=T)
 require(devtools)
@@ -99,5 +99,13 @@ plot(ecdf(top$SFI), main="", xlab="SFI", ylab="Cum. proportion of observations",
 abline(0.5,0, lty=2, col="grey")
 plot(ecdf(sub$SFI), add=T, verticals=T, lty=1, lwd=1, col="grey", do.points=F)
 
+# Train/Test set selection ------------------------------------------------
+sites <- rownames(tsc.ranef$Site)
+set.seed(5321)
+train <- sample(sites, 0.8*length(sites))
+nb60_cal <- nb60[ nb60$Site%in%train, ]
+nb60_val <- nb60[!nb60$Site%in%train, ]
+
 # Write data files --------------------------------------------------------
-write.csv(nb60, "nb60.csv", row.names=F)
+write.csv(nb60_cal, "nb60_cal.csv", row.names=F)
+write.csv(nb60_val, "nb60_cal.csv", row.names=F)
