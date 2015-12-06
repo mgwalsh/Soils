@@ -17,3 +17,7 @@ mir <- as.data.frame(mir)
 names(mir) <- c("SSN", paste("m", signif(seq(7497.964, 599.76, length.out=3578), 6),sep=""))
 nb60_cal <- merge(nb60_cal, mir, by="SSN")
 nb60_val <- merge(nb60_val, mir, by="SSN")
+
+# Write data files --------------------------------------------------------
+write.csv(nb60_cal, "nb60_cal.csv", row.names=F)
+write.csv(nb60_val, "nb60_val.csv", row.names=F)
