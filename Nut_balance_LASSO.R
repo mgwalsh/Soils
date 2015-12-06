@@ -119,7 +119,3 @@ pred <- cbind(test, rreg)
 
 # Write data files --------------------------------------------------------
 write.csv(pred, "LASSO_pred.csv", row.names=F)
-
-
-
-
