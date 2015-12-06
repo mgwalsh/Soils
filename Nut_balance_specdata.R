@@ -16,7 +16,9 @@ mir <- read.table("hstxt_MIR.csv", header=F, sep=",", stringsAsFactors=F)
 mir <- as.data.frame(mir)
 names(mir) <- c("SSN", paste("m", signif(seq(7497.964, 599.76, length.out=3578), 6),sep=""))
 nb60_cal <- merge(nb60_cal, mir, by="SSN")
+nb60_cal <- na.omit(nb60_cal)
 nb60_val <- merge(nb60_val, mir, by="SSN")
+nb60_val <- na.omit(nb60_val)
 
 # Write data files --------------------------------------------------------
 write.csv(nb60_cal, "nb60_cal.csv", row.names=F)
