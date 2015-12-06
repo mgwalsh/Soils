@@ -20,7 +20,7 @@ V5 <- nb60_cal$V5
 V6 <- nb60_cal$V6
 V7 <- nb60_cal$V7
 HSTXTc <- nb60_cal[c(8,28:3605)] ## Depth in profile plus HSTXT spectra
-HSTXTv <- nb60_val[c(8,28:3605)] ## for 12 randomly selected validation sites
+HSTXTv <- nb60_val[c(8,28:3605)] ## same for 12 randomly selected validation sites
 
 # LASSO models ------------------------------------------------------------
 set.seed(1385321)
