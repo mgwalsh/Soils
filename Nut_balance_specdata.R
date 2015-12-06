@@ -9,10 +9,11 @@ require(devtools)
 SourceURL <- "https://raw.githubusercontent.com/mgwalsh/Soils/master/Nut_balance_benchmarks.R"
 source_url(SourceURL)
 
-# Load HSTXT MIR spectra
+# Load and merge HSTXT MIR spectra
 download("https://www.dropbox.com/s/6fvipxqlmg704g3/hstxt_MIR.csv.zip?dl=0", "hstxt_MIR.csv.zip", mode="wb")
 unzip("hstxt_MIR.csv.zip", overwrite=T)
 mir <- read.table("hstxt_MIR.csv", header=F, sep=",", stringsAsFactors=F)
 mir <- as.data.frame(mir)
 names(mir) <- c("SSN", paste("m", signif(seq(7497.964, 599.76, length.out=3578), 6),sep=""))
-nbmir <- merge(nb60_cal, mir, by="SSN")
+nb60_cal <- merge(nb60_cal, mir, by="SSN")
+nb60_val <- merge(nb60_val, mir, by="SSN")
