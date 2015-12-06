@@ -105,7 +105,3 @@ set.seed(5321)
 train <- sample(sites, 0.8*length(sites))
 nb60_cal <- nb60[ nb60$Site%in%train, ] ## calibration data
 nb60_val <- nb60[!nb60$Site%in%train, ] ## validation data
-
-# Write data files --------------------------------------------------------
-write.csv(nb60_cal, "nb60_cal.csv", row.names=F)
-write.csv(nb60_val, "nb60_val.csv", row.names=F)
