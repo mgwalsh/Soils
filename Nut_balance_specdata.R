@@ -1,4 +1,4 @@
-#' Soil nutrient mass balance spectral predictions with AfSIS-1 data:
+#' Soil nutrient mass balance spectral data
 #' C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites with HSTXT MIR spectra
 #' M. Walsh, Nov. 2015
 
