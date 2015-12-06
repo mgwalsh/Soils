@@ -1,5 +1,5 @@
-#' LASSO regression predictions of nutrient mass balance variables with AfSIS-1 data
-#' C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites with HSTXT MIR spectra
+#' LASSO regression predictions of nutrient mass balance variables with HSTXT MIR data
+#' C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites
 #' M. Walsh, December 2015
 
 # Required packages
