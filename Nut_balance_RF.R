@@ -92,14 +92,14 @@ V7.rfo <- train(HSTXTc, V7,
 print(V7.rfo)
 
 # Test set predictions ----------------------------------------------------
-V1p <- predict(V1.rfo, HSTXTv)
-V2p <- predict(V2.rfo, HSTXTv)
-V3p <- predict(V3.rfo, HSTXTv)
-V4p <- predict(V4.rfo, HSTXTv)
-V5p <- predict(V5.rfo, HSTXTv)
-V6p <- predict(V6.rfo, HSTXTv)
-V7p <- predict(V7.rfo, HSTXTv)
-pred <- cbind.data.frame(V1p,V2p,V3p,V4p,V5p,V6p,V7p)
+V1_rfo <- predict(V1.rfo, HSTXTv)
+V2_rfo <- predict(V2.rfo, HSTXTv)
+V3_rfo <- predict(V3.rfo, HSTXTv)
+V4_rfo <- predict(V4.rfo, HSTXTv)
+V5_rfo <- predict(V5.rfo, HSTXTv)
+V6_rfo <- predict(V6.rfo, HSTXTv)
+V7_rfo <- predict(V7.rfo, HSTXTv)
+pred <- cbind.data.frame(V1_rfo,V2_rfo,V3_rfo,V4_rfo,V5_rfo,V6_rfo,V7_rfo)
 test <- nb60_val[c("SSN","V1","V2","V3","V4","V5","V6","V7")]
 eval <- cbind(test, pred)
 
