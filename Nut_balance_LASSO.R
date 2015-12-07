@@ -106,14 +106,14 @@ v7.imp <- varImp(V7.las)
 plot(v7.imp, top=20)
 
 # Test set predictions ----------------------------------------------------
-V1p <- predict(V1.las, HSTXTv)
-V2p <- predict(V2.las, HSTXTv)
-V3p <- predict(V3.las, HSTXTv)
-V4p <- predict(V4.las, HSTXTv)
-V5p <- predict(V5.las, HSTXTv)
-V6p <- predict(V6.las, HSTXTv)
-V7p <- predict(V7.las, HSTXTv)
-pred <- cbind.data.frame(V1p,V2p,V3p,V4p,V5p,V6p,V7p)
+V1_las <- predict(V1.las, HSTXTv)
+V2_las <- predict(V2.las, HSTXTv)
+V3_las <- predict(V3.las, HSTXTv)
+V4_las <- predict(V4.las, HSTXTv)
+V5_las <- predict(V5.las, HSTXTv)
+V6_las <- predict(V6.las, HSTXTv)
+V7_las <- predict(V7.las, HSTXTv)
+pred <- cbind.data.frame(V1_las,V2_las,V3_las,V4_las,V5_las,V6_las,V7_las)
 test <- nb60_val[c("SSN","V1","V2","V3","V4","V5","V6","V7")]
 eval <- cbind(test, eval)
 
