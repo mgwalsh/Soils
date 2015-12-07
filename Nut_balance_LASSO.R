@@ -115,7 +115,7 @@ V6_las <- predict(V6.las, HSTXTv)
 V7_las <- predict(V7.las, HSTXTv)
 pred <- cbind.data.frame(V1_las,V2_las,V3_las,V4_las,V5_las,V6_las,V7_las)
 test <- nb60_val[c("SSN","V1","V2","V3","V4","V5","V6","V7")]
-eval <- cbind(test, eval)
+eval <- cbind(test, pred)
 
 # Write data files --------------------------------------------------------
 write.csv(eval, "LASSO_pred.csv", row.names=F)
