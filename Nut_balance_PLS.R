@@ -3,7 +3,7 @@
 #' M. Walsh, December 2015
 
 # Required packages
-# install.packages(c("caret","glmnet")), dependencies=TRUE)
+# install.packages(c("caret","pls")), dependencies=TRUE)
 require(devtools)
 require(caret)
 require(pls)
@@ -21,7 +21,6 @@ V6 <- nb60_cal$V6
 V7 <- nb60_cal$V7
 HSTXTc <- nb60_cal[c(8,28:3605)] ## Depth in profile plus HSTXT spectra
 HSTXTv <- nb60_val[c(8,28:3605)] ## same for 12 randomly selected validation sites
-
 
 # PLS models --------------------------------------------------------------
 set.seed(1385321)
