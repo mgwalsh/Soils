@@ -28,7 +28,7 @@ fpart <- c("C","N","P","K","S","Ca","Mg") ## all values in mg/kg
 nb60$Fv <- 1000000-rowSums(nb60[fpart]) ## calculates "fill value" (Fv), in mg/kg soil
 cpart <- c("C","N","P","K","S","Ca","Mg","Fv")
 
-# Sequential binary partion & integrated log ratio (ilr) transform
+# Sequential binary partion & isometric log ratio (ilr) transform
 cdata <- acomp(nb60[cpart])
 bpart <- t(matrix(c( 1, 1, 1, 1, 1, 1, 1,-1,
                     -1,-1, 1, 1, 1, 1, 1, 0,
