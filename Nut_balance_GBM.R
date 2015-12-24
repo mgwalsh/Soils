@@ -36,16 +36,17 @@ registerDoParallel(mc)
 # Control setup
 set.seed(1385321)
 tc <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
+tg <- expand.grid(.n.trees=seq(50,500,by=50), 
+                  .interaction.depth = 5,
+                  .shrinkage = 0.1,
+                  .n.minobsinnode = 10)
 
 # V1 = ilr [C,N,P,K,S,Ca,Mg | Fv]
 V1.gbm <- train(HSTXTc, V1, 
                 method = "gbm", 
                 preProc = c("center", "scale"),
                 trControl = tc,
-                tuneGrid = expand.grid(.n.trees=seq(50,500,by=50), 
-                                       .interaction.depth = 5,
-                                       .shrinkage = 0.1,
-                                       .n.minobsinnode = 10))
+                tuneGrid = tg)
 print(V1.gbm)
 v1.imp <- varImp(V1.gbm)
 plot(v1.imp, top=20)
@@ -55,10 +56,7 @@ V2.gbm <- train(HSTXTc, V2,
                 method = "gbm", 
                 preProc = c("center", "scale"),
                 trControl = tc,
-                tuneGrid = expand.grid(.n.trees=seq(50,500,by=50), 
-                                       .interaction.depth = 5,
-                                       .shrinkage = 0.1,
-                                       .n.minobsinnode = 10))
+                tuneGrid = tg)
 print(V2.gbm)
 v2.imp <- varImp(V2.gbm)
 plot(v2.imp, top=20)
@@ -68,10 +66,7 @@ V3.gbm <- train(HSTXTc, V3,
                 method = "gbm", 
                 preProc = c("center", "scale"),
                 trControl = tc,
-                tuneGrid = expand.grid(.n.trees=seq(50,500,by=50), 
-                                       .interaction.depth = 5,
-                                       .shrinkage = 0.1,
-                                       .n.minobsinnode = 10))
+                tuneGrid = tg)
 print(V3.gbm)
 v3.imp <- varImp(V3.gbm)
 plot(v3.imp, top=20)
@@ -81,10 +76,7 @@ V4.gbm <- train(HSTXTc, V4,
                 method = "gbm", 
                 preProc = c("center", "scale"),
                 trControl = tc,
-                tuneGrid = expand.grid(.n.trees=seq(50,500,by=50), 
-                                       .interaction.depth = 5,
-                                       .shrinkage = 0.1,
-                                       .n.minobsinnode = 10))
+                tuneGrid = tg)
 print(V4.gbm)
 v4.imp <- varImp(V4.gbm)
 plot(v4.imp, top=20)
@@ -94,10 +86,7 @@ V5.gbm <- train(HSTXTc, V5,
                 method = "gbm", 
                 preProc = c("center", "scale"),
                 trControl = tc,
-                tuneGrid = expand.grid(.n.trees=seq(50,500,by=50), 
-                                       .interaction.depth = 5,
-                                       .shrinkage = 0.1,
-                                       .n.minobsinnode = 10))
+                tuneGrid = tg)
 print(V5.gbm)
 v5.imp <- varImp(V5.gbm)
 plot(v5.imp, top=20)
@@ -107,10 +96,7 @@ V6.gbm <- train(HSTXTc, V6,
                 method = "gbm", 
                 preProc = c("center", "scale"),
                 trControl = tc,
-                tuneGrid = expand.grid(.n.trees=seq(50,500,by=50), 
-                                       .interaction.depth = 5,
-                                       .shrinkage = 0.1,
-                                       .n.minobsinnode = 10))
+                tuneGrid = tg)
 print(V6.gbm)
 v6.imp <- varImp(V6.gbm)
 plot(v6.imp, top=20)
@@ -120,10 +106,7 @@ V7.gbm <- train(HSTXTc, V7,
                 method = "gbm", 
                 preProc = c("center", "scale"),
                 trControl = tc,
-                tuneGrid = expand.grid(.n.trees=seq(50,500,by=50), 
-                                       .interaction.depth = 5,
-                                       .shrinkage = 0.1,
-                                       .n.minobsinnode = 10))
+                tuneGrid = tg)
 print(V7.gbm)
 v7.imp <- varImp(V7.gbm)
 plot(v7.imp, top=20)
