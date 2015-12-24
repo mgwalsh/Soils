@@ -45,7 +45,7 @@ V1.rfo <- train(HSTXTc, V1,
                 tuneGrid = tg,
                 trControl = tc)
 print(V1.rfo)
-# v1.imp <- varImp(V1.rfo, useModel = FALSE) ## uncomment if needed
+# v1.imp <- varImp(V1.rfo, useModel = FALSE) ## uncomment these if needed
 # plot(v1.imp, top=20)
 
 # V2 = ilr [P,K,S,Ca,Mg | C,N]
