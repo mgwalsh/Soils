@@ -1,6 +1,6 @@
 #' Soil nutrient mass balances with AfSIS-1 data:
 #' C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites
-#' M. Walsh, Oct. 2015
+#' M. Walsh, December 2015
 
 # install.packages(c("downloader","compositions","rgdal"), dependencies=T)
 require(downloader)
@@ -67,7 +67,7 @@ download("https://www.dropbox.com/s/6fvipxqlmg704g3/hstxt_MIR.csv.zip?dl=0", "hs
 unzip("hstxt_MIR.csv.zip", overwrite=T)
 mir <- read.table("hstxt_MIR.csv", header=F, sep=",", stringsAsFactors=F)
 mir <- as.data.frame(mir)
-names(mir) <- c("SSN", paste("m", signif(seq(7497.964, 599.76, length.out=3578), 6),sep=""))
+names(mir) <- c("SSN", paste("m", signif(seq(7497.964, 599.76, length.out=3578), 6), sep=""))
 nb60_cal <- merge(nb60_cal, mir, by="SSN")
 nb60_cal <- na.omit(nb60_cal)
 nb60_val <- merge(nb60_val, mir, by="SSN")
