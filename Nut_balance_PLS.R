@@ -34,7 +34,7 @@ registerDoParallel(mc)
 
 # Control setup
 set.seed(1385321)
-tc <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+tc <- trainControl(method = "repeatedcv", number = 10, repeats = 3, allowParallel = TRUE)
 
 # V1 = ilr [C,N,P,K,S,Ca,Mg | Fv]
 V1.pls <- train(HSTXTc, V1,
