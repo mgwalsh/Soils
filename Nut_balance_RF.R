@@ -1,4 +1,4 @@
-#' Random Forest predictions of nutrient mass balance variables with HSTXT MIR data
+#' Random Forest predictions of soil nutrient mass balance variables with HSTXT MIR data
 #' C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites
 #' M. Walsh, December 2015
 
