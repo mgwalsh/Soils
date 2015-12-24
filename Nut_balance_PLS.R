@@ -3,15 +3,18 @@
 #' M. Walsh, December 2015
 
 # Required packages
-# install.packages(c("caret","pls")), dependencies=TRUE)
+# install.packages(c("devtools","caret","doParallel","pls")), dependencies=TRUE)
 require(devtools)
 require(caret)
+require(doParallel)
 require(pls)
 
 # Data setup --------------------------------------------------------------
-SourceURL <- "https://raw.githubusercontent.com/mgwalsh/Soils/master/Nut_balance_specdata.R"
-source_url(SourceURL)
+# Run this first: https://github.com/mgwalsh/Soils/blob/master/Nut_balance_setup.R
+# SourceURL <- "https://raw.githubusercontent.com/mgwalsh/Soils/master/Nut_balance_setup.R"
+# source_url(SourceURL)
 
+# Mass balance variables
 V1 <- nb60_cal$V1
 V2 <- nb60_cal$V2
 V3 <- nb60_cal$V3
@@ -19,14 +22,19 @@ V4 <- nb60_cal$V4
 V5 <- nb60_cal$V5
 V6 <- nb60_cal$V6
 V7 <- nb60_cal$V7
-HSTXTc <- nb60_cal[c(8,28:3605)] ## Depth in profile plus HSTXT spectra
-HSTXTv <- nb60_val[c(8,28:3605)] ## same for 12 randomly selected validation sites
+
+# Spectral covariates
+HSTXTc <- nb60_cal[c(8,24:3601)] ## Depth in profile plus HSTXT spectra
+HSTXTv <- nb60_val[c(8,24:3601)] ## same for 12 randomly selected validation sites
 
 # PLS models --------------------------------------------------------------
-set.seed(1385321)
+# Start foreach to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
 
-# Cross-validation setup
-tc <- trainControl(method = "cv", number = 10)
+# Control setup
+set.seed(1385321)
+tc <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
 
 # V1 = ilr [C,N,P,K,S,Ca,Mg | Fv]
 V1.pls <- train(HSTXTc, V1,
@@ -98,6 +106,9 @@ print(V7.pls)
 v7.imp <- varImp(V7.pls)
 plot(v7.imp, top=20)
 
+# Stop doParallel
+stopCluster(mc)
+
 # Test set predictions ----------------------------------------------------
 V1_pls <- predict(V1.pls, HSTXTv)
 V2_pls <- predict(V2.pls, HSTXTv)
@@ -108,7 +119,7 @@ V6_pls <- predict(V6.pls, HSTXTv)
 V7_pls <- predict(V7.pls, HSTXTv)
 pred <- cbind.data.frame(V1_pls,V2_pls,V3_pls,V4_pls,V5_pls,V6_pls,V7_pls)
 test <- nb60_val[c("SSN","V1","V2","V3","V4","V5","V6","V7")]
-eval <- cbind(test, pred)
+pls_eval <- cbind(test, pred)
 
 # Write data files --------------------------------------------------------
-write.csv(eval, "PLS_pred.csv", row.names=F)
+write.csv(pls_eval, "PLS_pred.csv", row.names=F)
