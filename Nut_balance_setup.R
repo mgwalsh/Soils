@@ -2,10 +2,9 @@
 #' C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites
 #' M. Walsh, Oct. 2015
 
-# install.packages(c("downloader","compositions","arm","rgdal"), dependencies=T)
+# install.packages(c("downloader","compositions","rgdal"), dependencies=T)
 require(downloader)
 require(compositions)
-require(arm)
 require(rgdal)
 
 # Data setup --------------------------------------------------------------
@@ -54,4 +53,26 @@ ygid <- ceiling(abs(nb60$y)/res.pixel)
 gidx <- ifelse(nb60$x<0, paste("W", xgid, sep=""), paste("E", xgid, sep=""))
 gidy <- ifelse(nb60$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
 GID <- paste(gidx, gidy, sep="-")
-nb60.gid <- cbind(GID, nb60)
+nb60 <- cbind(GID, nb60)
+
+# Train/Test set partition ------------------------------------------------
+sites <- names(table(nb60$Site))
+set.seed(1385321)
+train <- sample(sites, 0.8*length(sites))
+nb60_cal <- nb60[ nb60$Site%in%train, ] ## calibration data
+nb60_val <- nb60[!nb60$Site%in%train, ] ## validation data
+
+# Load and merge HSTXT MIR spectra ----------------------------------------
+download("https://www.dropbox.com/s/6fvipxqlmg704g3/hstxt_MIR.csv.zip?dl=0", "hstxt_MIR.csv.zip", mode="wb")
+unzip("hstxt_MIR.csv.zip", overwrite=T)
+mir <- read.table("hstxt_MIR.csv", header=F, sep=",", stringsAsFactors=F)
+mir <- as.data.frame(mir)
+names(mir) <- c("SSN", paste("m", signif(seq(7497.964, 599.76, length.out=3578), 6),sep=""))
+nb60_cal <- merge(nb60_cal, mir, by="SSN")
+nb60_cal <- na.omit(nb60_cal)
+nb60_val <- merge(nb60_val, mir, by="SSN")
+nb60_val <- na.omit(nb60_val)
+
+# Write data files --------------------------------------------------------
+write.csv(nb60_cal, "nb60_cal.csv", row.names=F)
+write.csv(nb60_val, "nb60_val.csv", row.names=F)
