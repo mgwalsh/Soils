@@ -36,7 +36,7 @@ bpart <- t(matrix(c( 1, 1, 1, 1, 1, 1, 1,-1,
                      0, 0, 1, 0,-1, 0, 0, 0,
                      0, 0, 0, 0, 0, 1,-1, 0,
                      1,-1, 0, 0, 0, 0, 0, 0), ncol=8, nrow=7, byrow=T))
-CoDaDendrogram(X=acomp(cdata), signary=bpart) ## mass balance mobile graph				
+CoDaDendrogram(X=acomp(cdata), signary=bpart, type="lines") ## mass balance mobile graph				
 idata <- as.data.frame(ilr(cdata, V=bpart))
 nb60 <- cbind(nb60, idata)
 
@@ -55,10 +55,27 @@ gidy <- ifelse(nb60$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
 GID <- paste(gidx, gidy, sep="-")
 nb60 <- cbind(GID, nb60)
 
+# Project GeoSurvey observations to Africa LAEA from LonLat
+geos.laea <- as.data.frame(project(cbind(geos$Lon, geos$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
+colnames(geos.laea) <- c("x","y")
+geos <- cbind(geos.laea, geos)
+
+# Generate GeoSurvey grid cell ID's (GID)
+xgid <- ceiling(abs(geos$x)/res.pixel)
+ygid <- ceiling(abs(geos$y)/res.pixel)
+gidx <- ifelse(geos$x<0, paste("W", xgid, sep=""), paste("E", xgid, sep=""))
+gidy <- ifelse(geos$y<0, paste("S", ygid, sep=""), paste("N", ygid, sep=""))
+GID <- paste(gidx, gidy, sep="-")
+geos <- cbind(GID, geos)
+geos <- geos[c(1,6:8)]
+
+# Merge nb60 w Geosurvey observations by GID
+nb60 <- merge(nb60, geos, by="GID")
+
 # Train/Test set partition ------------------------------------------------
 sites <- names(table(nb60$Site))
 set.seed(1385321)
-train <- sample(sites, 0.8*length(sites))
+train <- sample(sites, 0.8*length(sites)) ## sample 80% of sites for calibration
 nb60_cal <- nb60[ nb60$Site%in%train, ] ## calibration data
 nb60_val <- nb60[!nb60$Site%in%train, ] ## validation data
 
@@ -74,5 +91,6 @@ nb60_val <- merge(nb60_val, mir, by="SSN")
 nb60_val <- na.omit(nb60_val)
 
 # Write data files --------------------------------------------------------
+write.csv(nb60, "nb60_dat.csv", row.names=F)
 write.csv(nb60_cal, "nb60_cal.csv", row.names=F)
 write.csv(nb60_val, "nb60_val.csv", row.names=F)
