@@ -2,9 +2,12 @@
 #' C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites
 #' M. Walsh, December 2015
 
-# install.packages(c("downloader","compositions","rgdal"), dependencies=T)
+# install.packages(c("downloader","compositions","colorRamps","RColorBrewer","MASS","rgdal"), dependencies=T)
 require(downloader)
 require(compositions)
+require(MASS)
+require(colorRamps)
+require(RColorBrewer)
 require(rgdal)
 
 # Data setup --------------------------------------------------------------
@@ -19,6 +22,13 @@ prof <- read.table("Profiles.csv", header=T, sep=",") ## profile locations and s
 samp <- read.table("Samples.csv", header=T, sep=",") ## sample data
 geos <- read.table("nb60_GS.csv", header=T, sep=",") ## GeoSurvey data
 dat <- merge(prof, samp, by="PID")
+
+# Parallel coordinates plot of the raw data
+xvars <- c("C","N","P","K","S","Ca","Mg","Depth")
+xdata <- dat[xvars]
+xdata$Depth <- as.factor(xdata$Depth)
+k <- adjustcolor(brewer.pal(3, "Set1")[xdata$Depth], alpha=.4)
+parcoord(xdata[,1:7], col = k)
 
 # Compositional analysis setup
 vars <- c("SSN","Site","Lat","Lon","Depth","C","N","P","K","S","Ca","Mg")
