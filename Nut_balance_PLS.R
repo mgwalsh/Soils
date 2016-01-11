@@ -1,4 +1,5 @@
-#' PLS regression predictions of nutrient mass balance variables with HSTXT MIR data
+#' PLS regression predictions of nutrient mass balance variables with HSTXT MIR,
+#' depth in profile and GeoSurvey data
 #' C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites
 #' M. Walsh, December 2015
 
@@ -23,9 +24,9 @@ V5 <- nb60_cal$V5
 V6 <- nb60_cal$V6
 V7 <- nb60_cal$V7
 
-# Spectral covariates
-HSTXTc <- nb60_cal[c(8,24:3601)] ## Depth in profile plus HSTXT spectra
-HSTXTv <- nb60_val[c(8,24:3601)] ## same for 12 randomly selected validation sites
+# Covariates
+HSTXTc <- nb60_cal[c(8,25:26,27:3604)] ## Depth, CP, WP and HSTXT spectra
+HSTXTv <- nb60_val[c(8,25:26,27:3604)] ## same for 12 randomly selected validation sites
 
 # PLS models --------------------------------------------------------------
 # Start foreach to parallelize model fitting
@@ -120,6 +121,15 @@ V7_pls <- predict(V7.pls, HSTXTv)
 pred <- cbind.data.frame(V1_pls,V2_pls,V3_pls,V4_pls,V5_pls,V6_pls,V7_pls)
 test <- nb60_val[c("SSN","V1","V2","V3","V4","V5","V6","V7")]
 pls_eval <- cbind(test, pred)
+
+# Validation plots --------------------------------------------------------
+# V1 = ilr [C,N,P,K,S,Ca,Mg | Fv]
+plot(V1~V1_pls, pls_eval, xlim=c(-19, -11), ylim=c(-19, -11), xlab="V1 predicted", ylab="V1 measured")
+abline(c(0,1), col="red", lwd=2)
+
+# V2 = ilr [P,K,S,Ca,Mg | C,N]
+plot(V2~V2_pls, pls_eval, xlim=c(-20, -6), ylim=c(-20, -6), xlab="V2 predicted", ylab="V2 measured")
+abline(c(0,1), col="red", lwd=2)
 
 # Write data files --------------------------------------------------------
 write.csv(pls_eval, "PLS_pred.csv", row.names=F)
