@@ -89,3 +89,22 @@ plot(summary(V6.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## 
 # V7 = ilr [C | N]
 V7.rq <- rq(V7~log(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
 plot(summary(V7.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+
+# Enrichment factor models ------------------------------------------------
+# download XRF data
+download("https://www.dropbox.com/s/0j6hl56pwy2yiwt/Al_XRF.csv?dl=0", "Al_XRF.csv", mode="wb")
+xrf <- read.table("Al_XRF.csv", header=T, sep=",")
+nb60 <- merge(nb60, xrf, by="SSN")
+
+# P | Al
+P.rq <- rq(I(P/Al)~log(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
+plot(summary(P.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+
+# K | Al
+K.rq <- rq(I(K/Al)~log(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
+plot(summary(K.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+
+# S | Al
+S.rq <- rq(I(S/Al)~log(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
+plot(summary(S.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+
