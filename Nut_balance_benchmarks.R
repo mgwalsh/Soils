@@ -91,20 +91,46 @@ V7.rq <- rq(V7~log(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60
 plot(summary(V7.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
 
 # Enrichment factor models ------------------------------------------------
-# download XRF data
+# load XRF Aluminum reference data
 download("https://www.dropbox.com/s/0j6hl56pwy2yiwt/Al_XRF.csv?dl=0", "Al_XRF.csv", mode="wb")
 xrf <- read.table("Al_XRF.csv", header=T, sep=",")
 nb60 <- merge(nb60, xrf, by="SSN")
 
 # P | Al
-P.rq <- rq(I(P/Al)~log(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
-plot(summary(P.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+nb60$PAL <- nb60$P/nb60$Al
+PAL.rq <- rq(PAL~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
+plot(summary(PAL.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+
+tau <- 0.25 ## set quantile reference level
+PAL.rq <- rq(PAL~I(Depth/100)+CP+WP, tau = tau, data=nb60) 
+nb60$PALp <- predict(PAL.rq, nb60)
+nb60$PALd <- log(nb60$PAL/nb60$PALp)
+nb60$PALq <- ifelse(nb60$PALp > nb60$PAL, 1, 0) ## predict above/below quantile value
+prop.table(table(nb60$PALq))
+hist(nb60$PALd)
 
 # K | Al
-K.rq <- rq(I(K/Al)~log(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
-plot(summary(K.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+nb60$KAL <- nb60$K/nb60$Al
+KAL.rq <- rq(KAL~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
+plot(summary(KAL.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+
+tau <- 0.25 ## set quantile reference level
+KAL.rq <- rq(KAL~I(Depth/100)+CP+WP, tau = tau, data=nb60) 
+nb60$KALp <- predict(KAL.rq, nb60)
+nb60$KALd <- log(nb60$KAL/nb60$KALp)
+nb60$KALq <- ifelse(nb60$KALp > nb60$KAL, 1, 0) ## predict above/below quantile value
+prop.table(table(nb60$KALq))
+hist(nb60$KALd)
 
 # S | Al
-S.rq <- rq(I(S/Al)~log(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
-plot(summary(S.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+nb60$SAL <- nb60$S/nb60$Al
+SAL.rq <- rq(SAL~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
+plot(summary(SAL.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
 
+tau <- 0.25 ## set quantile reference level
+SAL.rq <- rq(SAL~I(Depth/100)+CP+WP, tau = tau, data=nb60) 
+nb60$SALp <- predict(SAL.rq, nb60)
+nb60$SALd <- log(nb60$SAL/nb60$SALp)
+nb60$SALq <- ifelse(nb60$SALp > nb60$SAL, 1, 0) ## predict above/below quantile value
+prop.table(table(nb60$SALq))
+hist(nb60$SALd)
