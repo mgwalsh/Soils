@@ -1,5 +1,5 @@
 #' Soil nutrient mass balance benchmarks with AfSIS-1 data:
-#' C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites
+#' C,N, Mehlich-3 extractable P,K,S,Ca & Mg and XRF Al,P,K & S, from 60 sentinel sites
 #' M. Walsh, January 2016
 
 # install.packages(c("devtools","arm","quantreg"), dependencies=T)
@@ -8,17 +8,17 @@ require(arm)
 require(quantreg)
 
 # Data setup --------------------------------------------------------------
-# SourceURL <- "https://raw.githubusercontent.com/mgwalsh/Soils/master/Nut_balance_setup.R"
-# source_url(SourceURL)
+SourceURL <- "https://raw.githubusercontent.com/mgwalsh/Soils/master/Nut_balance_setup.R"
+source_url(SourceURL)
 
-# Enrichment factor models ------------------------------------------------
-# load XRF Aluminum reference data
-download("https://www.dropbox.com/s/0j6hl56pwy2yiwt/Al_XRF.csv?dl=0", "Al_XRF.csv", mode="wb")
-xrf <- read.table("Al_XRF.csv", header=T, sep=",")
+# Enrichment/depletion factor (EDF) models ---------------------------------
+# load XRF reference data
+download("https://www.dropbox.com/s/hypt5i9zey3dpug/XRF_ref.csv?dl=0", "XRF_ref.csv", mode="wb")
+xrf <- read.table("XRF_ref.csv", header=T, sep=",")
 nb60 <- merge(nb60, xrf, by="SSN")
 
-# P | Al
-nb60$PAL <- nb60$P/nb60$Al
+# P | Alx
+nb60$PAL <- nb60$P/nb60$Alx
 PAL.rq <- rq(PAL~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
 plot(summary(PAL.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
 
@@ -30,8 +30,21 @@ nb60$PALq <- ifelse(nb60$PALp > nb60$PAL, 1, 0) ## predict above/below quantile 
 prop.table(table(nb60$PALq))
 hist(nb60$PALd)
 
-# K | Al
-nb60$KAL <- nb60$K/nb60$Al
+# P | Px
+nb60$PPX <- nb60$P/nb60$Px
+PPX.rq <- rq(PPX~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
+plot(summary(PPX.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+
+tau <- 0.25 ## set quantile reference level
+PPX.rq <- rq(PPX~I(Depth/100)+CP+WP, tau = tau, data=nb60) 
+nb60$PPXp <- predict(PPX.rq, nb60)
+nb60$PPXd <- log(nb60$PPX/nb60$PPXp)
+nb60$PPXq <- ifelse(nb60$PPXp > nb60$PPX, 1, 0) ## predict above/below quantile value
+prop.table(table(nb60$PPXq))
+hist(nb60$PPXd)
+
+# K | Alx
+nb60$KAL <- nb60$K/nb60$Alx
 KAL.rq <- rq(KAL~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
 plot(summary(KAL.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
 
@@ -43,8 +56,21 @@ nb60$KALq <- ifelse(nb60$KALp > nb60$KAL, 1, 0) ## predict above/below quantile 
 prop.table(table(nb60$KALq))
 hist(nb60$KALd)
 
-# S | Al
-nb60$SAL <- nb60$S/nb60$Al
+# K | Kx
+nb60$KKX <- nb60$K/nb60$Kx
+KKX.rq <- rq(KKX~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
+plot(summary(KKX.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+
+tau <- 0.25 ## set quantile reference level
+KKX.rq <- rq(KKX~I(Depth/100)+CP+WP, tau = tau, data=nb60) 
+nb60$KKXp <- predict(KKX.rq, nb60)
+nb60$KKXd <- log(nb60$KKX/nb60$KKXp)
+nb60$KKXq <- ifelse(nb60$KKXp > nb60$KKX, 1, 0) ## predict above/below quantile value
+prop.table(table(nb60$KKXq))
+hist(nb60$KKXd)
+
+# S | Alx
+nb60$SAL <- nb60$S/nb60$Alx
 SAL.rq <- rq(SAL~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
 plot(summary(SAL.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
 
@@ -55,6 +81,19 @@ nb60$SALd <- log(nb60$SAL/nb60$SALp)
 nb60$SALq <- ifelse(nb60$SALp > nb60$SAL, 1, 0) ## predict above/below quantile value
 prop.table(table(nb60$SALq))
 hist(nb60$SALd)
+
+# S | Sx
+nb60$SSX <- nb60$S/nb60$Sx
+SSX.rq <- rq(SSX~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
+plot(summary(SSX.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+
+tau <- 0.25 ## set quantile reference level
+SSX.rq <- rq(SSX~I(Depth/100)+CP+WP, tau = tau, data=nb60) 
+nb60$SSXp <- predict(SSX.rq, nb60)
+nb60$SSXd <- log(nb60$SSX/nb60$SSXp)
+nb60$SALq <- ifelse(nb60$SSXp > nb60$SSX, 1, 0) ## predict above/below quantile value
+prop.table(table(nb60$SSXq))
+hist(nb60$SSXd)
 
 # Site-level EDF summaries ------------------------------------------------
 # PAL = P | Al
