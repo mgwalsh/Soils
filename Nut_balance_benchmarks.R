@@ -1,5 +1,5 @@
 #' Soil nutrient mass balance benchmarks with AfSIS-1 data:
-#' C,N, Mehlich-3 extractable P,K,S,Ca & Mg and XRF Al,P,K & S, from 60 sentinel sites
+#' C,N, Mehlich-3 extractable elements and XRF Al,P,K & S, from 60 sentinel sites
 #' M. Walsh, January 2016
 
 # install.packages(c("devtools","arm","quantreg"), dependencies=T)
@@ -11,14 +11,19 @@ require(quantreg)
 SourceURL <- "https://raw.githubusercontent.com/mgwalsh/Soils/master/Nut_balance_setup.R"
 source_url(SourceURL)
 
-# Enrichment/depletion factor (EDF) models ---------------------------------
+# load Mehlich-3 Al,B,Cu,Fe,Mn & Zn data
+download("https://www.dropbox.com/s/bivkvxrjno8fo67/nb60_micro.csv?dl=0", "nb60_micro.csv", mode="wb")
+mic <- read.table("nb60_micro.csv", header=T, sep=",")
+nb60 <- merge(nb60, mic, by="SSN")
+
 # load XRF reference data
 download("https://www.dropbox.com/s/hypt5i9zey3dpug/XRF_ref.csv?dl=0", "XRF_ref.csv", mode="wb")
 xrf <- read.table("XRF_ref.csv", header=T, sep=",")
 nb60 <- merge(nb60, xrf, by="SSN")
 
-# P | Alx
-nb60$PAL <- nb60$P/nb60$Alx
+# Enrichment/depletion factor (EDF) models ---------------------------------
+# P | Al
+nb60$PAL <- nb60$P/nb60$Al
 PAL.rq <- rq(PAL~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
 plot(summary(PAL.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
 
@@ -30,21 +35,21 @@ nb60$PALq <- ifelse(nb60$PALp > nb60$PAL, 1, 0) ## predict above/below quantile 
 prop.table(table(nb60$PALq))
 hist(nb60$PALd)
 
-# P | Px
-nb60$PPX <- nb60$P/nb60$Px
-PPX.rq <- rq(PPX~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
-plot(summary(PPX.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+# P | Alx
+nb60$PALx <- nb60$P/nb60$Alx
+PALx.rq <- rq(PALx~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
+plot(summary(PALx.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
 
 tau <- 0.25 ## set quantile reference level
-PPX.rq <- rq(PPX~I(Depth/100)+CP+WP, tau = tau, data=nb60) 
-nb60$PPXp <- predict(PPX.rq, nb60)
-nb60$PPXd <- log(nb60$PPX/nb60$PPXp)
-nb60$PPXq <- ifelse(nb60$PPXp > nb60$PPX, 1, 0) ## predict above/below quantile value
-prop.table(table(nb60$PPXq))
-hist(nb60$PPXd)
+PALx.rq <- rq(PALx~I(Depth/100)+CP+WP, tau = tau, data=nb60) 
+nb60$PALxp <- predict(PALx.rq, nb60)
+nb60$PALxd <- log(nb60$PALx/nb60$PALxp)
+nb60$PALxq <- ifelse(nb60$PALxp > nb60$PALx, 1, 0) ## predict above/below quantile value
+prop.table(table(nb60$PALxq))
+hist(nb60$PALxd)
 
-# K | Alx
-nb60$KAL <- nb60$K/nb60$Alx
+# K | Al
+nb60$KAL <- nb60$K/nb60$Al
 KAL.rq <- rq(KAL~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
 plot(summary(KAL.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
 
@@ -56,21 +61,21 @@ nb60$KALq <- ifelse(nb60$KALp > nb60$KAL, 1, 0) ## predict above/below quantile 
 prop.table(table(nb60$KALq))
 hist(nb60$KALd)
 
-# K | Kx
-nb60$KKX <- nb60$K/nb60$Kx
-KKX.rq <- rq(KKX~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
-plot(summary(KKX.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+# K | Alx
+nb60$KALx <- nb60$K/nb60$Alx
+KALx.rq <- rq(KALx~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
+plot(summary(KALx.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
 
 tau <- 0.25 ## set quantile reference level
-KKX.rq <- rq(KKX~I(Depth/100)+CP+WP, tau = tau, data=nb60) 
-nb60$KKXp <- predict(KKX.rq, nb60)
-nb60$KKXd <- log(nb60$KKX/nb60$KKXp)
-nb60$KKXq <- ifelse(nb60$KKXp > nb60$KKX, 1, 0) ## predict above/below quantile value
-prop.table(table(nb60$KKXq))
-hist(nb60$KKXd)
+KALx.rq <- rq(KALx~I(Depth/100)+CP+WP, tau = tau, data=nb60) 
+nb60$KALxp <- predict(KALx.rq, nb60)
+nb60$KALxd <- log(nb60$KALx/nb60$KALxp)
+nb60$KALxq <- ifelse(nb60$KALxp > nb60$KALx, 1, 0) ## predict above/below quantile value
+prop.table(table(nb60$KALxq))
+hist(nb60$KALxd)
 
-# S | Alx
-nb60$SAL <- nb60$S/nb60$Alx
+# S | Al
+nb60$SAL <- nb60$S/nb60$Al
 SAL.rq <- rq(SAL~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
 plot(summary(SAL.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
 
@@ -82,36 +87,36 @@ nb60$SALq <- ifelse(nb60$SALp > nb60$SAL, 1, 0) ## predict above/below quantile 
 prop.table(table(nb60$SALq))
 hist(nb60$SALd)
 
-# S | Sx
-nb60$SSX <- nb60$S/nb60$Sx
-SSX.rq <- rq(SSX~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
-plot(summary(SSX.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
+# S | SAlx
+nb60$SALx <- nb60$S/nb60$Alx
+SALx.rq <- rq(SALx~I(Depth/100)+CP+WP, tau = seq(0.05, 0.95, by = 0.05), data=nb60)
+plot(summary(SALx.rq), main = c("Intercept","Depth","Cropland","Woody cover")) ## Coefficient plots
 
 tau <- 0.25 ## set quantile reference level
-SSX.rq <- rq(SSX~I(Depth/100)+CP+WP, tau = tau, data=nb60) 
-nb60$SSXp <- predict(SSX.rq, nb60)
-nb60$SSXd <- log(nb60$SSX/nb60$SSXp)
-nb60$SALq <- ifelse(nb60$SSXp > nb60$SSX, 1, 0) ## predict above/below quantile value
-prop.table(table(nb60$SSXq))
-hist(nb60$SSXd)
+SALx.rq <- rq(SALx~I(Depth/100)+CP+WP, tau = tau, data=nb60) 
+nb60$SALxp <- predict(SALx.rq, nb60)
+nb60$SALxd <- log(nb60$SALx/nb60$SALxp)
+nb60$SALxq <- ifelse(nb60$SALxp > nb60$SALx, 1, 0) ## predict above/below quantile value
+prop.table(table(nb60$SALxq))
+hist(nb60$SALxd)
 
 # Site-level EDF summaries ------------------------------------------------
 # PAL = P | Al
-PAL.lmer <- lmer(PALd~1+(1|Site), data=nb60)
+PAL.lmer <- lmer(PALxd~1+(1|Site), data=nb60)
 summary(PAL.lmer)
 PAL.coef <- coef(PAL.lmer)
 PAL.se <- se.coef(PAL.lmer)
 coefplot(PAL.coef$Site[,1], PAL.se$Site[,1], varnames=rownames(PAL.coef$Site), xlim=c(-2,4), CI=2, cex.var=0.6, cex.pts=1.0, main="")
 
 # KAL = K | Al
-KAL.lmer <- lmer(KALd~1+(1|Site), data=nb60)
+KAL.lmer <- lmer(KALxd~1+(1|Site), data=nb60)
 summary(KAL.lmer)
 KAL.coef <- coef(KAL.lmer)
 KAL.se <- se.coef(KAL.lmer)
 coefplot(KAL.coef$Site[,1], KAL.se$Site[,1], varnames=rownames(KAL.coef$Site), xlim=c(-2,4), CI=2, cex.var=0.6, cex.pts=1.0, main="")
 
 #  SAL = S | Al
-SAL.lmer <- lmer(SALd~1+(1|Site), data=nb60)
+SAL.lmer <- lmer(SALxd~1+(1|Site), data=nb60)
 summary(SAL.lmer)
 SAL.coef <- coef(SAL.lmer)
 SAL.se <- se.coef(SAL.lmer)
