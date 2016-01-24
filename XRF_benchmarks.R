@@ -51,5 +51,3 @@ tau <- 0.25 ## set quantile level
 SAL.rq <- rq(log(SALt)~log(SALs), tau = tau, data=del)
 del$SALp <- exp(predict(SAL.rq, del))
 del$dSAL <- del$SALt/del$SALp-1
-
-
