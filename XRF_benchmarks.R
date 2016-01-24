@@ -35,19 +35,19 @@ del$SALs <- del$Ss/del$Als
 
 # Quantile regression benchmarks ------------------------------------------
 # Predict P-quantile
-tau <- 0.25 ## set quantile level
+tau <- 0.5 ## set quantile level
 PAL.rq <- rq(log(PALt)~log(PALs), tau = tau, data=del)
 del$PALp <- exp(predict(PAL.rq, del))
-del$dPAL <- del$PALt/del$PALp-1
+del$dPAL <- (del$PALt/del$PALp-1)*100
 
 # Predict K-quantile
-tau <- 0.25 ## set quantile level
+tau <- 0.5 ## set quantile level
 KAL.rq <- rq(log(KALt)~log(KALs), tau = tau, data=del)
 del$KALp <- exp(predict(KAL.rq, del))
-del$dKAL <- del$KALt/del$KALp-1
+del$dKAL <- (del$KALt/del$KALp-1)*100
 
 # Predict S-quantile
-tau <- 0.25 ## set quantile level
+tau <- 0.5 ## set quantile level
 SAL.rq <- rq(log(SALt)~log(SALs), tau = tau, data=del)
 del$SALp <- exp(predict(SAL.rq, del))
-del$dSAL <- del$SALt/del$SALp-1
+del$dSAL <- (del$SALt/del$SALp-1)*100
