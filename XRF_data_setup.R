@@ -36,3 +36,5 @@ xrfd$CIW <- (Al*1.8895)/(Al*1.8895+(Ca*1.3992-(P*2.2916*10/3))+Na*1.3480)*100
 detach(xrfd)
 plot(CIW ~ CIA, data=xrfd, xlim=c(0,100), ylim=c(0,100))
 abline(c(0,1), lwd=2, col="red")
+
+
