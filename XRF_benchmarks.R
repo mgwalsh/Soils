@@ -2,13 +2,15 @@
 #' XRF data from 60 sentinel sites
 #' M. Walsh, January 2016
 
-# install.packages(c("downloader","quantreg","arm"), dependencies=T)
+# install.packages(c("downloader","quantreg","MASS","colorRamps","RColorBrewer"), dependencies=T)
 require(downloader)
 require(quantreg)
-require(arm)
+require(MASS)
+require(colorRamps)
+require(RColorBrewer)
 
 # Data setup --------------------------------------------------------------
-# Create a data folder in your current working directory
+# Create a data folder in  your current working directory
 dir.create("XRF_data", showWarnings=F)
 setwd("./XRF_data")
 
@@ -32,6 +34,13 @@ del$KALt <- del$Kt/del$Alt
 del$KALs <- del$Ks/del$Als
 del$SALt <- del$St/del$Alt
 del$SALs <- del$Ss/del$Als
+
+# Parallel coordinates plot of the raw data
+xdata <- xrfd[,8:48]
+xdata$Depth <- as.factor(xdata$Depth)
+k <- adjustcolor(brewer.pal(3, "Set1")[xdata$Depth], alpha=0.8)
+parcoord(xdata[,2:21], col = k)
+parcoord(xdata[,22:41], col = k)
 
 # Quantile regression benchmarks ------------------------------------------
 # Predict P-quantile
