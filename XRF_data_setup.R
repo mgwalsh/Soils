@@ -2,8 +2,9 @@
 #' XRF data from 60 sentinel sites
 #' M. Walsh, January 2016
 
-# install.packages(c("downloader","quantreg","MASS","colorRamps","RColorBrewer"), dependencies=T)
+# install.packages(c("downloader","arm","MASS","colorRamps","RColorBrewer"), dependencies=T)
 require(downloader)
+require(arm)
 require(MASS)
 require(colorRamps)
 require(RColorBrewer)
@@ -37,4 +38,16 @@ detach(xrfd)
 plot(CIW ~ CIA, data=xrfd, xlim=c(0,100), ylim=c(0,100))
 abline(c(0,1), lwd=2, col="red")
 
+# Site level summaries ----------------------------------------------------
+CIA.lmer <- lmer(CIA~I(Depth/100)+(1|Site), data=xrfd)
+summary(CIA.lmer)
+CIA.ranef <- ranef(CIA.lmer)
+CIA.se <- se.coef(CIA.lmer)
+coefplot(CIA.ranef$Site[,1], CIA.se$Site[,1], varnames=rownames(CIA.ranef$Site), xlim=c(-60,60), CI=2, cex.var=0.6, cex.pts=1.0, main="")
+
+CIW.lmer <- lmer(CIW~I(Depth/100)+(1|Site), data=xrfd)
+summary(CIW.lmer)
+CIW.ranef <- ranef(CIW.lmer)
+CIW.se <- se.coef(CIW.lmer)
+coefplot(CIW.ranef$Site[,1], CIW.se$Site[,1], varnames=rownames(CIW.ranef$Site), xlim=c(-60,60), CI=2, cex.var=0.6, cex.pts=1.0, main="")
 
