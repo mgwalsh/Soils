@@ -2,12 +2,13 @@
 #' XRF data from 60 sentinel sites
 #' M. Walsh & J. Chen, January 2016
 
-# install.packages(c("downloader","MASS","colorRamps","RColorBrewer","compositions"), dependencies=T)
+# install.packages(c("downloader","MASS","colorRamps","RColorBrewer","compositions","archetypes"), dependencies=T)
 require(downloader)
 require(MASS)
 require(colorRamps)
 require(RColorBrewer)
 require(compositions)
+require(archetypes)
 
 # Data setup --------------------------------------------------------------
 # Create a data folder in  your current working directory
@@ -43,13 +44,8 @@ wi60 <- na.omit(xrfd[vars])
 cpart <- c("wCN","wK","wA")
 
 # Sequential binary partion & isometric log ratio (ilr) transform
-# Ternary plot
 cdata <- acomp(wi60[cpart])
 colnames(cdata) <- c("CN","K","A")
-plot(cdata, cex=0.5, col="grey", center=T)
-crust <- c(15.4,3.59+3.57,2.8) ## average composition of upper crust reference point
-crust <- acomp(crust)
-plot(crust, cex=1.3, col="red", pch=3, add=T)
 
 # Binary partition
 bpart <- t(matrix(c(-1,-1, 1,
@@ -58,7 +54,6 @@ CoDaDendrogram(X=acomp(cdata), signary=bpart, type="lines") ## compositional bal
 idata <- as.data.frame(ilr(cdata, V=bpart))
 wi60 <- cbind(wi60, idata)
 
-require(archetypes)
 # Identification of archetypes / endmembers -------------------------------
 set.seed(85321)
 wi60.arc <- stepArchetypes(data=wi60[,9:10], k=1:4, nrep=5, verbose=T)
@@ -77,18 +72,19 @@ ilrInv_nonorthonormal <- function(idata, V){
   orig_data <- clrInv(cdata_tmp)
   return(orig_data)
 }
-
 arch <- ilrInv_nonorthonormal(idata, bpart)
 arch <- as.data.frame(arch)
 colnames(arch) <- c("CN","K","A")
 carc <- acomp(arch)
 
+# A-CN-K ternary plot
 plot(cdata, cex=0.5, col="grey", center=T)
 crust <- c(15.4,3.59+3.57,2.8) ## average composition of upper crust reference point
 crust <- acomp(crust)
-plot(crust, cex=1.3, col="red", pch=3, add=T)
+plot(crust, cex=1.3, col="red", add=T)
 plot(carc, cex=1.3, col="blue", add=T)
 
-
-
+# Plot of endmember compositions
+mypal <- brewer.pal(3,"Blues")
+barplot(carc, xlim=c(0,5), ylab=list("Proportion", cex=1), col=mypal, legend.text=T)
 
