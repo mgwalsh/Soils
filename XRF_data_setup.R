@@ -1,6 +1,6 @@
 #' Geochemical weathering index model setup with AfSIS-1 XRF data
 #' XRF data from 60 sentinel sites
-#' M. Walsh, January 2016
+#' M. Walsh & J. Chen, January 2016
 
 # install.packages(c("downloader","MASS","colorRamps","RColorBrewer","compositions"), dependencies=T)
 require(downloader)
@@ -30,28 +30,65 @@ k <- adjustcolor(brewer.pal(3, "Set1")[xdata$Depth], alpha=0.8)
 parcoord(xdata[,2:21], col = k)
 parcoord(xdata[,22:41], col = k)
 
-# Calculate equivalent oxide wt% units and weathering indices
+# Calculate equivalent oxide wt% units and weathering index
 attach(xrfd)
-xrfd$Al2O3 <- (Al*1.8895)/10000
-xrfd$CaO   <- (Ca*1.2046)/10000
-xrfd$Na2O  <- (Na*1.3992)/10000
-xrfd$K2O   <- (K*1.3480)/10000
-xrfd$CIA <- (Al*1.8895)/(Al*1.8895+K*1.2046+(Ca*1.3992-(P*2.2916*10/3))+Na*1.3480)*100
-xrfd$CIW <- (Al*1.8895)/(Al*1.8895+(Ca*1.3992-(P*2.2916*10/3))+Na*1.3480)*100
+xrfd$wA  <- (Al*1.8895)/10000
+xrfd$wCN <- (Ca*1.2046)/10000 + (Na*1.3992)/10000
+xrfd$wK  <- (K*1.3480)/10000
 detach(xrfd)
-plot(CIW ~ CIA, data=xrfd, xlim=c(0,100), ylim=c(0,100))
-abline(c(0,1), lwd=2, col="red")
 
 # Compositional analysis setup
-vars <- c("SSN","Site","Lat","Lon","Depth","Al2O3","CaO","Na2O","K2O","CIA","CIW")
+vars <- c("SSN","Site","Lat","Lon","Depth","wA","wCN","wK")
 wi60 <- na.omit(xrfd[vars])
-cpart <- c("Al2O3","CaO","Na2O","K2O")
+cpart <- c("wCN","wK","wA")
 
 # Sequential binary partion & isometric log ratio (ilr) transform
+# Ternary plot
 cdata <- acomp(wi60[cpart])
-bpart <- t(matrix(c(1,-1,-1,-1,
-                    0,-1,-1, 1,
-                    0, 1,-1, 0), ncol=4, nrow=3, byrow=T))
-CoDaDendrogram(X=acomp(cdata), signary=bpart, type="lines") ## mass balance mobile graph				
+colnames(cdata) <- c("CN","K","A")
+plot(cdata, cex=0.5, col="grey", center=T)
+crust <- c(15.4,3.59+3.57,2.8) ## average composition of upper crust reference point
+crust <- acomp(crust)
+plot(crust, cex=1.3, col="red", pch=3, add=T)
+
+# Binary partition
+bpart <- t(matrix(c(-1,-1, 1,
+                    -1, 1, 0), ncol=3, nrow=2, byrow=T))
+CoDaDendrogram(X=acomp(cdata), signary=bpart, type="lines") ## compositional balance mobile graph				
 idata <- as.data.frame(ilr(cdata, V=bpart))
 wi60 <- cbind(wi60, idata)
+
+require(archetypes)
+# Identification of archetypes / endmembers -------------------------------
+set.seed(85321)
+wi60.arc <- stepArchetypes(data=wi60[,9:10], k=1:4, nrep=5, verbose=T)
+screeplot(wi60.arc)
+
+# Select no. of archetypes, screeplot suggests 3 endmembers
+wi60.arc3 <- bestModel(wi60.arc[[3]])
+idata <- as.data.frame(parameters(wi60.arc3))
+
+# Inverse ilr transform 
+ilrInv_nonorthonormal <- function(idata, V){
+  n <- dim(idata)[2]
+  LT <- (cbind(diag(n), rep(-1, n)))%*%V
+  cdata_tmp <- as.matrix(idata)%*%solve(LT)
+  cdata_tmp <- cbind(cdata_tmp, -rowSums(cdata_tmp))
+  orig_data <- clrInv(cdata_tmp)
+  return(orig_data)
+}
+
+arch <- ilrInv_nonorthonormal(idata, bpart)
+arch <- as.data.frame(arch)
+colnames(arch) <- c("CN","K","A")
+carc <- acomp(arch)
+
+plot(cdata, cex=0.5, col="grey", center=T)
+crust <- c(15.4,3.59+3.57,2.8) ## average composition of upper crust reference point
+crust <- acomp(crust)
+plot(crust, cex=1.3, col="red", pch=3, add=T)
+plot(carc, cex=1.3, col="blue", add=T)
+
+
+
+
