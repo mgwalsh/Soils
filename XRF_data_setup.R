@@ -87,7 +87,7 @@ crust <- c(15.4,3.59+3.57,2.8) ## average composition of upper crust reference p
 crust <- acomp(crust)
 plot(crust, cex=1.3, col="red", add=T)
 plot(carc, cex=1.3, col="blue", add=T)
-rmin <- acomp(minr[,2:4])
+rmin <- acomp(minr[,2:4]) ## mineral reference compositions
 plot(rmin, cex=1.3, pch=3, add=T)
 
 # Plot of endmember compositions
