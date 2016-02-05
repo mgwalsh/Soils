@@ -24,6 +24,10 @@ xrfd <- read.table("XRF.csv", header=T, sep=",") ## XRF data
 samp <- merge(prof, samp, by="PID")
 xrfd <- merge(samp, xrfd, by="SSN")
 
+# Mineral reference data
+download("https://www.dropbox.com/s/viva1hgblukr6vg/Ref_Min.csv?dl=0", "Ref_Min.csv", mode="wb")
+minr <- read.table("Ref_Min.csv", header=T, sep=",")
+
 # Parallel coordinates plot of all of the XRF data
 xdata <- xrfd[,8:48]
 xdata$Depth <- as.factor(xdata$Depth)
@@ -31,7 +35,7 @@ k <- adjustcolor(brewer.pal(3, "Set1")[xdata$Depth], alpha=0.8)
 parcoord(xdata[,2:21], col = k)
 parcoord(xdata[,22:41], col = k)
 
-# Calculate equivalent oxide wt% units and weathering index
+# Calculate equivalent oxide wt% units
 attach(xrfd)
 xrfd$wA  <- (Al*1.8895)/10000
 xrfd$wCN <- (Ca*1.2046)/10000 + (Na*1.3992)/10000
@@ -83,6 +87,8 @@ crust <- c(15.4,3.59+3.57,2.8) ## average composition of upper crust reference p
 crust <- acomp(crust)
 plot(crust, cex=1.3, col="red", add=T)
 plot(carc, cex=1.3, col="blue", add=T)
+rmin <- acomp(minr[,2:4])
+plot(rmin, cex=1.3, pch=3, add=T)
 
 # Plot of endmember compositions
 mypal <- brewer.pal(3,"Blues")
