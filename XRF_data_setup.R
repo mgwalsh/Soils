@@ -60,12 +60,18 @@ wi60 <- cbind(wi60, idata)
 
 # Identification of archetypes / endmembers -------------------------------
 set.seed(85321)
-wi60.arc <- stepArchetypes(data=wi60[,9:10], k=1:4, nrep=5, verbose=T)
+wi60.arc <- stepArchetypes(data=wi60[,9:10], k=1:5, nrep=5, verbose=T)
 screeplot(wi60.arc)
 
 # Select no. of archetypes, screeplot suggests 3 endmembers
 wi60.arc3 <- bestModel(wi60.arc[[3]])
-idata <- as.data.frame(parameters(wi60.arc3))
+edata <- as.data.frame(parameters(wi60.arc3))
+
+# Classify ilr's by "dominant archetypes" (DA's)
+arc <- as.data.frame(predict(wi60.arc3, wi60[,9:10]))
+arc$DA <- apply(arc, 1, which.max)
+colnames(arc) <- c("A1","A2","A3","DA")
+wi60 <- cbind(wi60, arc)
 
 # Inverse ilr transform 
 ilrInv_nonorthonormal <- function(idata, V){
@@ -76,7 +82,7 @@ ilrInv_nonorthonormal <- function(idata, V){
   orig_data <- clrInv(cdata_tmp)
   return(orig_data)
 }
-arch <- ilrInv_nonorthonormal(idata, bpart)
+arch <- ilrInv_nonorthonormal(edata, bpart)
 arch <- as.data.frame(arch)
 colnames(arch) <- c("CN","K","A")
 carc <- acomp(arch)
@@ -93,4 +99,3 @@ plot(rmin, cex=1.3, pch=3, add=T)
 # Plot of endmember compositions
 mypal <- brewer.pal(3,"Blues")
 barplot(carc, xlim=c(0,5), ylab=list("Proportion", cex=1), col=mypal, legend.text=T)
-
