@@ -68,10 +68,10 @@ wi60.arc3 <- bestModel(wi60.arc[[3]])
 edata <- as.data.frame(parameters(wi60.arc3))
 
 # Classify ilr's by "dominant archetypes" (DA's)
-arc <- as.data.frame(predict(wi60.arc3, wi60[,9:10]))
-arc$DA <- apply(arc, 1, which.max)
-colnames(arc) <- c("A1","A2","A3","DA")
-wi60 <- cbind(wi60, arc)
+darc <- as.data.frame(predict(wi60.arc3, wi60[,9:10]))
+arc$DA <- apply(darc, 1, which.max)
+colnames(darc) <- c("A1","A2","A3","DA")
+wi60 <- cbind(wi60, darc)
 
 # Inverse ilr transform 
 ilrInv_nonorthonormal <- function(idata, V){
@@ -99,3 +99,7 @@ plot(rmin, cex=1.3, pch=3, add=T)
 # Plot of endmember compositions
 mypal <- brewer.pal(3,"Blues")
 barplot(carc, xlim=c(0,5), ylab=list("Proportion", cex=1), col=mypal, legend.text=T)
+
+# Write file --------------------------------------------------------------
+write.csv(wi60, "wi60.csv", row.names=F)
+
