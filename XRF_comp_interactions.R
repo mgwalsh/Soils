@@ -2,9 +2,8 @@
 #' XRF data from 60 sentinel sites
 #' M. Walsh, Februaray 2016
 
-# install.packages(c("downloader","colorRamps","RColorBrewer","compositions"), dependencies=T)
+# install.packages(c("downloader","colorRamps","RColorBrewer","compositions","circlize"), dependencies=T)
 require(devtools)
-# install_github("mbojan/alluvial")
 require(downloader)
 require(colorRamps)
 require(RColorBrewer)
