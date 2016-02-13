@@ -1,9 +1,8 @@
-#' Compositional interactions of essential plant nutrients in soils
+#' Compositional affinities between essential plant nutrients in soils
 #' XRF data from 60 sentinel sites
 #' M. Walsh, Februaray 2016
 
 # install.packages(c("downloader","colorRamps","RColorBrewer","compositions","circlize"), dependencies=T)
-require(devtools)
 require(downloader)
 require(colorRamps)
 require(RColorBrewer)
@@ -34,7 +33,7 @@ ecor <- (cor(edat))^2
 ecor[lower.tri(ecor, diag=F)] <- 0
 ecor <- ifelse(ecor < 0.1 | ecor == 1.0, 0, ecor)
 
-# Plot chord diagram of absolute correlations -----------------------------
+# Plot chord diagram of affinities ----------------------------------------
 set.seed(12358)
 circos.par(gap.degree = 2)
 chordDiagram(ecor, directional = F, annotationTrack = "grid",
@@ -44,7 +43,7 @@ circos.trackPlotRegion(track.index = 1, panel.fun = function(x, y) {
   xlim = get.cell.meta.data("xlim")
   ylim = get.cell.meta.data("ylim")
   sector.index = get.cell.meta.data("sector.index")
-  circos.text(mean(xlim), mean(ylim), sector.index, facing = "inside", niceFacing = T)
+  circos.text(mean(xlim), mean(ylim), sector.index, facing = "clockwise", niceFacing = T)
 }, bg.border = NA)
 circos.trackPlotRegion(track.index = 2, panel.fun = function(x, y) {
   circos.axis("bottom", major.tick.percentage = 0.2, labels.cex = 0.6)
