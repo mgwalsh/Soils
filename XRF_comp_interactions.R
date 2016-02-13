@@ -27,7 +27,7 @@ xrfd <- merge(samp, xrfd, by="SSN")
 vars <- c("Na","Mg","P","S","Cl","K","Ca","Mn","Fe","Co","Ni","Cu","Zn","Mo")
 enut <- xrfd[vars]
 
-# Calculate compositional correlations
+# Calculate compositional affinities
 edat <- as.data.frame(clr(acomp(enut)))
 ecor <- (cor(edat))^2 ## affinities = sum of compositional coefficients of determination (R^2)
 ecor[lower.tri(ecor, diag=F)] <- 0
