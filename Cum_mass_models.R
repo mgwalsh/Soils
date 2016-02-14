@@ -21,7 +21,7 @@ profile <- na.omit(profile)
 samples <- read.table(paste(dat_dir, "/Horizons.csv", sep=""), header=T, sep=",")
 samples <- na.omit(samples)
 
-#+ Generate coordinate reference and GID's ----------------------------------
+#+ Generate coordinate reference and GID's ---------------------------------
 # Project profile coords to Africa LAEA from LonLat
 profile.laea <- as.data.frame(project(cbind(profile$Lon, profile$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
 colnames(profile.laea) <- c("x","y")
