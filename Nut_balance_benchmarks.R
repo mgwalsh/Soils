@@ -13,8 +13,8 @@ require(RColorBrewer)
 
 # Data setup --------------------------------------------------------------
 # Run this first
-SourceURL <- "https://raw.githubusercontent.com/mgwalsh/Soils/master/Nut_balance_setup.R"
-source_url(SourceURL)
+# SourceURL <- "https://raw.githubusercontent.com/mgwalsh/Soils/master/Nut_balance_setup.R"
+# source_url(SourceURL)
 
 # load Mehlich-3 Al,B,Cu,Fe,Mn & Zn data
 download("https://www.dropbox.com/s/bivkvxrjno8fo67/nb60_micro.csv?dl=0", "nb60_micro.csv", mode="wb")
