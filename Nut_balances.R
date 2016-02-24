@@ -3,6 +3,7 @@
 #' M. Walsh, January 2016
 
 # install.packages(c("devtools","downloader","compositions","arm","quantreg","circlize","RColorBrewer"), dependencies=T)
+suppressPackageStartupMessages({
 require(devtools)
 require(downloader)
 require(compositions)
@@ -10,6 +11,7 @@ require(arm)
 require(quantreg)
 require(circlize)
 require(RColorBrewer)
+})
 
 # Data setup --------------------------------------------------------------
 # Run this first
