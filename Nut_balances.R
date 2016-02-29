@@ -85,19 +85,6 @@ circos.clear()
 # Data setup
 edf <- cbind(nb60[c(1,5,8,17:25,36:37,41)], mdats)
 
-# clr [C] | Depth, GeoSurvey, A-CN-K composition
-tauQL <- 0.5 ## set dependent variable quantile reference level
-C.rq <- rq(C~I(Depth/100)+BP*CP+wV1*wV2, tau = tauQL, data=edf) 
-summary(C.rq)
-edf$CQL <- predict(C.rq, edf)
-
-# CQL site-level summaries
-CQL.lmer <- lmer(I(C-CQL)~1+(1|Site), edf)
-summary(CQL.lmer)
-CQL.coef <- coef(CQL.lmer)
-CQL.se <- se.coef(CQL.lmer)
-coefplot(CQL.coef$Site[,1], CQL.se$Site[,1], varnames=rownames(CQL.coef$Site), xlim=c(-2,2), CI=2, cex.var=0.6, cex.pts=0.9, main="")
-
 # clr [P] | Depth, GeoSurvey, A-CN-K composition
 tauQL <- 0.5 ## set dependent variable quantile reference level
 P.rq <- rq(P~I(Depth/100)+BP*CP+wV1*wV2, tau = tauQL, data=edf) 
@@ -105,7 +92,7 @@ summary(P.rq)
 edf$PQL <- predict(P.rq, edf)
 
 # PQL site-level summaries
-PQL.lmer <- lmer(I(P-PQL)~1+(1|Site), edat)
+PQL.lmer <- lmer(I(P-PQL)~1+(1|Site), edf)
 summary(PQL.lmer)
 PQL.coef <- coef(PQL.lmer)
 PQL.se <- se.coef(PQL.lmer)
