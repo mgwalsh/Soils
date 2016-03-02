@@ -28,7 +28,7 @@ download("https://www.dropbox.com/s/i73ce1l3k8lsufl/wi60.csv?dl=0", "wi60.csv", 
 wi60 <- read.table("wi60.csv", header=T, sep=",")
 nb60 <- merge(nb60, wi60[c(1,6:14)], by="SSN")
 
-# load Laser Diffraction data (see: https://github.com/mgwalsh/LDPSA/blob/master/XRF_data_setup.R)
+# load Laser Diffraction data (see: https://github.com/mgwalsh/LDPSA/blob/master/LDPSA_starter.R)
 download("https://www.dropbox.com/s/kwwyk9wgl0i7yog/LDPSA_comp.csv.zip?dl=0", "LDPSA_comp.csv.zip", mode="wb")
 unzip("LDPSA_comp.csv.zip", overwrite=T)
 ldsp <- read.table("LDPSA_comp.csv", header=T, sep=",")
