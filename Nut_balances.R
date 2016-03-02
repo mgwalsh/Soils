@@ -91,11 +91,11 @@ circos.clear()
 
 # Quantile enrichment/ depletion factor (EDF) models ----------------------
 # Data setup
-edf <- cbind(nb60[c(1,5,8,17:25,36:37,41)], mdats)
+edf <- cbind(nb60[c(1,5,8,17:25,36:37,41,45:46)], mdats)
 
-# clr [P] | Depth, GeoSurvey, A-CN-K composition
+# clr [P] | Depth, GeoSurvey, A-CN-K, LDPSA
 tauQL <- 0.5 ## set dependent variable quantile reference level
-P.rq <- rq(P~I(Depth/100)+BP*CP+wV1*wV2, tau = tauQL, data=edf) 
+P.rq <- rq(P~I(Depth/100)+BP*CP+wV1*tV1, tau = tauQL, data=edf) 
 summary(P.rq)
 edf$PQL <- predict(P.rq, edf)
 
@@ -104,11 +104,11 @@ PQL.lmer <- lmer(I(P-PQL)~1+(1|Site), edf)
 summary(PQL.lmer)
 PQL.coef <- coef(PQL.lmer)
 PQL.se <- se.coef(PQL.lmer)
-coefplot(PQL.coef$Site[,1], PQL.se$Site[,1], varnames=rownames(PQL.coef$Site), xlim=c(-3,3), CI=2, cex.var=0.6, cex.pts=0.9, main="")
+coefplot(PQL.coef$Site[,1], PQL.se$Site[,1], varnames=rownames(PQL.coef$Site), xlim=c(-2,2), CI=2, cex.var=0.6, cex.pts=0.9, main="")
 
-# clr [K] | Depth, GeoSurvey, A-CN-K composition
+# clr [K] | Depth, GeoSurvey, A-CN-K, LDPSA
 tauQL <- 0.5 ## set dependent variable quantile reference level
-K.rq <- rq(K~I(Depth/100)+BP*CP+wV1*wV2, tau = tauQL, data=edf) 
+K.rq <- rq(K~I(Depth/100)+BP*CP+wV1*tV1, tau = tauQL, data=edf) 
 summary(K.rq)
 edf$KQL <- predict(K.rq, edf)
 
@@ -119,12 +119,12 @@ KQL.coef <- coef(KQL.lmer)
 KQL.se <- se.coef(KQL.lmer)
 coefplot(KQL.coef$Site[,1], KQL.se$Site[,1], varnames=rownames(KQL.coef$Site), xlim=c(-1.5,1.5), CI=2, cex.var=0.6, cex.pts=0.9, main="")
 
-# ilr [C,N,P,K,Ca,Mg,S | Fv] | Depth, GeoSurvey, A-CN-K composition
+# ilr [C,N,P,K,Ca,Mg,S | Fv] | Depth, GeoSurvey, A-CN-K, LDPSA
 tauQL <- 0.5 ## set dependent variable quantile reference level
-V1.rq <- rq(V1~I(Depth/100)+BP*CP+wV1*wV2, tau = tauQL, data=edf) 
+V1.rq <- rq(V1~I(Depth/100)+BP*CP+wV1*tV1, tau = tauQL, data=edf) 
 summary(V1.rq)
 
-# ilr [P,K,Ca,Mg,S | C,N] | Depth, GeoSurvey, A-CN-K composition
+# ilr [P,K,Ca,Mg,S | C,N] | Depth, GeoSurvey, A-CN-K, LDPSA
 tauQL <- 0.5 ## set dependent variable quantile reference level
-V2.rq <- rq(V2~I(Depth/100)+BP*CP+wV1*wV2, tau = tauQL, data=edf) 
+V2.rq <- rq(V2~I(Depth/100)+BP*CP+wV1*tV1, tau = tauQL, data=edf) 
 summary(V2.rq)
