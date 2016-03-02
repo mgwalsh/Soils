@@ -1,5 +1,5 @@
 #' Soil nutrient mass balance benchmarks with AfSIS-1 data:
-#' C,N, Mehlich-3 extractable elements and XRF A-CN-K data from 60 sentinel sites
+#' C,N, Mehlich-3 extractable elements, XRF A-CN-K data and Laser Diffraction data from 60 sentinel sites
 #' M. Walsh, January 2016
 
 # install.packages(c("devtools","downloader","compositions","arm","quantreg","circlize","RColorBrewer"), dependencies=T)
@@ -27,6 +27,14 @@ nb60 <- merge(nb60, mic, by="SSN")
 download("https://www.dropbox.com/s/i73ce1l3k8lsufl/wi60.csv?dl=0", "wi60.csv", mode="wb")
 wi60 <- read.table("wi60.csv", header=T, sep=",")
 nb60 <- merge(nb60, wi60[c(1,6:14)], by="SSN")
+
+# load Laser Diffraction data (see: https://github.com/mgwalsh/LDPSA/blob/master/XRF_data_setup.R)
+download("https://www.dropbox.com/s/kwwyk9wgl0i7yog/LDPSA_comp.csv.zip?dl=0", "LDPSA_comp.csv.zip", mode="wb")
+unzip("LDPSA_comp.csv.zip", overwrite=T)
+ldsp <- read.table("LDPSA_comp.csv", header=T, sep=",")
+ldsp <- subset(ldsp, TRT=="c4", select=c(SSN, Sand, Silt, Clay, V1, V2))
+colnames(ldsp) <- c("SSN","Sand","Silt","Clay","tV1","tV2")
+nb60 <- merge(nb60, ldsp, by="SSN")
 
 # Plot chord diagram of affinities ------------------------------------------
 # Extract variables
