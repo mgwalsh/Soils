@@ -92,40 +92,66 @@ circos.clear()
 # Quantile enrichment/ depletion factor (EDF) models ----------------------
 # Data setup
 edf <- cbind(nb60[c(1,5,8,17:25,36:37,41,45:46)], mdats)
+tauQL <- 0.5 ## set dependent variable quantile reference level
+
+# clr [N] | Depth, GeoSurvey, A-CN-K, LDPSA
+N.rq <- rq(N~log(Depth)+CP+wV1*tV1, tau = tauQL, data=edf) 
+summary(N.rq)
+
+# N-quantile regression coefficients plot
+est <- as.vector(coef(summary(N.rq))[2:6,1])
+ses <- as.vector(coef(summary(N.rq))[2:6,2])
+names <- c("log(Depth)","Cropland","CWI","PWI","CWI*PWI")
+coefplot(est, ses, varnames=names, cex.var=1, cex.pts=1.5, col.pts="blue", CI=2, xlim=c(-0.6,0.6), main="")
 
 # clr [P] | Depth, GeoSurvey, A-CN-K, LDPSA
-tauQL <- 0.5 ## set dependent variable quantile reference level
-P.rq <- rq(P~I(Depth/100)+BP*CP+wV1*tV1, tau = tauQL, data=edf) 
+P.rq <- rq(P~log(Depth)+CP+wV1*tV1, tau = tauQL, data=edf) 
 summary(P.rq)
-edf$PQL <- predict(P.rq, edf)
 
-# PQL site-level summaries
+# P-quantile regression coefficients plot
+est <- as.vector(coef(summary(P.rq))[2:6,1])
+ses <- as.vector(coef(summary(P.rq))[2:6,2])
+coefplot(est, ses, cex.pts=1.5, offset=0.1, CI=2, main="", add=T)
+
+# clr [K] | Depth, GeoSurvey, A-CN-K, LDPSA
+K.rq <- rq(K~log(Depth)+CP+wV1*tV1, tau = tauQL, data=edf) 
+summary(K.rq)
+
+# K-quantile regression coefficients plot
+est <- as.vector(coef(summary(K.rq))[2:6,1])
+ses <- as.vector(coef(summary(K.rq))[2:6,2])
+coefplot(est, ses, cex.pts=1.5, col.pts="red", offset=0.2, CI=2, main="", add=T)
+
+# P site-level summaries
+edf$PQL <- predict(P.rq, edf)
 PQL.lmer <- lmer(I(P-PQL)~1+(1|Site), edf)
 summary(PQL.lmer)
 PQL.coef <- coef(PQL.lmer)
 PQL.se <- se.coef(PQL.lmer)
 coefplot(PQL.coef$Site[,1], PQL.se$Site[,1], varnames=rownames(PQL.coef$Site), xlim=c(-2,2), CI=2, cex.var=0.6, cex.pts=0.9, main="")
 
-# clr [K] | Depth, GeoSurvey, A-CN-K, LDPSA
-tauQL <- 0.5 ## set dependent variable quantile reference level
-K.rq <- rq(K~I(Depth/100)+BP*CP+wV1*tV1, tau = tauQL, data=edf) 
-summary(K.rq)
+# K site-level summaries
 edf$KQL <- predict(K.rq, edf)
-
-# KQL site-level summaries
 KQL.lmer <- lmer(I(K-KQL)~1+(1|Site), edf)
 summary(KQL.lmer)
 KQL.coef <- coef(KQL.lmer)
 KQL.se <- se.coef(KQL.lmer)
 coefplot(KQL.coef$Site[,1], KQL.se$Site[,1], varnames=rownames(KQL.coef$Site), xlim=c(-1.5,1.5), CI=2, cex.var=0.6, cex.pts=0.9, main="")
 
+
 # ilr [C,N,P,K,Ca,Mg,S | Fv] | Depth, GeoSurvey, A-CN-K, LDPSA
 tauQL <- 0.5 ## set dependent variable quantile reference level
-V1.rq <- rq(V1~I(Depth/100)+wV1*tV1, tau = tauQL, data=edf) 
+V1.rq <- rq(V1~I(Depth/10)+wV1*tV1, tau = tauQL, data=edf) 
 summary(V1.rq)
-edf$V1QL <- predict(V1.rq, edf)
+
+# V1 quantile regression coefficient plot
+est <- as.vector(coef(summary(V1.rq))[2:5,1])
+ses <- as.vector(coef(summary(V1.rq))[2:5,2])
+names <- c("Depth","CWI","PWI","CWI*PWI")
+coefplot(est, ses, varnames=names, CI=2, main="")
 
 # V1 site-level summaries
+edf$V1QL <- predict(V1.rq, edf)
 V1QL.lmer <- lmer(I(V1-V1QL)~1+(1|Site), edf)
 summary(V1QL.lmer)
 V1QL.coef <- coef(V1QL.lmer)
