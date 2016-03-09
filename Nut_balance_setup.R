@@ -3,12 +3,14 @@
 #' M. Walsh, December 2015
 
 # install.packages(c("downloader","compositions","colorRamps","RColorBrewer","MASS","rgdal"), dependencies=T)
+suppressPackageStartupMessages({
 require(downloader)
 require(compositions)
 require(MASS)
 require(colorRamps)
 require(RColorBrewer)
 require(rgdal)
+})
 
 # Data setup --------------------------------------------------------------
 # Create a data folder in your current working directory
