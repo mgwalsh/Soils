@@ -149,3 +149,31 @@ summary(V3.rq, se="boot", bsmethod="xy")
 est <- as.vector(coef(summary(V3.rq))[2:6,1])
 ses <- as.vector(coef(summary(V3.rq))[2:6,2])
 coefplot(est, ses, cex.pts=1.5, col.pts="red", offset=0.2, CI=2, main="", add=T)
+
+# Site-level enrichment-depletion factors (EDFs) --------------------------
+# N EDF REML estimates
+edf$NEDF <- predict(N.rq, edf)
+N.lmer <- lmer(I(N-NEDF)~1+(1|Site), edf)
+summary(N.lmer)
+ran <- ranef(N.lmer)
+ses <- se.coef(N.lmer)
+nam <- rownames(ran$Site) 
+coefplot(ran$Site[31:60,1], ses$Site[31:60,1], varnames=nam[31:60], cex.var=0.8, col.pts="blue", xlim=c(-1.5,1.5), CI=2, main="")
+
+# P EDF REML estimates
+edf$PEDF <- predict(P.rq, edf)
+P.lmer <- lmer(I(P-PEDF)~1+(1|Site), edf)
+summary(P.lmer)
+ran <- ranef(P.lmer)
+ses <- se.coef(P.lmer)
+nam <- rownames(ran$Site) 
+coefplot(ran$Site[31:60,1], ses$Site[31:60,1], offset=0.2, CI=2, main="", add=T)
+
+# K EDF REML estimates
+edf$KEDF <- predict(K.rq, edf)
+K.lmer <- lmer(I(K-KEDF)~1+(1|Site), edf)
+summary(K.lmer)
+ran <- ranef(K.lmer)
+ses <- se.coef(K.lmer)
+nam <- rownames(ran$Site) 
+coefplot(ran$Site[31:60,1], ses$Site[31:60,1], col.pts="red", offset=0.4, CI=2, main="", add=T)
