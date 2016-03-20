@@ -17,11 +17,6 @@ require(RColorBrewer)
 # SourceURL <- "https://raw.githubusercontent.com/mgwalsh/Soils/master/Nut_balance_setup.R"
 # source_url(SourceURL)
 
-# load Mehlich-3 Al,B,Cu,Fe,Mn & Zn data
-download("https://www.dropbox.com/s/bivkvxrjno8fo67/nb60_micro.csv?dl=0", "nb60_micro.csv", mode="wb")
-mic <- read.table("nb60_micro.csv", header=T, sep=",")
-nb60 <- merge(nb60, mic, by="SSN")
-
 # load XRF A-CN-K reference data (see: https://github.com/mgwalsh/Soils/blob/master/XRF_data_setup.R)
 download("https://www.dropbox.com/s/i73ce1l3k8lsufl/wi60.csv?dl=0", "wi60.csv", mode="wb")
 wi60 <- read.table("wi60.csv", header=T, sep=",")
@@ -37,7 +32,7 @@ nb60 <- merge(nb60, ldsp, by="SSN")
 
 # Plot chord diagram of affinities ------------------------------------------
 # Extract variables
-vars <- c("Fv","C","N","P","K","Ca","Mg","S")
+vars <- c("Fc","B","C","N","Mg","P","S","K","Ca","Mn","Fe","Cu","Zn")
 mnus <- nb60[vars]
 
 # Calculate compositional affinities
@@ -46,7 +41,7 @@ mcors[lower.tri(mcors, diag=F)] <- 0
 mcors <- ifelse(mcors < 0.05 | mcors == 1.0, 0, mcors)
 
 # Chord diagram
-set.seed(1235813)
+set.seed(123)
 circos.par(gap.degree = 3)
 chordDiagram(mcors, directional = F, annotationTrack = "grid",
              preAllocateTracks = list(list(track.height = 0.05),
