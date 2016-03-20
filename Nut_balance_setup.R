@@ -53,7 +53,7 @@ CoDaDendrogram(X=acomp(cdat), signary=bpart, type="lines") ## mass balance mobil
 ilrt <- as.data.frame(ilr(cdat, V=bpart)) ## isometric log ratio (ilr) transform
 cdat <- cbind(clrt, ilrt)
 
-# Assemble nurtrient balance dataframe
+# Assemble nurtrient composition dataframe
 vars <- c("SSN","Site","Lat","Lon","Depth")
 nb60 <- cbind(qdat[vars], cdat)
 
