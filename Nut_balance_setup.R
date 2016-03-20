@@ -32,15 +32,16 @@ xdata$Depth <- as.factor(xdata$Depth)
 k <- adjustcolor(brewer.pal(3, "Set1")[xdata$Depth], alpha=.4)
 parcoord(xdata[,1:7], col = k)
 
-# Compositional analysis setup
+# Compositional data analysis setup
 vars <- c("SSN","Site","Lat","Lon","Depth","C","N","P","K","S","Ca","Mg")
-nb60 <- na.omit(dat[vars])
+qdat <- na.omit(dat[vars])
 fpart <- c("C","N","P","K","S","Ca","Mg") ## all values in mg/kg
-nb60$Fv <- 1000000-rowSums(nb60[fpart]) ## calculates "fill value" (Fv), in mg/kg soil
+qdat$Fv <- 1000000-rowSums(qdat[fpart]) ## calculates "fill value" (Fv), in mg/kg soil
 cpart <- c("C","N","P","K","S","Ca","Mg","Fv")
 
-# Sequential binary partion & isometric log ratio (ilr) transform
-cdata <- acomp(nb60[cpart])
+# Log ratio transforms and sequential binary partion
+cdat <- acomp(qdat[cpart])
+clrt <- as.data.frame(clr(cdat)) ## centered log ratio (clr) transform
 bpart <- t(matrix(c( 1, 1, 1, 1, 1, 1, 1,-1,
                     -1,-1, 1, 1, 1, 1, 1, 0,
                      0, 0, 1,-1, 1,-1,-1, 0,
@@ -48,9 +49,13 @@ bpart <- t(matrix(c( 1, 1, 1, 1, 1, 1, 1,-1,
                      0, 0, 1, 0,-1, 0, 0, 0,
                      0, 0, 0, 0, 0, 1,-1, 0,
                      1,-1, 0, 0, 0, 0, 0, 0), ncol=8, nrow=7, byrow=T))
-CoDaDendrogram(X=acomp(cdata), signary=bpart, type="lines") ## mass balance mobile graph				
-idata <- as.data.frame(ilr(cdata, V=bpart))
-nb60 <- cbind(nb60, idata)
+CoDaDendrogram(X=acomp(cdat), signary=bpart, type="lines") ## mass balance mobile graph				
+ilrt <- as.data.frame(ilr(cdat, V=bpart)) ## isometric log ratio (ilr) transform
+cdat <- cbind(clrt, ilrt)
+
+# assemble nurtrient balance dataframe
+vars <- c("SSN","Site","Lat","Lon","Depth")
+nb60 <- cbind(qdat[vars], cdat)
 
 # Add grid coordinates ----------------------------------------------------
 # Project to Africa LAEA from LonLat
