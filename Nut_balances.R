@@ -1,4 +1,4 @@
-#' Soil nutrient mass balance benchmarks with AfSIS-1 data:
+#' Extractable soil nutrient mass balance benchmarks with AfSIS-1 data:
 #' C,N, Mehlich-3 extractable elements, XRF A-CN-K data and Laser Diffraction data from 60 sentinel sites
 #' M. Walsh, January 2016
 
