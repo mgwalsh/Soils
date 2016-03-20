@@ -25,23 +25,37 @@ samp <- read.table("Samples.csv", header=T, sep=",") ## sample data
 geos <- read.table("nb60_GS.csv", header=T, sep=",") ## GeoSurvey data
 dat <- merge(prof, samp, by="PID")
 
+# load Mehlich-3 Al,B,Cu,Fe,Mn & Zn data
+download("https://www.dropbox.com/s/bivkvxrjno8fo67/nb60_micro.csv?dl=0", "nb60_micro.csv", mode="wb")
+mic <- read.table("nb60_micro.csv", header=T, sep=",")
+dat <- merge(dat, mic, by="SSN")
+
 # Parallel coordinates plot of the raw data
-xvars <- c("C","N","P","K","S","Ca","Mg","Depth")
+xvars <- c("B","C","N","Mg","P","S","K","Ca","Mn","Fe","Cu","Zn","Depth")
 xdata <- dat[xvars]
 xdata$Depth <- as.factor(xdata$Depth)
 k <- adjustcolor(brewer.pal(3, "Set1")[xdata$Depth], alpha=.4)
-parcoord(xdata[,1:7], col = k)
+parcoord(xdata[,1:12], col = k)
 
 # Compositional data analysis setup
-vars <- c("SSN","Site","Lat","Lon","Depth","C","N","P","K","S","Ca","Mg")
+vars <- c("SSN","Site","Lat","Lon","Depth","B","C","N","Mg","P","S","K","Ca","Mn","Fe","Cu","Zn")
 qdat <- na.omit(dat[vars])
-fpart <- c("C","N","P","K","S","Ca","Mg") ## all values in mg/kg
-qdat$Fv <- 1000000-rowSums(qdat[fpart]) ## calculates "fill value" (Fv), in mg/kg soil
-cpart <- c("C","N","P","K","S","Ca","Mg","Fv")
+
+# Fill value / subcomposition calculations
+cvar <- c("B","C","N","Mg","P","S","K","Ca","Mn","Fe","Cu","Zn") ## all values in mg/kg
+ivar <- c("C","N","P","K","S","Ca","Mg") ## all values in mg/kg
+qdat$Fc <- 1000000-rowSums(qdat[cvar]) ## calculates "fill value" (Fc), in mg/kg soil
+qdat$Fi <- 1000000-rowSums(qdat[ivar]) ## calculates "fill value" (Fi), in mg/kg soil
 
 # Log ratio transforms and sequential binary partion
-cdat <- acomp(qdat[cpart])
+# clr transform
+cvar <- c("B","C","N","Mg","P","S","K","Ca","Mn","Fe","Cu","Zn","Fc") ## all values in mg/kg
+cdat <- acomp(qdat[cvar])
 clrt <- as.data.frame(clr(cdat)) ## centered log ratio (clr) transform
+
+# ilr transform
+ivar <- c("C","N","P","K","S","Ca","Mg","Fi") ## all values in mg/kg 
+idat <- acomp(qdat[ivar])
 bpart <- t(matrix(c( 1, 1, 1, 1, 1, 1, 1,-1,
                     -1,-1, 1, 1, 1, 1, 1, 0,
                      0, 0, 1,-1, 1,-1,-1, 0,
@@ -49,11 +63,11 @@ bpart <- t(matrix(c( 1, 1, 1, 1, 1, 1, 1,-1,
                      0, 0, 1, 0,-1, 0, 0, 0,
                      0, 0, 0, 0, 0, 1,-1, 0,
                      1,-1, 0, 0, 0, 0, 0, 0), ncol=8, nrow=7, byrow=T))
-CoDaDendrogram(X=acomp(cdat), signary=bpart, type="lines") ## mass balance mobile graph				
-ilrt <- as.data.frame(ilr(cdat, V=bpart)) ## isometric log ratio (ilr) transform
-cdat <- cbind(clrt, ilrt)
+CoDaDendrogram(X=acomp(idat), signary=bpart, type="lines") ## mass balance mobile graph				
+ilrt <- as.data.frame(ilr(idat, V=bpart)) ## isometric log ratio (ilr) transform
 
 # Assemble nurtrient composition dataframe
+cdat <- cbind(clrt, ilrt)
 vars <- c("SSN","Site","Lat","Lon","Depth")
 nb60 <- cbind(qdat[vars], cdat)
 
