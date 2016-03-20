@@ -53,7 +53,7 @@ CoDaDendrogram(X=acomp(cdat), signary=bpart, type="lines") ## mass balance mobil
 ilrt <- as.data.frame(ilr(cdat, V=bpart)) ## isometric log ratio (ilr) transform
 cdat <- cbind(clrt, ilrt)
 
-# assemble nurtrient balance dataframe
+# Assemble nurtrient balance dataframe
 vars <- c("SSN","Site","Lat","Lon","Depth")
 nb60 <- cbind(qdat[vars], cdat)
 
@@ -77,7 +77,7 @@ geos.laea <- as.data.frame(project(cbind(geos$Lon, geos$Lat), "+proj=laea +ellps
 colnames(geos.laea) <- c("x","y")
 geos <- cbind(geos.laea, geos)
 
-# Generate GeoSurvey grid cell ID's (GID)
+# Generate GeoSurvey grid cell ID's (GID) & add in GeoSurvey results
 xgid <- ceiling(abs(geos$x)/res.pixel)
 ygid <- ceiling(abs(geos$y)/res.pixel)
 gidx <- ifelse(geos$x<0, paste("W", xgid, sep=""), paste("E", xgid, sep=""))
