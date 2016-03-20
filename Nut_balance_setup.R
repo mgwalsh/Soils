@@ -1,4 +1,4 @@
-#' Soil nutrient mass balances with AfSIS-1 data:
+#' Soil nutrient mass balance set-up with AfSIS1 data:
 #' C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites
 #' M. Walsh, December 2015
 
@@ -57,12 +57,12 @@ cdat <- cbind(clrt, ilrt)
 vars <- c("SSN","Site","Lat","Lon","Depth")
 nb60 <- cbind(qdat[vars], cdat)
 
-# Add grid coordinates ----------------------------------------------------
 # Project to Africa LAEA from LonLat
 nb60.laea <- as.data.frame(project(cbind(nb60$Lon, nb60$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
 colnames(nb60.laea) <- c("x","y")
 nb60 <- cbind(nb60.laea, nb60)
 
+# Add AfSIS grid coordinates ----------------------------------------------
 # Generate AfSIS 100m resolution grid cell ID's (GID)
 res.pixel <- 100 ## set pixel resolution in m
 xgid <- ceiling(abs(nb60$x)/res.pixel)
