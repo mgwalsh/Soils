@@ -41,7 +41,7 @@ mcors[lower.tri(mcors, diag=F)] <- 0
 mcors <- ifelse(mcors < 0.05 | mcors == 1.0, 0, mcors)
 
 # Chord diagram
-set.seed(123)
+set.seed(11)
 circos.par(gap.degree = 3)
 chordDiagram(mcors, directional = F, annotationTrack = "grid",
              preAllocateTracks = list(list(track.height = 0.05),
