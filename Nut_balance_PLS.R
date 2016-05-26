@@ -5,10 +5,13 @@
 
 # Required packages
 # install.packages(c("devtools","caret","doParallel","pls")), dependencies=TRUE)
+suppressPackageStartupMessages({
 require(devtools)
+require(compositions)
 require(caret)
 require(doParallel)
 require(pls)
+})
 
 # Data setup --------------------------------------------------------------
 # Run this first: https://github.com/mgwalsh/Soils/blob/master/Nut_balance_setup.R
