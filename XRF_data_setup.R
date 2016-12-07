@@ -69,7 +69,7 @@ edata <- as.data.frame(parameters(wi60.arc3))
 
 # Classify ilr's by "dominant archetypes" (DA's)
 darc <- as.data.frame(predict(wi60.arc3, wi60[,9:10]))
-arc$DA <- apply(darc, 1, which.max)
+darc$DA <- apply(darc, 1, which.max)
 colnames(darc) <- c("A1","A2","A3","DA")
 wi60 <- cbind(wi60, darc)
 
