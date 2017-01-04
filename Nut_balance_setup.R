@@ -125,3 +125,6 @@ nb60_val <- na.omit(nb60_val)
 write.csv(nb60, "nb60_dat.csv", row.names=F)
 write.csv(nb60_cal, "nb60_cal.csv", row.names=F)
 write.csv(nb60_val, "nb60_val.csv", row.names=F)
+
+# Remove extraneous objects from memory -----------------------------------
+rm(list=setdiff(ls(), c("nb60_cal", "nb60_val")))
