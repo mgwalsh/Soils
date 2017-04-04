@@ -18,7 +18,7 @@ dir.create("NB60_data", showWarnings=F)
 setwd("./NB60_data")
 
 # Download
-download("https://www.dropbox.com/s/k9pti8a4fvaxjlm/Nutbal60.zip?dl=0", "Nutbal60.zip", mode="wb")
+download("https://www.dropbox.com/s/k9pti8a4fvaxjlm/Nutbal60.zip?raw=1", "Nutbal60.zip", mode="wb")
 unzip("Nutbal60.zip", overwrite=T)
 prof <- read.table("Profiles.csv", header=T, sep=",") ## profile locations and site names
 samp <- read.table("Samples.csv", header=T, sep=",") ## sample data
@@ -26,7 +26,7 @@ geos <- read.table("nb60_GS.csv", header=T, sep=",") ## GeoSurvey data
 dat <- merge(prof, samp, by="PID")
 
 # load Mehlich-3 Al,B,Cu,Fe,Mn & Zn data
-download("https://www.dropbox.com/s/bivkvxrjno8fo67/nb60_micro.csv?dl=0", "nb60_micro.csv", mode="wb")
+download("https://www.dropbox.com/s/bivkvxrjno8fo67/nb60_micro.csv?raw=1", "nb60_micro.csv", mode="wb")
 mic <- read.table("nb60_micro.csv", header=T, sep=",")
 dat <- merge(dat, mic, by="SSN")
 
@@ -111,7 +111,7 @@ nb60_cal <- nb60[ nb60$Site%in%train, ] ## calibration data
 nb60_val <- nb60[!nb60$Site%in%train, ] ## validation data
 
 # Load and merge HSTXT MIR spectra ----------------------------------------
-download("https://www.dropbox.com/s/6fvipxqlmg704g3/hstxt_MIR.csv.zip?dl=0", "hstxt_MIR.csv.zip", mode="wb")
+download("https://www.dropbox.com/s/6fvipxqlmg704g3/hstxt_MIR.csv.zip?raw=1", "hstxt_MIR.csv.zip", mode="wb")
 unzip("hstxt_MIR.csv.zip", overwrite=T)
 mir <- read.table("hstxt_MIR.csv", header=F, sep=",", stringsAsFactors=F)
 mir <- as.data.frame(mir)
