@@ -26,7 +26,7 @@ geos <- read.table("nb60_GS.csv", header=T, sep=",") ## GeoSurvey data
 dat <- merge(prof, samp, by="PID")
 
 # load Mehlich-3 Al,B,Cu,Fe,Mn & Zn data
-download("https://www.dropbox.com/s/bivkvxrjno8fo67/nb60_micro.csv?raw=1", "nb60_micro.csv", mode="wb")
+download("https://www.dropbox.com/s/bt8g2uu8wlkfsc9/nb60_micro.csv?raw=1", "nb60_micro.csv", mode="wb")
 mic <- read.table("nb60_micro.csv", header=T, sep=",")
 dat <- merge(dat, mic, by="SSN")
 
