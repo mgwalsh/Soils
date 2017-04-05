@@ -2,12 +2,11 @@
 #' C,N and Mehlich-3 extractable P,K,S,Ca & Mg, from 60 sentinel sites
 #' M. Walsh, December 2015
 
-# install.packages(c("downloader","compositions","colorRamps","RColorBrewer","MASS","rgdal"), dependencies=T)
+# install.packages(c("downloader","compositions","RColorBrewer","MASS","rgdal"), dependencies=T)
 suppressPackageStartupMessages({
 require(downloader)
 require(compositions)
 require(MASS)
-require(colorRamps)
 require(RColorBrewer)
 require(rgdal)
 })
