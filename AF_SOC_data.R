@@ -41,7 +41,7 @@ plot(prof) ## profile locations
 # extract gridded variables at profile locations
 socgrid <- extract(grids, prof)
 prof <- as.data.frame(cbind(prof, socgrid))
-soc <- merge(prof, samp, by="PID") ## merge by profile ID (PID)
+soc <- merge(prof, samp, by="PID") ## merge samples by profile ID (PID)
 
 # Write file --------------------------------------------------------------
 write.csv(soc, "socdat.csv", row.names = FALSE)
