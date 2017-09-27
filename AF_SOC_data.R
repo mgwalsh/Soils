@@ -22,7 +22,7 @@ prof <- read.table("Profiles.csv", header=T, sep=",") ## profile locations
 prof <- prof[complete.cases(prof[ ,3:4]),] ## delete non-georeferenced profiles
 samp <- read.table("Samples.csv", header=T, sep=",") ## samples in profiles
 
-# download Africa Gtifs and stack in raster (note this is a big 1Gb+ download)
+# download Africa Gtifs and stack in raster (note this is a big 400Mb+ download)
 download("https://www.dropbox.com/s/8kw4jitwp1n1bmc/AF_test_grids.zip?raw=1", "AF_test_grids.zip", mode="wb")
 unzip("AF_test_grids.zip", overwrite=T)
 glist <- list.files(pattern="tif", full.names=T)
