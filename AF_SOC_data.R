@@ -36,7 +36,7 @@ colnames(prof.proj) <- c("x","y")
 prof <- cbind(prof, prof.proj)
 coordinates(prof) <- ~x+y
 projection(prof) <- projection(grids)
-plot(prof) ## profile locations
+plot(prof) ## sketch map of profile locations
 
 # extract gridded variables at profile locations
 socgrid <- extract(grids, prof)
