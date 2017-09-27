@@ -16,7 +16,7 @@ dir.create("AF_SOC", showWarnings=F)
 setwd("./AF_SOC")
 
 # download SOC data
-download("https://www.dropbox.com/s/cn85c3jrlx2wgbp/SOCSAT.zip?dl=0", "SOCSAT.zip", mode="wb")
+download("https://www.dropbox.com/s/cn85c3jrlx2wgbp/SOCSAT.zip?raw=1", "SOCSAT.zip", mode="wb")
 unzip("SOCSAT.zip", overwrite=T)
 prof <- read.table("Profiles.csv", header=T, sep=",") ## profile locations
 samp <- read.table("Samples.csv", header=T, sep=",") ## samples in profiles
