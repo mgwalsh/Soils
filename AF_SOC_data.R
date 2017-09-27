@@ -38,8 +38,8 @@ projection(prof) <- projection(grids)
 # extract gridded variables at profile locations
 socgrid <- extract(grids, prof)
 prof <- as.data.frame(cbind(prof, socgrid))
-soc <- merge(prof, samp, by="PID")
+soc <- merge(prof, samp, by="PID") ## merge by profile ID (PID)
 soc <- soc[!(soc$Lon=="NA" & soc$Lat=="NA"),] ## delete non-georeferenced profiles
 
-# Write file
+# Write file --------------------------------------------------------------
 write.csv(soc, "socdat.csv", row.names = FALSE)
