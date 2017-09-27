@@ -27,6 +27,7 @@ download("https://www.dropbox.com/s/8kw4jitwp1n1bmc/AF_test_grids.zip?raw=1", "A
 unzip("AF_test_grids.zip", overwrite=T)
 glist <- list.files(pattern="tif", full.names=T)
 grids <- stack(glist)
+plot(grids, axes = FALSE)
 
 # Data setup ---------------------------------------------------------------
 # project SOC coords to grid CRS
