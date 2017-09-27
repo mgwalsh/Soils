@@ -16,10 +16,10 @@ dir.create("AF_SOC", showWarnings=F)
 setwd("./AF_SOC")
 
 # download SOC data
-download("https://www.dropbox.com/s/ubc00ukm5k433cb/SOC.csv.zip?raw=1", "SOC.csv.zip", mode="wb")
-unzip("SOC.csv.zip", overwrite=T)
-soc <- read.table("SOC.csv", header=T, sep=",")
-soc <- soc[!(soc$lon==0 & soc$lat==0),] ## delete non-georeferenced profiles
+download("https://www.dropbox.com/s/cn85c3jrlx2wgbp/SOCSAT.zip?dl=0", "SOCSAT.zip", mode="wb")
+unzip("SOCSAT.zip", overwrite=T)
+prof <- read.table("Profiles.csv", header=T, sep=",") ## profile locations
+samp <- read.table("Samples.csv", header=T, sep=",") ## samples in profiles
 
 # download Africa Gtifs and stack in raster (note this is a big 1Gb+ download)
 download("https://www.dropbox.com/s/8kw4jitwp1n1bmc/AF_test_grids.zip?raw=1", "AF_test_grids.zip", mode="wb")
@@ -29,13 +29,17 @@ grids <- stack(glist)
 
 # Data setup ---------------------------------------------------------------
 # project SOC coords to grid CRS
-soc.proj <- as.data.frame(project(cbind(soc$lon, soc$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
-colnames(soc.proj) <- c("x","y")
-soc <- cbind(soc, soc.proj)
-coordinates(soc) <- ~x+y
-projection(soc) <- projection(grids)
+prof.proj <- as.data.frame(project(cbind(prof$Lon, prof$Lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
+colnames(prof.proj) <- c("x","y")
+soc <- cbind(prof, prof.proj)
+coordinates(prof) <- ~x+y
+projection(prof) <- projection(grids)
 
 # extract gridded variables at profile locations
-socgrid <- extract(grids, soc)
-soc <- as.data.frame(cbind(soc, socgrid))
+socgrid <- extract(grids, prof)
+prof <- as.data.frame(cbind(prof, socgrid))
+soc <- merge(prof, samp, by="PID")
+soc <- soc[!(soc$Lon=="NA" & soc$Lat=="NA"),] ## delete non-georeferenced profiles
+
+# Write file
 write.csv(soc, "socdat.csv", row.names = FALSE)
