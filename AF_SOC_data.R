@@ -1,4 +1,4 @@
-# Africa-wide SOC data cleaning & setup 
+# Africa-wide SOC data setup 
 # M. Walsh, September 2017
 
 # Required packages
