@@ -1,13 +1,12 @@
-# Africa-wide SOC data setup 
+# Africa-wide SOC data cleaning & setup 
 # M. Walsh, September 2017
 
 # Required packages
-# install.packages(c("downloader","rgdal","raster","caret")), dependencies=TRUE)
+# install.packages(c("downloader","rgdal","raster")), dependencies=TRUE)
 suppressPackageStartupMessages({
   require(downloader)
   require(rgdal)
   require(raster)
-  require(caret)
 })
 
 # Data downloads -----------------------------------------------------------
@@ -15,14 +14,14 @@ suppressPackageStartupMessages({
 dir.create("AF_SOC", showWarnings=F)
 setwd("./AF_SOC")
 
-# download SOC data
+# download SOC profile data
 download("https://www.dropbox.com/s/cn85c3jrlx2wgbp/SOCSAT.zip?raw=1", "SOCSAT.zip", mode="wb")
 unzip("SOCSAT.zip", overwrite=T)
 prof <- read.table("Profiles.csv", header=T, sep=",") ## profile locations & collection year
 prof <- prof[complete.cases(prof[ ,3:4]),] ## delete non-georeferenced profiles
 samp <- read.table("Samples.csv", header=T, sep=",") ## sample data
 
-# download Africa Gtifs and stack in raster (note this is a big 400Mb+ download)
+# download Africa Gtifs and stack in raster (note this is a big 450Mb+ download)
 download("https://www.dropbox.com/s/8kw4jitwp1n1bmc/AF_test_grids.zip?raw=1", "AF_test_grids.zip", mode="wb")
 unzip("AF_test_grids.zip", overwrite=T)
 glist <- list.files(pattern="tif", full.names=T)
