@@ -7,6 +7,8 @@ suppressPackageStartupMessages({
   require(downloader)
   require(rgdal)
   require(raster)
+  require(leaflet)
+  require(htmlwidgets)
 })
 
 # Data downloads -----------------------------------------------------------
@@ -35,7 +37,6 @@ colnames(prof.proj) <- c("x","y")
 prof <- cbind(prof, prof.proj)
 coordinates(prof) <- ~x+y
 projection(prof) <- projection(grids)
-plot(prof) ## sketch map of profile locations
 
 # extract gridded variables at profile locations
 socgrid <- extract(grids, prof)
@@ -44,4 +45,14 @@ soc <- merge(prof, samp, by="PID") ## merge samples by profile ID (PID)
 soc <- soc[complete.cases(soc[ ,c(16,18:19)]),] ## delete cases with incomplete Sand, pH or SOC measurements
 
 # Write file --------------------------------------------------------------
-write.csv(soc, "socdat.csv", row.names = FALSE)
+write.csv(soc, "socdat.csv", row.names = F)
+
+# Profile location map widget ---------------------------------------------
+# render map
+w <- leaflet() %>% 
+  addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+  addCircleMarkers(prof$Lon, prof$Lat, clusterOptions = markerClusterOptions())
+w ## plot widget 
+
+# save widget
+saveWidget(w, 'SOC_profile.html', selfcontained = T)
