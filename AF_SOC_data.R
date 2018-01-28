@@ -16,7 +16,7 @@ suppressPackageStartupMessages({
 dir.create("AF_SOC", showWarnings=F)
 setwd("./AF_SOC")
 
-# download SOC profile data
+# download SOC profile data (courtesy ISRIC)
 download("https://www.dropbox.com/s/cn85c3jrlx2wgbp/SOCSAT.zip?raw=1", "SOCSAT.zip", mode="wb")
 unzip("SOCSAT.zip", overwrite=T)
 prof <- read.table("Profiles.csv", header=T, sep=",") ## profile locations & collection year
