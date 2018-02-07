@@ -42,7 +42,7 @@ projection(prof) <- projection(grids)
 socgrid <- extract(grids, prof)
 prof <- as.data.frame(cbind(prof, socgrid))
 soc <- merge(prof, samp, by="PID") ## merge samples by profile ID (PID)
-soc <- soc[complete.cases(soc[ ,c(16,18:19)]),] ## delete cases with incomplete Sand, pH or SOC measurements
+socc <- soc[complete.cases(soc[ ,c(16,18:19)]),] ## delete cases with incomplete Sand, pH or SOC measurements
 
 # Write file --------------------------------------------------------------
 write.csv(soc, "socdat.csv", row.names = F)
