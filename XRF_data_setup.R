@@ -1,6 +1,6 @@
-#' Geochemical weathering index model setup with AfSIS-1 XRF data
-#' pXRF data from 60 sentinel sites
-#' M. Walsh & J. Chen, January 2016
+# Geochemical weathering index model setup with AfSIS-1 XRF data
+# pXRF data from 60 sentinel sites
+# M. Walsh & J. Chen, January 2016
 
 # install.packages(c("downloader","MASS","colorRamps","RColorBrewer","compositions","archetypes"), dependencies=T)
 require(downloader)
