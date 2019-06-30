@@ -27,3 +27,5 @@ samp <- merge(samp, psa, by="sid")
 # RUSLE K-factors based on LDPSA texture analyses 
 samp$w1k <- 7.594*(0.0034+0.0387*exp(-0.5*(log(samp$w1dg)+1.533/0.7671)^2))
 samp$c4k <- 7.594*(0.0034+0.0387*exp(-0.5*(log(samp$c4dg)+1.533/0.7671)^2))
+
+
