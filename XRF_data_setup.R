@@ -40,6 +40,8 @@ attach(xrfd)
 xrfd$wA  <- (Al*1.8895)/10000
 xrfd$wCN <- (Ca*1.2046)/10000 + (Na*1.3992)/10000
 xrfd$wK  <- (K*1.3480)/10000
+xrfd$wC  <- (Ca*1.2046)/10000
+xrfd$wN  <- (Na*1.3992)/10000
 detach(xrfd)
 
 # Compositional analysis setup
