@@ -23,7 +23,20 @@ wet <- read.table("wet.csv", header=T, sep=",") ## pH, EC, Hp, C, N & M3 data
 alpha <- read.table("alpha.csv", header=T, sep=",") ## alpha ZnSe spectral data
 
 # Compositional data analysis setup ---------------------------------------
-vars <- c("C","N","P","S","K","Ca","Mg","Na","Fe","Mn","Zn","Cu")
+vars <- c("C","N","P","K","S","Ca","Mg","Na")
 nbal <- na.omit(wet[vars])
 nbal$Fv <- 1000000-rowSums(nbal[vars]) ## calculates "fill value" (Fv), in mg/kg soil
 
+# isometric log ratio transform
+vars <- c("C","N","P","K","S","Ca","Mg","Na","Fv") ## all values in mg/kg 
+cdat <- acomp(nbal[vars])
+bpart <- t(matrix(c( 1, 1, 1, 1, 1, 1, 1, 1,-1,
+                    -1,-1, 1, 1, 1, 1, 1, 1, 0,
+                     0, 0, 1,-1, 1,-1,-1,-1, 0,
+                     0, 0, 0,-1, 0,-1,-1, 1, 0,
+                     0, 0, 0, 1, 0,-1,-1, 0, 0, 
+                     0, 0, 1, 0,-1, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0, 1,-1, 0, 0,
+                     1,-1, 0, 0, 0, 0, 0, 0, 0), ncol=9, nrow=8, byrow=T))
+CoDaDendrogram(X=acomp(cdat), signary=bpart, type="lines") ## mass balance mobile graph				
+idat <- as.data.frame(ilr(cdat, V=bpart)) ## isometric log ratio (ilr) transform
