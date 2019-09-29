@@ -32,8 +32,9 @@ val <- nbal[-gsIndex,]
 labs <- c("Fv") ## substitute other labels here
 lcal <- as.vector(t(cal[labs]))
 
-# raster calibration features
+# spectral calibration features
 fcal <- cal[,14:1727]
+fpca <- cal[,1728:1747] ## PCA variables
 
 # PLS ---------------------------------------------------------------------
 # start doParallel to parallelize model fitting
@@ -98,7 +99,6 @@ tg <- expand.grid(mtry = seq(2,20, by=1)) ## model tuning steps
 
 # model training
 rf2 <- train(fpca, lcal,
-             preProc = c("center","scale"),
              method = "rf",
              ntree = 501,
              tuneGrid = tg,
@@ -117,17 +117,39 @@ mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
-set.seed(1385321)
 tc <- trainControl(method = "cv", allowParallel = T)
-tg <- expand.grid(interaction.depth = seq(10,100, by=10), shrinkage = seq(0.02,0.1, by=0.02), n.trees = 501,
+tg <- expand.grid(interaction.depth = seq(20,100, by=20), shrinkage = seq(0.02,0.1, by=0.02), n.trees = 501,
                   n.minobsinnode = 25) ## model tuning steps
 
-gb <- train(fcal, lcal, 
-            method = "gbm", 
-            preProc = c("center", "scale"),
-            trControl = tc,
-            tuneGrid = tg)
-print(gb)
+gb1 <- train(fcal, lcal, 
+             method = "gbm", 
+             preProc = c("center", "scale"),
+             trControl = tc,
+             tuneGrid = tg)
+print(gb1)
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_gb.rds", sep = "")
-saveRDS(gb, fname)
+fname <- paste("./Results/", labs, "_gb1.rds", sep = "")
+saveRDS(gb1, fname)
+
+# Generalized boosting with spectral PCA variables
+seed <- 12358
+set.seed(seed)
+
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+tc <- trainControl(method = "cv", allowParallel = T)
+tg <- expand.grid(interaction.depth = seq(2,20, by=2), shrinkage = seq(0.02,0.1, by=0.02), n.trees = 501,
+                  n.minobsinnode = 25) ## model tuning steps
+
+gb2 <- train(fpca, lcal, 
+             method = "gbm", 
+             trControl = tc,
+             tuneGrid = tg)
+print(gb2)
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_gb2.rds", sep = "")
+saveRDS(gb2, fname)
+
