@@ -40,8 +40,9 @@ screeplot(alpha.pca)
 pcas <- predict(alpha.pca, alpha)
 pcas <- pcas[,1:20]
 
-# merge & write files
+# Merge & write files -----------------------------------------------------
 alpha <- cbind(alpha, pcas)
 nbal <- merge(nbal, alpha, by="SSID")
-write.csv(nbal, "nbal_2019.csv", row.names=F)
+dir.create("Results", showWarnings = F)
+write.csv(nbal, "./Results/nbal_2019.csv", row.names=F)
 
