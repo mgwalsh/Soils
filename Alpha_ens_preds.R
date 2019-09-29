@@ -85,9 +85,6 @@ saveRDS(rf1, fname)
 seed <- 12358
 set.seed(seed)
 
-# PCA features
-fpca <- cal[,1728:1747]
-
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
