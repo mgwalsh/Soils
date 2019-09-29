@@ -1,4 +1,4 @@
-# Stacked predictions of soil properties with Alpha ZnSe spectra
+# Stacked calibrations of soil properties with Alpha ZnSe spectra
 # M. Walsh, September 2019
 
 # Required packages
