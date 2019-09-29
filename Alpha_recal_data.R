@@ -34,7 +34,14 @@ nbal <- as.data.frame(clr(nbal)) ## centered log ratio (clr) transform
 nbal <- cbind(wet$SSID, nbal)
 colnames(nbal)[colnames(nbal)=="wet$SSID"] <- "SSID"
 
-# merge with spectral data
+# Alpha principal components ----------------------------------------------
+alpha.pca <- prcomp(alpha[,2:1715], center=T, scale=T)
+screeplot(alpha.pca)
+pcas <- predict(alpha.pca, alpha)
+pcas <- pcas[,1:20]
+
+# merge & write files
+alpha <- cbind(alpha, pcas)
 nbal <- merge(nbal, alpha, by="SSID")
 write.csv(nbal, "nbal_2019.csv", row.names=F)
 
