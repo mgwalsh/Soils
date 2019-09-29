@@ -2,13 +2,14 @@
 # M. Walsh, September 2019
 
 # Required packages
-# install.packages(c("devtools","caret","pls","randomForest","gbm","nnet","plyr","doParallel")), dependencies=T)
+# install.packages(c("devtools","caret","pls","randomForest","gbm","Cubist","nnet","plyr","doParallel")), dependencies=T)
 suppressPackageStartupMessages({
   require(devtools)
   require(caret)
   require(pls)
   require(randomForest)
   require(gbm)
+  require(cubist)
   require(nnet)
   require(plyr)
   require(doParallel)
@@ -33,8 +34,8 @@ labs <- c("Fv") ## substitute other labels here
 lcal <- as.vector(t(cal[labs]))
 
 # spectral calibration features
-fcal <- cal[,14:1727]
-fpca <- cal[,1728:1747] ## PCA variables
+fcal <- cal[,15:1728]
+fpca <- cal[,1729:1748] ## PCA variables
 
 # PLS ---------------------------------------------------------------------
 # start doParallel to parallelize model fitting
@@ -150,3 +151,45 @@ stopCluster(mc)
 fname <- paste("./Results/", labs, "_gb2.rds", sep = "")
 saveRDS(gb2, fname)
 
+# Cubist <cubist> ---------------------------------------------------------
+seed <- 12358
+set.seed(seed)
+
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+tc <- trainControl(method = "cv", allowParallel = T)
+tg <- cubistControl()
+  
+cu1 <- train(fcal, lcal, 
+             method = "cubist", 
+             preProc = c("center", "scale"),
+             trControl = tc,
+             tuneGrid = tg)
+print(cu1)
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_cu1.rds", sep = "")
+saveRDS(cu1, fname)
+
+# Cubist with spectral PCA variables
+seed <- 12358
+set.seed(seed)
+
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+tc <- trainControl(method = "cv", allowParallel = T)
+tg <- cubistControl()
+
+cu2 <- train(fpca, lcal, 
+             method = "cubist", 
+             trControl = tc,
+             tuneGrid = tg)
+print(cu2)
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_cu2.rds", sep = "")
+saveRDS(cu2, fname)
