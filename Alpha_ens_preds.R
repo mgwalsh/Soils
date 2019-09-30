@@ -161,13 +161,12 @@ registerDoParallel(mc)
 
 # control setup
 tc <- trainControl(method = "cv", allowParallel = T)
-tg <- cubistControl()
+# tg <- cubistControl() ## may need to be tuned
   
 cu1 <- train(fcal, lcal, 
              method = "cubist", 
              preProc = c("center", "scale"),
-             trControl = tc,
-             tuneGrid = tg)
+             trControl = tc)
 print(cu1)
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_cu1.rds", sep = "")
@@ -183,13 +182,14 @@ registerDoParallel(mc)
 
 # control setup
 tc <- trainControl(method = "cv", allowParallel = T)
-tg <- cubistControl()
+# tg <- cubistControl() may need to be tuned
 
 cu2 <- train(fpca, lcal, 
              method = "cubist", 
-             trControl = tc,
-             tuneGrid = tg)
+             trControl = tc)
 print(cu2)
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_cu2.rds", sep = "")
 saveRDS(cu2, fname)
+
+
