@@ -1,15 +1,16 @@
-# Stacked calibrations of soil properties with Alpha ZnSe spectra
+# Stacked calibrations of soil compositional properties with Alpha ZnSe spectra
 # M. Walsh, September 2019
 
 # Required packages
-# install.packages(c("devtools","caret","pls","randomForest","gbm","Cubist","nnet","plyr","doParallel")), dependencies=T)
+# install.packages(c("devtools","caret","pls","glmnet","randomForest","gbm","Cubist","nnet","plyr","doParallel")), dependencies=T)
 suppressPackageStartupMessages({
   require(devtools)
   require(caret)
   require(pls)
+  require(glmnet)
   require(randomForest)
   require(gbm)
-  require(cubist)
+  require(Cubist)
   require(nnet)
   require(plyr)
   require(doParallel)
@@ -20,8 +21,8 @@ suppressPackageStartupMessages({
 rm(list=setdiff(ls(), c("nbal"))) ## scrubs extraneous objects in memory)
 # nbal <- as.data.frame(nbal[complete.cases(nbal[ ,c(1:1727)]),]) ## removes incomplete cases
 
-# set calibration/validation set randomization seed
-seed <- 12358
+# set randomization seed
+seed <- 1385321
 set.seed(seed)
 
 # split data into calibration and validation sets
@@ -30,7 +31,7 @@ cal <- nbal[ gsIndex,]
 val <- nbal[-gsIndex,]
 
 # GeoSurvey calibration labels
-labs <- c("Fv") ## substitute other labels here
+labs <- c("Fv") ## substitute other labels here!
 lcal <- as.vector(t(cal[labs]))
 
 # spectral calibration features
@@ -43,7 +44,7 @@ mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
-set.seed(1385321)
+set.seed(seed)
 tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel=T)
 tg <- expand.grid(ncomp=seq(2,40, by=2)) ## model tuning steps
 
@@ -57,139 +58,104 @@ stopCluster(mc)
 fname <- paste("./Results/", labs, "_pls.rds", sep = "")
 saveRDS(pls, fname)
 
+# Elastic net <glmnet> ----------------------------------------------------
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(seed)
+tc <- trainControl(method="cv", allowParallel=T)
+# tg <- needs tuning
+
+# model training
+en <- train(fcal, lcal,
+            method = "glmnet",
+            tuneGrid = tg,
+            trControl = tc)
+print(en)
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_en.rds", sep = "")
+saveRDS(en, fname)
+
 # Random forest <randomForest> --------------------------------------------
-seed <- 12358
-set.seed(seed)
-
-# start doParallel to parallelize model fitting
-mc <- makeCluster(detectCores())
-registerDoParallel(mc)
-
-# control setup
-set.seed(1385321)
-tc <- trainControl(method="cv", allowParallel=T)
-tg <- expand.grid(mtry = seq(10,100, by=10)) ## model tuning steps
-
-# model training
-rf1 <- train(fcal, lcal,
-             preProc = c("center","scale"),
-             method = "rf",
-             ntree = 501,
-             tuneGrid = tg,
-             trControl = tc)
-print(rf1)
-stopCluster(mc)
-fname <- paste("./Results/", labs, "_rf1.rds", sep = "")
-saveRDS(rf1, fname)
-
 # Random forest with spectral PCA covariates
-seed <- 12358
-set.seed(seed)
-
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
-set.seed(1385321)
+set.seed(seed)
 tc <- trainControl(method="cv", allowParallel=T)
-tg <- expand.grid(mtry = seq(2,20, by=1)) ## model tuning steps
+tg <- expand.grid(mtry = seq(2,20, by=1)) ## model tuning
 
 # model training
-rf2 <- train(fpca, lcal,
-             method = "rf",
-             ntree = 501,
-             tuneGrid = tg,
-             trControl = tc)
-print(rf2)
+rf <- train(fpca, lcal,
+            method = "rf",
+            ntree = 501,
+            tuneGrid = tg,
+            trControl = tc)
+print(rf)
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_rf2.rds", sep = "")
+fname <- paste("./Results/", labs, "_rf.rds", sep = "")
 saveRDS(rf, fname)
 
 # Generalized boosting <gbm> ----------------------------------------------
-seed <- 12358
-set.seed(seed)
-
-# start doParallel to parallelize model fitting
-mc <- makeCluster(detectCores())
-registerDoParallel(mc)
-
-# control setup
-tc <- trainControl(method = "cv", allowParallel = T)
-tg <- expand.grid(interaction.depth = seq(20,100, by=20), shrinkage = seq(0.02,0.1, by=0.02), n.trees = 501,
-                  n.minobsinnode = 25) ## model tuning steps
-
-gb1 <- train(fcal, lcal, 
-             method = "gbm", 
-             preProc = c("center", "scale"),
-             trControl = tc,
-             tuneGrid = tg)
-print(gb1)
-stopCluster(mc)
-fname <- paste("./Results/", labs, "_gb1.rds", sep = "")
-saveRDS(gb1, fname)
-
 # Generalized boosting with spectral PCA variables
-seed <- 12358
-set.seed(seed)
-
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
+set.seed(seed)
 tc <- trainControl(method = "cv", allowParallel = T)
-tg <- expand.grid(interaction.depth = seq(2,20, by=2), shrinkage = seq(0.02,0.1, by=0.02), n.trees = 501,
+tg <- expand.grid(interaction.depth = seq(2,20, by=1), shrinkage = seq(0.02,0.1, by=0.02), n.trees = 501,
                   n.minobsinnode = 25) ## model tuning steps
 
-gb2 <- train(fpca, lcal, 
-             method = "gbm", 
-             trControl = tc,
-             tuneGrid = tg)
-print(gb2)
+gb <- train(fpca, lcal, 
+            method = "gbm", 
+            trControl = tc,
+            tuneGrid = tg)
+print(gb)
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_gb2.rds", sep = "")
-saveRDS(gb2, fname)
+fname <- paste("./Results/", labs, "_gb.rds", sep = "")
+saveRDS(gb, fname)
 
-# Cubist <cubist> ---------------------------------------------------------
-seed <- 12358
-set.seed(seed)
-
-# start doParallel to parallelize model fitting
-mc <- makeCluster(detectCores())
-registerDoParallel(mc)
-
-# control setup
-tc <- trainControl(method = "cv", allowParallel = T)
-# tg <- cubistControl() ## may need to be tuned
-  
-cu1 <- train(fcal, lcal, 
-             method = "cubist", 
-             preProc = c("center", "scale"),
-             trControl = tc)
-print(cu1)
-stopCluster(mc)
-fname <- paste("./Results/", labs, "_cu1.rds", sep = "")
-saveRDS(cu1, fname)
-
+# Cubist <Cubist> ---------------------------------------------------------
 # Cubist with spectral PCA variables
-seed <- 12358
-set.seed(seed)
-
 # start doParallel to parallelize model fitting
+set.seed(seed)
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
-tc <- trainControl(method = "cv", allowParallel = T)
+tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel = T)
 # tg <- cubistControl() may need to be tuned
 
-cu2 <- train(fpca, lcal, 
-             method = "cubist", 
-             trControl = tc)
-print(cu2)
+cu <- train(fpca, lcal, 
+            method = "cubist", 
+            trControl = tc)
+print(cu)
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_cu2.rds", sep = "")
-saveRDS(cu2, fname)
+fname <- paste("./Results/", labs, "_cu.rds", sep = "")
+saveRDS(cu, fname)
 
+# Neural net <nnet> -------------------------------------------------------
+# nnet with spectral PCA variables
+# start doParallel to parallelize model fitting
+set.seed(seed)
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+tc <- trainControl(method = "cv", allowParallel = T)
+# tg <- needs tuning
+
+nn <- train(fpca, lcal, 
+            method = "nnet", 
+            trControl = tc)
+print(nn)
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_nn.rds", sep = "")
+saveRDS(nn, fname)
 
