@@ -31,7 +31,7 @@ cal <- nbal[ gsIndex,]
 val <- nbal[-gsIndex,]
 
 # GeoSurvey calibration labels
-labs <- c("Fv") ## substitute other labels here!
+labs <- c("Fv") ## insert other labels here!
 lcal <- as.vector(t(cal[labs]))
 
 # spectral calibration features
@@ -71,6 +71,7 @@ tc <- trainControl(method="cv", allowParallel=T)
 # model training
 en <- train(fcal, lcal,
             method = "glmnet",
+            family = "gaussian",
             tuneGrid = tg,
             trControl = tc)
 print(en)
@@ -124,11 +125,11 @@ saveRDS(gb, fname)
 # Cubist <Cubist> ---------------------------------------------------------
 # Cubist with spectral PCA variables
 # start doParallel to parallelize model fitting
-set.seed(seed)
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
+set.seed(seed)
 tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel = T)
 # tg <- cubistControl() may need to be tuned
 
@@ -143,11 +144,11 @@ saveRDS(cu, fname)
 # Neural net <nnet> -------------------------------------------------------
 # nnet with spectral PCA variables
 # start doParallel to parallelize model fitting
-set.seed(seed)
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
+set.seed(seed)
 tc <- trainControl(method = "cv", allowParallel = T)
 # tg <- needs tuning
 
@@ -158,4 +159,5 @@ print(nn)
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_nn.rds", sep = "")
 saveRDS(nn, fname)
+
 
