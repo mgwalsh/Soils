@@ -160,4 +160,3 @@ stopCluster(mc)
 fname <- paste("./Results/", labs, "_nn.rds", sep = "")
 saveRDS(nn, fname)
 
-
