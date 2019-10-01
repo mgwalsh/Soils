@@ -1,12 +1,12 @@
 # Stacked calibrations of soil compositional properties with Alpha ZnSe spectra
 # M. Walsh, September 2019
 
-# Required packages
-required.packages <- c("devtools","caret","pls","glmnet","randomForest","gbm","Cubist","bartMachine","plyr","doParallel")
-install <- which(!is.installed(required.packages)==TRUE)
-if (length (install) > 0) {
-    install.packages(required.packages[install])
-}
+# Required packages -------------------------------------------------------
+packages <- c("devtools","caret","pls","glmnet","randomForest","gbm","Cubist","bartMachine","plyr","doParallel")
+install <- which(!is.installed(packages)==TRUE)
+if (length(install) > 0) {
+    install.packages(packages[install])}
+
 suppressPackageStartupMessages({
   require(devtools)
   require(caret)
@@ -17,8 +17,7 @@ suppressPackageStartupMessages({
   require(Cubist)
   require(bartMachine)
   require(plyr)
-  require(doParallel)
-})
+  require(doParallel)})
 
 # Data setup --------------------------------------------------------------
 # Run this first: https://github.com/mgwalsh/Soils/blob/master/Alpha_recal_data.R
@@ -32,8 +31,7 @@ suppressPackageStartupMessages({
 #  })
 # }
 # source_https("https://github.com/mgwalsh/Soils/blob/master/Alpha_recal_data.R")
-
-rm(list=setdiff(ls(), c("nbal"))) ## scrubs extraneous objects in memory)
+rm(list=setdiff(ls(), c("nbal"))) ## scrubs extraneous objects in memory
 
 # set randomization seed
 seed <- 1385321
