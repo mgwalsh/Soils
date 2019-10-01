@@ -5,9 +5,9 @@
 packages <- c("devtools","caret","pls","glmnet","randomForest","gbm","Cubist","bartMachine","plyr","doParallel")
 install <- which(!is.installed(packages)==TRUE)
 if (length(install) > 0) {
-    install.packages(packages[install])}
+    install.packages(packages[install] )}
 
-suppressPackageStartupMessages({
+suppressPackageStartupMessages ({
   require(devtools)
   require(caret)
   require(pls)
@@ -17,7 +17,7 @@ suppressPackageStartupMessages({
   require(Cubist)
   require(bartMachine)
   require(plyr)
-  require(doParallel)})
+  require(doParallel) })
 
 # Data setup --------------------------------------------------------------
 # Run this first: https://github.com/mgwalsh/Soils/blob/master/Alpha_recal_data.R
@@ -50,7 +50,7 @@ lcal <- as.vector(t(cal[labs]))
 fcal <- cal[,15:1728]
 fpca <- cal[,1729:1748] ## PCA variables
 
-# PLS ---------------------------------------------------------------------
+# PLS <pls> --------------------------------------------------------------
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
