@@ -143,7 +143,7 @@ registerDoParallel(mc)
 # control setup
 set.seed(seed)
 tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel = T)
-# tg <- cubistControl() may need to be tuned
+# tg <- needs tuning
 
 cu <- train(fpca, lcal, 
             method = "cubist", 
@@ -162,7 +162,7 @@ registerDoParallel(mc)
 # control setup
 set.seed(seed)
 tc <- trainControl(method="cv", allowParallel = T)
-# tg <- needs to tuning
+# tg <- needs tuning
 
 bm <- train(fpca, lcal, 
             method = "bartMachine", 
@@ -171,6 +171,4 @@ print(ba)
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_bm.rds", sep = "")
 saveRDS(bm, fname)
-
-
 
