@@ -2,7 +2,11 @@
 # M. Walsh, September 2019
 
 # Required packages
-# install.packages(c("devtools","caret","pls","glmnet","randomForest","gbm","Cubist","nnet","plyr","doParallel")), dependencies=T)
+required.packages <- c("devtools","caret","pls","glmnet","randomForest","gbm","Cubist","bartMachine","plyr","doParallel")
+install <- which(!is.installed(required.packages)==TRUE)
+if (length (install) > 0) {
+    install.packages(required.packages[install])
+}
 suppressPackageStartupMessages({
   require(devtools)
   require(caret)
@@ -11,7 +15,7 @@ suppressPackageStartupMessages({
   require(randomForest)
   require(gbm)
   require(Cubist)
-  require(nnet)
+  require(bartMachine)
   require(plyr)
   require(doParallel)
 })
@@ -28,6 +32,7 @@ suppressPackageStartupMessages({
 #  })
 # }
 # source_https("https://github.com/mgwalsh/Soils/blob/master/Alpha_recal_data.R")
+
 rm(list=setdiff(ls(), c("nbal"))) ## scrubs extraneous objects in memory)
 
 # set randomization seed
@@ -150,22 +155,24 @@ stopCluster(mc)
 fname <- paste("./Results/", labs, "_cu.rds", sep = "")
 saveRDS(cu, fname)
 
-# Neural net <nnet> -------------------------------------------------------
-# nnet with spectral PCA variables
+# BART <bartMachine> ------------------------------------------------------
+# bartMachine with spectral PCA variables
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
 set.seed(seed)
-tc <- trainControl(method = "cv", allowParallel = T)
-# tg <- needs tuning
+tc <- trainControl(method="cv", allowParallel = T)
+# tg <- needs to tuning
 
-nn <- train(fpca, lcal, 
-            method = "nnet", 
+bm <- train(fpca, lcal, 
+            method = "bartMachine", 
             trControl = tc)
-print(nn)
+print(ba)
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_nn.rds", sep = "")
-saveRDS(nn, fname)
+fname <- paste("./Results/", labs, "_bm.rds", sep = "")
+saveRDS(bm, fname)
+
+
 
