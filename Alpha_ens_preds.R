@@ -26,7 +26,7 @@ suppressPackageStartupMessages({
 #  sapply(c(url, ...), function(u) {
 #    eval(parse(text = getURL(u, followlocation = TRUE, cainfo = system.file("CurlSSL", "cacert.pem", package = "RCurl"))), envir = .GlobalEnv)
 #  })
-#}
+# }
 # source_https("https://github.com/mgwalsh/Soils/blob/master/Alpha_recal_data.R")
 rm(list=setdiff(ls(), c("nbal"))) ## scrubs extraneous objects in memory)
 
@@ -35,12 +35,12 @@ seed <- 1385321
 set.seed(seed)
 
 # split data into calibration and validation sets
-gsIndex <- createDataPartition(nbal$Fv, p = 9/10, list = F, times = 1)
+gsIndex <- createDataPartition(nbal$Fv, p = 9/10, list=F, times = 1)
 cal <- nbal[ gsIndex,]
 val <- nbal[-gsIndex,]
 
 # GeoSurvey calibration labels
-labs <- c("Fv") ## insert other labels here!
+labs <- c("Fv") ## insert other labels (C,N,P ...) here!
 lcal <- as.vector(t(cal[labs]))
 
 # spectral calibration features
