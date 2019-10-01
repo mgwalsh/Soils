@@ -167,7 +167,7 @@ tc <- trainControl(method="cv", allowParallel = T)
 bm <- train(fpca, lcal, 
             method = "bartMachine", 
             trControl = tc)
-print(ba)
+print(bm)
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_bm.rds", sep = "")
 saveRDS(bm, fname)
