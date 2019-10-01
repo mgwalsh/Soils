@@ -17,9 +17,18 @@ suppressPackageStartupMessages({
 })
 
 # Data setup --------------------------------------------------------------
-# Run this first: https://github.com/mgwalsh/Cropland-Atlas/blob/master/ZM_GS19_data.R
+# Run this first: https://github.com/mgwalsh/Soils/blob/master/Alpha_recal_data.R
+# ... or
+# source_https <- function(url, ...) {
+#  # load package
+#  require(RCurl)
+#  # parse and evaluate .R script
+#  sapply(c(url, ...), function(u) {
+#    eval(parse(text = getURL(u, followlocation = TRUE, cainfo = system.file("CurlSSL", "cacert.pem", package = "RCurl"))), envir = .GlobalEnv)
+#  })
+#}
+# source_https("https://github.com/mgwalsh/Soils/blob/master/Alpha_recal_data.R")
 rm(list=setdiff(ls(), c("nbal"))) ## scrubs extraneous objects in memory)
-# nbal <- as.data.frame(nbal[complete.cases(nbal[ ,c(1:1727)]),]) ## removes incomplete cases
 
 # set randomization seed
 seed <- 1385321
