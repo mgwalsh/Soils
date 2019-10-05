@@ -21,7 +21,7 @@ unzip("alpha_ref_data.zip", overwrite=T)
 wet <- read.table("wet.csv", header=T, sep=",") ## pH, EC, Hp, C, N & M3 data
 vars <- c("SSID","C","N","P","K","S","Ca","Mg","Na","Fe","Mn","Cu","Zn")
 wet <- na.omit(wet[vars])
-alpha <- read.table("alpha.csv", header=T, sep=",") ## alpha ZnSe spectral data
+alpha <- read.table("alpha.csv", header=T, sep=",") ## Alpha ZnSe spectral data
 
 # Compositional data analysis setup ---------------------------------------
 vars <- c("C","N","P","K","S","Ca","Mg","Na","Fe","Mn","Cu","Zn")
