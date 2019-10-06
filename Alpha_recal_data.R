@@ -2,11 +2,10 @@
 # pH, EC, Hp, C, N and M3 data from 60 AfSIS1 sentinel sites and TZ & GH AfSIS2 sites
 # M. Walsh, September 2019
 
-# install.packages(c("downloader","compositions","archetypes"), dependencies=T)
+# install.packages(c("downloader","compositions"), dependencies=T)
 suppressPackageStartupMessages({
   require(downloader)
   require(compositions)
-  require(archetypes)
 })
 rm(list = ls())
 
