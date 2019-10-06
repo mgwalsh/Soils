@@ -1,4 +1,4 @@
-# Stacked calibrations of soil compositional properties with Alpha ZnSe spectra
+# Stacked calibrations of soil compositional properties with Alpha-MIR spectra
 # M. Walsh, September 2019
 
 # Required packages -------------------------------------------------------
