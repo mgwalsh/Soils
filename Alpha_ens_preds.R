@@ -38,7 +38,7 @@ seed <- 1385321
 set.seed(seed)
 
 # split data into calibration and validation sets
-gsIndex <- createDataPartition(nbal$Fv, p = 9/10, list=F, times = 1)
+gsIndex <- createDataPartition(nbal$Fv, p = 8/10, list=F, times = 1)
 cal <- nbal[ gsIndex,]
 val <- nbal[-gsIndex,]
 
