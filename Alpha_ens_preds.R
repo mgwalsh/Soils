@@ -78,7 +78,7 @@ registerDoParallel(mc)
 # control setup
 set.seed(seed)
 tc <- trainControl(method="cv", allowParallel=T)
-tg <- expand.grid(alpha = seq(0, 1, length = 3), lambda = seq(0.0001, 1, length = 10))
+tg <- expand.grid(alpha = 0:1, lambda = seq(0.0001, 1, length = 10))
 
 # model training
 en <- train(fcal, lcal,
