@@ -2,12 +2,10 @@
 # M. Walsh, September 2019
 
 # Required packages -------------------------------------------------------
-is.installed <- function(anypkg) {
-  is.element(anypkg, installed.packages()[,1] )}
+is.installed <- function(pkg) {is.element(pkg, installed.packages()[,1] )}
 packages <- c("devtools","caret","pls","glmnet","randomForest","gbm","Cubist","bartMachine","plyr","doParallel")
-install  <- which(!is.installed(packages)==TRUE)
-if (length(install) > 0) {
-    install.packages(packages[install] )}
+install  <- which(!is.installed(packages) == TRUE)
+if (length(install) > 0) {install.packages(packages[install] )}
 
 suppressPackageStartupMessages ({
   require(devtools)
