@@ -78,11 +78,12 @@ registerDoParallel(mc)
 # control setup
 set.seed(seed)
 tc <- trainControl(method="cv", allowParallel=T)
-# tg <- needs tuning
+tg <- expand.grid(alpha = seq(0, 1, length = 3), lambda = seq(0.0001, 1, length = 10))
 
 # model training
 en <- train(fcal, lcal,
             method = "glmnet",
+            preProc = c("center", "scale"),
             family = "gaussian",
             tuneGrid = tg,
             trControl = tc)
