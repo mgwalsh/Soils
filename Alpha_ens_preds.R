@@ -43,7 +43,7 @@ cal <- nbal[ gsIndex,]
 val <- nbal[-gsIndex,]
 
 # GeoSurvey calibration labels
-labs <- c("Fv") ## insert other labels (C,N,P ...) here!
+labs <- c("C") ## insert other labels (N,P,K ...) here!
 lcal <- as.vector(t(cal[labs]))
 
 # spectral calibration features
