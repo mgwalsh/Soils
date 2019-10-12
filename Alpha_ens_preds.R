@@ -58,7 +58,7 @@ registerDoParallel(mc)
 # control setup
 set.seed(seed)
 tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel=T)
-tg <- expand.grid(ncomp=seq(2,40, by=2)) ## model tuning steps
+tg <- expand.grid(ncomp=seq(2,80, by=2)) ## model tuning steps
 
 pls <- train(fcal, lcal,
              method = "pls",
@@ -101,7 +101,7 @@ registerDoParallel(mc)
 # control setup
 set.seed(seed)
 tc <- trainControl(method="cv", allowParallel=T)
-tg <- expand.grid(mtry = seq(2,20, by=1)) ## model tuning
+tg <- expand.grid(mtry = seq(2,20, by=2)) ## model tuning
 
 # model training
 rf <- train(fpca, lcal,
@@ -143,7 +143,7 @@ registerDoParallel(mc)
 
 # control setup
 set.seed(seed)
-tc <- trainControl(method="repeatedcv", number=10, repeats=5, allowParallel = T)
+tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel = T)
 # tg <- needs tuning
 
 cu <- train(fpca, lcal, 
