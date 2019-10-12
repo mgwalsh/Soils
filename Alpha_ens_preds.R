@@ -143,7 +143,7 @@ registerDoParallel(mc)
 
 # control setup
 set.seed(seed)
-tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel = T)
+tc <- trainControl(method="repeatedcv", number=10, repeats=5, allowParallel = T)
 # tg <- needs tuning
 
 cu <- train(fpca, lcal, 
