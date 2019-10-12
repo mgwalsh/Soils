@@ -125,7 +125,7 @@ registerDoParallel(mc)
 # control setup
 set.seed(seed)
 tc <- trainControl(method = "cv", allowParallel = T)
-tg <- expand.grid(interaction.depth = seq(2,20, by=1), shrinkage = seq(0.02,0.1, by=0.02), n.trees = 501,
+tg <- expand.grid(interaction.depth = seq(2,20, by=2), shrinkage = seq(0.02,0.1, by=0.02), n.trees = 501,
                   n.minobsinnode = 25) ## model tuning steps
 
 gb <- train(fpca, lcal, 
@@ -164,7 +164,7 @@ registerDoParallel(mc)
 
 # control setup
 set.seed(seed)
-tc <- trainControl(method="cv", allowParallel = T)
+tc <- trainControl(method="cv", 5, allowParallel = T)
 # tg <- needs tuning
 
 bm <- train(fpca, lcal, 
