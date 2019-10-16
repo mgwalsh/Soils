@@ -216,3 +216,9 @@ stopCluster(mc)
 fname <- paste("./Results/", labs, "_st.rds", sep = "")
 saveRDS(st, fname)
 
+# write validation-set predictions
+st.pred <- predict(st, stack)
+preds <- cbind(lval, stack, st.pred)
+names(preds) <- c(labs,"pl","en","rf","gb","cu","bm","st")
+fname <- paste("./Results/", labs, "_preds.csv", sep = "")
+write.csv(preds, fname)  
