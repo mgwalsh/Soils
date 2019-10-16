@@ -173,10 +173,10 @@ stopCluster(mc)
 fname <- paste("./Results/", labs, "_bm.rds", sep = "")
 saveRDS(bm, fname)
 
-# Ensemble <glm> ----------------------------------------------------------
 # validation labels
 lval <- as.vector(t(val[labs]))
 
+# Stacking <glm> ----------------------------------------------------------
 # spectral calibration features
 fval <- val[,15:1728]
 fpca <- val[,1729:1748] ## PCA variables
@@ -188,5 +188,5 @@ rf.pred <- predict(rf, fpca)
 gb.pred <- predict(gb, fpca)
 cu.pred <- predict(cu, fpca)
 bm.pred <- predict(bm, fpca)
-test <- as.data.frame(cbind(lval,pl.pred,en.pred,rf.pred,gb.pred,cu.pred,bm.pred))
-names(test) <- c(labs,"pl","en","rf","gb","cu","bm")
+stack <- as.data.frame(cbind(lval,pl.pred,en.pred,rf.pred,gb.pred,cu.pred,bm.pred))
+names(stack) <- c(labs,"pl","en","rf","gb","cu","bm")
