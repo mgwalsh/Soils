@@ -179,11 +179,11 @@ stopCluster(mc)
 fname <- paste("./Results/", labs, "_bm.rds", sep = "")
 saveRDS(bm, fname)
 
-# validation labels
+# Stacking <glm> ----------------------------------------------------------
+# validation-set labels
 lval <- as.vector(t(val[labs]))
 
-# Stacking <glm> ----------------------------------------------------------
-# spectral calibration features
+# validation-set features
 fval <- val[,15:1728]
 fpca <- val[,1729:1748] ## PCA variables
 
@@ -202,12 +202,12 @@ names(stack) <- c("pl","en","rf","gb","cu","bm")
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
-# control setup
+# model setup
 set.seed(seed)
 tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel=T)
 
 st <- train(stack, lval,
-            method = "glm",
+            method = "glmStepAIC",
             trControl = tc)
 
 print(st)
