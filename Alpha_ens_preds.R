@@ -42,7 +42,7 @@ gsIndex <- createDataPartition(nbal$Fv, p = 8/10, list=F, times = 1)
 cal <- nbal[ gsIndex,]
 val <- nbal[-gsIndex,]
 
-# GeoSurvey calibration labels
+# calibration labels
 labs <- c("C") ## insert other labels (N,P,K ...) here!
 lcal <- as.vector(t(cal[labs]))
 
@@ -60,15 +60,15 @@ set.seed(seed)
 tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel=T)
 tg <- expand.grid(ncomp=seq(2,80, by=2)) ## model tuning steps
 
-pls <- train(fcal, lcal,
-             method = "pls",
-             preProc = c("center", "scale"),
-             tuneGrid = tg,
-             trControl = tc)
-print(pls)
+pl <- train(fcal, lcal,
+            method = "pls",
+            preProc = c("center", "scale"),
+            tuneGrid = tg,
+            trControl = tc)
+print(pl)
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_pls.rds", sep = "")
-saveRDS(pls, fname)
+fname <- paste("./Results/", labs, "_pl.rds", sep = "")
+saveRDS(pl, fname)
 
 # Elastic net <glmnet> ----------------------------------------------------
 # start doParallel to parallelize model fitting
@@ -173,3 +173,20 @@ stopCluster(mc)
 fname <- paste("./Results/", labs, "_bm.rds", sep = "")
 saveRDS(bm, fname)
 
+# Ensemble <glm> ----------------------------------------------------------
+# validation labels
+lval <- as.vector(t(val[labs]))
+
+# spectral calibration features
+fval <- val[,15:1728]
+fpca <- val[,1729:1748] ## PCA variables
+
+# validation set predictions
+pl.pred <- predict(pl, fval)
+en.pred <- predict(en, fval)
+rf.pred <- predict(rf, fpca)
+gb.pred <- predict(gb, fpca)
+cu.pred <- predict(cu, fpca)
+bm.pred <- predict(bm, fpca)
+test <- as.data.frame(cbind(lval,pl.pred,en.pred,rf.pred,gb.pred,cu.pred,bm.pred))
+names(test) <- c(labs,"pl","en","rf","gb","cu","bm")
