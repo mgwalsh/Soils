@@ -1,5 +1,5 @@
 # Stacked calibrations of soil compositional properties with Alpha-MIR spectra
-# M. Walsh, September 2019
+# M. Walsh, October 2019
 
 # Required packages -------------------------------------------------------
 is.installed <- function(pkg) {is.element(pkg, installed.packages()[,1] )}
@@ -215,3 +215,4 @@ summary(st)
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_st.rds", sep = "")
 saveRDS(st, fname)
+
