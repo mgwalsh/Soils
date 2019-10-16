@@ -188,5 +188,23 @@ rf.pred <- predict(rf, fpca)
 gb.pred <- predict(gb, fpca)
 cu.pred <- predict(cu, fpca)
 bm.pred <- predict(bm, fpca)
-stack <- as.data.frame(cbind(lval,pl.pred,en.pred,rf.pred,gb.pred,cu.pred,bm.pred))
-names(stack) <- c(labs,"pl","en","rf","gb","cu","bm")
+stack <- as.data.frame(cbind(pl.pred,en.pred,rf.pred,gb.pred,cu.pred,bm.pred))
+names(stack) <- c("pl","en","rf","gb","cu","bm")
+
+# fit stack with cross-validation
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
+
+# control setup
+set.seed(seed)
+tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel=T)
+
+st <- train(stack, lval,
+            method = "glm",
+            trControl = tc)
+print(st)
+summary(st)
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_st.rds", sep = "")
+saveRDS(st, fname)
