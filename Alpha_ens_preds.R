@@ -65,6 +65,7 @@ pl <- train(fcal, lcal,
             preProc = c("center", "scale"),
             tuneGrid = tg,
             trControl = tc)
+
 print(pl)
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_pl.rds", sep = "")
@@ -87,6 +88,7 @@ en <- train(fcal, lcal,
             family = "gaussian",
             tuneGrid = tg,
             trControl = tc)
+
 print(en)
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_en.rds", sep = "")
@@ -109,6 +111,7 @@ rf <- train(fpca, lcal,
             ntree = 501,
             tuneGrid = tg,
             trControl = tc)
+
 print(rf)
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_rf.rds", sep = "")
@@ -130,6 +133,7 @@ gb <- train(fpca, lcal,
             method = "gbm", 
             trControl = tc,
             tuneGrid = tg)
+
 print(gb)
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_gb.rds", sep = "")
@@ -149,6 +153,7 @@ tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel = T)
 cu <- train(fpca, lcal, 
             method = "cubist", 
             trControl = tc)
+
 print(cu)
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_cu.rds", sep = "")
@@ -168,6 +173,7 @@ tc <- trainControl(method="cv", 5, allowParallel = T)
 bm <- train(fpca, lcal, 
             method = "bartMachine", 
             trControl = tc)
+
 print(bm)
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_bm.rds", sep = "")
@@ -203,6 +209,7 @@ tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel=T)
 st <- train(stack, lval,
             method = "glm",
             trControl = tc)
+
 print(st)
 summary(st)
 stopCluster(mc)
