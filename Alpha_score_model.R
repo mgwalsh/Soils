@@ -22,5 +22,5 @@ rals <- read.table("alpha_long_preds.csv", header=T, sep=",") ## RAL and MIR pre
 c50 <- glmer(c50~mir+(1+mir|cpart), family=binomial(link="logit"), data=rals)
 summary(c50)
 rals$rscore <- fitted(c50)
-write.csv(rals, "./Results/nbal_2019.csv", row.names=F)
+write.csv(rals, "./Results/rals_2019.csv", row.names=F)
 
