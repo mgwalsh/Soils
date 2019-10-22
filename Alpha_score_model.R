@@ -23,4 +23,3 @@ c50 <- glmer(c50~mir+(mir|cpart), family=binomial(link="logit"), data=rals)
 summary(c50)
 rals$score <- fitted(c50)
 
-
