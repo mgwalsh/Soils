@@ -129,3 +129,5 @@ a <- rals[ which(rals$cpart=="Zn" & rals$c50==0), ]
 a <- a[,6]
 e <- evaluate(p=p, a=a) ## calculate ROC's on test set
 plot(e, 'ROC') ## plot ROC curve
+
+
