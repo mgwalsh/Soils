@@ -26,10 +26,10 @@ rals$rscore <- fitted(y50)
 write.csv(rals, "./Results/rals_2019.csv", row.names=F)
 
 # Receiver-operator characteristics ---------------------------------------
-p <- rals[ which(rals$cpart=="C" & rals$c50==1), ] ## substitute other properties here
+p <- rals[ which(rals$cpart=="C" & rals$c50==1), ] ## substitute other properties here (N,P,K ...)
 p <- p[,6]
 a <- rals[ which(rals$cpart=="C" & rals$c50==0), ] ## substitute other properties here
 a <- a[,6]
-e <- evaluate(p=p, a=a) ## calculate ROC's on test set
+e <- evaluate(p=p, a=a) ## calculate ROC's on validation set
 plot(e, 'ROC') ## plot ROC curve
 
