@@ -45,7 +45,7 @@ pcas <- pcas[,1:20]
 
 # Merge & write files -----------------------------------------------------
 alpha <- cbind(alpha, pcas)
-lreq <- merge(cec, alpha, by="SSID")
+lreq <- merge(lreq, alpha, by="SSID")
 nbal <- merge(nbal, alpha, by="SSID")
 write.csv(lreq, "./Results/lreq_2019.csv", row.names=F)
 write.csv(nbal, "./Results/nbal_2019.csv", row.names=F)
