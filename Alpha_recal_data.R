@@ -21,7 +21,7 @@ unzip("alpha_ref_data.zip", overwrite=T)
 wet <- read.table("wet.csv", header=T, sep=",") ## pH, EC, Hp, C, N & M3 data
 vars <- c("SSID","pH","Hp","Ca","Mg")
 cec <- na.omit(wet[vars])
-cec$Hpa <- ifelse(cec$pH >= 7.0, 0.0, cec$Hp*10) ## adjusts Hp to meq/100 gm
+cec$Hpa <- ifelse(cec$pH >= 7.0, 0.0, cec$Hp*10) ## adjusts Hp to meq/100 gm for lime requirement calcs
 vars <- c("SSID","C","N","P","K","S","Ca","Mg","Na","Fe","Mn","Cu","Zn")
 wet <- na.omit(wet[vars])
 alpha <- read.table("alpha.csv", header=T, sep=",") ## Alpha ZnSe spectral data
