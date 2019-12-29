@@ -22,6 +22,7 @@ wet <- read.table("wet.csv", header=T, sep=",") ## pH, EC, Hp, C, N & M3 data
 vars <- c("SSID","pH","Hp","Ca","Mg")
 lreq <- na.omit(wet[vars])
 lreq$Hpa <- ifelse(lreq$pH >= 7.0, 0.0, lreq$Hp*10) ## adjusts Hp to meq/100 gm for lime requirement calcs
+lreq$camg <- lreq$Ca/lreq$Mg ## calculates Ca:Mg ratio based on Mehlich-3 measurements
 vars <- c("SSID","C","N","P","K","S","Ca","Mg","Na","Fe","Mn","Cu","Zn")
 wet <- na.omit(wet[vars])
 alpha <- read.table("alpha.csv", header=T, sep=",") ## Alpha ZnSe spectral data
