@@ -31,24 +31,24 @@ suppressPackageStartupMessages ({
 #  })
 # }
 # source_https("https://github.com/mgwalsh/Soils/blob/master/Alpha_recal_data.R")
-rm(list=setdiff(ls(), c("nbal"))) ## scrubs extraneous objects in memory
+rm(list=setdiff(ls(), c("lreq"))) ## scrubs extraneous objects in memory
 
 # set randomization seed
 seed <- 1385321
 set.seed(seed)
 
 # split data into calibration and validation sets
-gsIndex <- createDataPartition(nbal$Fv, p = 8/10, list=F, times = 1)
-cal <- nbal[ gsIndex,]
-val <- nbal[-gsIndex,]
+gsIndex <- createDataPartition(lreq$pH, p = 8/10, list=F, times = 1)
+cal <- lreq[ gsIndex,]
+val <- lreq[-gsIndex,]
 
 # calibration labels
-labs <- c("C") ## insert other labels (N,P,K ...) here!
+labs <- c("pH") ## insert other labels (Hpa or camg) here!
 lcal <- as.vector(t(cal[labs]))
 
 # spectral calibration features
-fcal <- cal[,15:1728]
-fpca <- cal[,1729:1748] ## PCA variables
+fcal <- cal[,8:1721]
+fpca <- cal[,1722:1741] ## PCA variables
 
 # PLS <pls> --------------------------------------------------------------
 # start doParallel to parallelize model fitting
@@ -184,8 +184,8 @@ saveRDS(bm, fname)
 lval <- as.vector(t(val[labs]))
 
 # validation-set features
-fval <- val[,15:1728]
-fpca <- val[,1729:1748] ## PCA variables
+fval <- val[,8:1721]
+fpca <- val[,1722:1741] ## PCA variables
 
 # validation set predictions
 pl.pred <- predict(pl, fval)
