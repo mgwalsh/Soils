@@ -27,6 +27,14 @@ vars <- c("SSID","C","N","P","K","S","Ca","Mg","Na","Fe","Mn","Cu","Zn")
 wet <- na.omit(wet[vars])
 alpha <- read.table("alpha.csv", header=T, sep=",") ## Alpha ZnSe spectral data
 
+# Hp vs pH plot
+par(pty="s")
+par(mfrow=c(1,1), mar=c(5,5,1,1))
+plot(I(Hp*10)~pH, xlab="pH (in water)", ylab="Hp (meq/kg)", cex.lab=1.3, 
+     xlim=c(4,10), ylim=c(0,50), lreq)
+abline(h=2.0, col="red", lwd=2)
+abline(v=6.5, col="red", lwd=2)
+
 # Compositional data analysis setup ---------------------------------------
 vars <- c("C","N","P","K","S","Ca","Mg","Na","Fe","Mn","Cu","Zn")
 wet$Fv <- 1000000-rowSums(wet[vars]) ## calculates "fill value" (Fv), in mg/kg soil
