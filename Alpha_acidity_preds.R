@@ -247,7 +247,7 @@ ppreds <- cbind(plab, pstack, pst.pred)
 names(ppreds) <- c(labs,"pl","en","rf","gb","cu","bm","st")
 
 # change plot variable and parameters here
-# this one is set for pH
+# this one is set for pH and a RAL of pH < 6.5
 par(pty="s")
 plot(pH~st, ppreds, xlim=c(3.9, 10.1), ylim=c(3.9,10.1), xlab="MIR predicted pH", ylab="Measured soil pH (in water)", cex.lab=1.3)
 abline(0,1, col="red", lwd=2)
