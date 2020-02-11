@@ -32,8 +32,8 @@ par(pty="s")
 par(mfrow=c(1,1), mar=c(5,5,1,1))
 plot(I(Hp*10)~pH, xlab="pH (in water)", ylab="Hp (meq/100g)", cex.lab=1.3, 
      xlim=c(4,10), ylim=c(0,50), lreq)
-abline(h=2.0, col="red", lwd=2)
-abline(v=6.5, col="blue", lwd=2)
+abline(h=2.0, col="red", lwd=2) ## Hp detection limit
+abline(v=6.5, col="blue", lwd=2) ## remdiation action level
 
 # Compositional data analysis setup ---------------------------------------
 vars <- c("C","N","P","K","S","Ca","Mg","Na","Fe","Mn","Cu","Zn")
