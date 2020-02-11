@@ -43,7 +43,7 @@ cal <- lreq[ gsIndex,]
 val <- lreq[-gsIndex,]
 
 # calibration labels
-labs <- c("pH") ## insert other labels (Hpa or camg) here!
+labs <- c("pH") ## insert other labels (Hp or camg) here!
 lcal <- as.vector(t(cal[labs]))
 
 # spectral calibration features
@@ -222,3 +222,33 @@ preds <- cbind(lval, stack, st.pred)
 names(preds) <- c(labs,"pl","en","rf","gb","cu","bm","st")
 fname <- paste("./Results/", labs, "_preds.csv", sep = "")
 write.csv(preds, fname)  
+
+# Prediction plots --------------------------------------------------------
+# prediction-set labels
+plab <- as.vector(t(lreq[labs])) ## includes all measurements
+
+# prediction-set features
+pspc <- lreq[,8:1721]
+ppca <- lreq[,1722:1741] ## PCA variables
+
+# prediction-stack predictions
+pl.pred <- predict(pl, pspc)
+en.pred <- predict(en, pspc)
+rf.pred <- predict(rf, ppca)
+gb.pred <- predict(gb, ppca)
+cu.pred <- predict(cu, ppca)
+bm.pred <- predict(bm, ppca)
+pstack <- as.data.frame(cbind(pl.pred,en.pred,rf.pred,gb.pred,cu.pred,bm.pred))
+names(pstack) <- c("pl","en","rf","gb","cu","bm")
+
+# stacked prediction-set predictions
+pst.pred <- predict(st, pstack)
+ppreds <- cbind(plab, pstack, pst.pred)
+names(ppreds) <- c(labs,"pl","en","rf","gb","cu","bm","st")
+
+# change plot variable and parameters here
+# this one is set for pH
+par(pty="s")
+plot(pH~st, ppreds, xlim=c(3.9, 10.1), ylim=c(3.9,10.1), xlab="MIR predicted pH", ylab="Measured pH (in water)", cex.lab=1.3)
+abline(0,1, col="red", lwd=2)
+abline(h=6.5, col="blue", lwd=2)
