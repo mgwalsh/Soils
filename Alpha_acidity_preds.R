@@ -43,7 +43,7 @@ cal <- lreq[ gsIndex,]
 val <- lreq[-gsIndex,]
 
 # calibration labels
-labs <- c("pH") ## insert other labels (Hp or camg) here!
+labs <- c("Hp") ## insert other labels (Hp or camg) here!
 lcal <- as.vector(t(cal[labs]))
 
 # spectral calibration features
@@ -247,8 +247,16 @@ ppreds <- cbind(plab, pstack, pst.pred)
 names(ppreds) <- c(labs,"pl","en","rf","gb","cu","bm","st")
 
 # change plot variable and parameters here
-# this one is set for pH and a RAL of pH < 6.5
+# this one is set for Hp and a detectionlevel < 6.5
 par(pty="s")
 plot(pH~st, ppreds, xlim=c(3.9, 10.1), ylim=c(3.9,10.1), xlab="MIR predicted pH", ylab="Measured soil pH (in water)", cex.lab=1.3)
 abline(0,1, col="red", lwd=2)
 abline(h=6.5, col="blue", lwd=2)
+
+# change plot variable and parameters here
+# this one is set for Hp
+# par(pty="s")
+# plot(I(Hp*10)~I(st*10), ppreds, xlim=c(-0.1, 40.1), ylim=c(-0.1,40.1), xlab="MIR predicted Hp (meq/100g)", ylab="Measured soil Hp (in M3, meq/100g)", cex.lab=1.3)
+# abline(0,1, col="red", lwd=2)
+# abline(h=2, col="red", lwd=2)
+
