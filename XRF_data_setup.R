@@ -16,7 +16,7 @@ dir.create("XRF_data", showWarnings=F)
 setwd("./XRF_data")
 
 # Download
-download("https://www.dropbox.com/s/6mr5ubca0jrhk25/XRF60.zip?dl=0", "XRF60.zip", mode="wb")
+download("https://www.dropbox.com/s/6mr5ubca0jrhk25/XRF60.zip?raw=1", "XRF60.zip", mode="wb")
 unzip("XRF60.zip", overwrite=T)
 prof <- read.table("Profiles.csv", header=T, sep=",") ## profile locations and site names
 samp <- read.table("Samples.csv", header=T, sep=",") ## sample ID's and depths
@@ -25,7 +25,7 @@ samp <- merge(prof, samp, by="PID")
 xrfd <- merge(samp, xrfd, by="SSN")
 
 # Mineral reference data
-download("https://www.dropbox.com/s/viva1hgblukr6vg/Ref_Min.csv?dl=0", "Ref_Min.csv", mode="wb")
+download("https://www.dropbox.com/s/viva1hgblukr6vg/Ref_Min.csv?raw=1", "Ref_Min.csv", mode="wb")
 minr <- read.table("Ref_Min.csv", header=T, sep=",")
 
 # Parallel coordinates plot of all of the XRF data
