@@ -17,8 +17,8 @@ dir.create("AF_SOC", showWarnings=F)
 setwd("./AF_SOC")
 
 # download SOC profile data (courtesy ISRIC)
-download("https://www.dropbox.com/s/cn85c3jrlx2wgbp/SOCSAT.zip?raw=1", "SOCSAT.zip", mode="wb")
-unzip("SOCSAT.zip", overwrite=T)
+download("https://osf.io/df7hg/raw=1", "socsat.zip", mode="wb")
+unzip("socsat.zip", overwrite=T)
 prof <- read.table("Profiles.csv", header=T, sep=",") ## profile locations & collection year
 prof <- prof[complete.cases(prof[ ,3:4]),] ## delete non-georeferenced profiles
 samp <- read.table("Samples.csv", header=T, sep=",") ## sample data
