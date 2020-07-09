@@ -17,8 +17,8 @@ dir.create("AF_SOC", showWarnings=F)
 setwd("./AF_SOC")
 
 # download SOC profile data (courtesy ISRIC)
-download("https://osf.io/df7hg?raw=1", "socsat.zip", mode="wb")
-unzip("socsat.zip", overwrite=T)
+download("https://osf.io/u8wng?raw=1", "socdat.zip", mode="wb")
+unzip("socdat.zip", overwrite=T)
 prof <- read.table("Profiles.csv", header=T, sep=",") ## profile locations & collection year
 prof <- prof[complete.cases(prof[ ,3:4]),] ## delete non-georeferenced profiles
 samp <- read.table("Samples.csv", header=T, sep=",") ## sample data
@@ -43,8 +43,6 @@ socgrid <- extract(grids, prof)
 prof <- as.data.frame(cbind(prof, socgrid))
 soc <- merge(prof, samp, by="pid") ## merge samples by profile ID (pid)
 # socc <- soc[complete.cases(soc[ ,c(17,19:20)]),] ## delete cases with incomplete Sand, pH or SOC measurements
-
-# Write file --------------------------------------------------------------
 write.csv(soc, "socdat.csv", row.names = F)
 
 # Profile location map widget ---------------------------------------------
@@ -54,3 +52,10 @@ w <- leaflet() %>%
   addCircleMarkers(prof$lon, prof$lat, clusterOptions = markerClusterOptions())
 w ## plot widget 
 saveWidget(w, 'SOC_locs.html', selfcontained = T)
+
+# Exploratory plots -------------------------------------------------------
+# ECDF plots of pH
+plot(ecdf(soc$pH), main="", xlab="pH", ylab="Cum. proportion of observations", xlim=c(4, 10), verticals=T, lty=1, lwd=2, col="red", do.points=F)
+abline(v = 5.2, lty=2, col="grey")
+
+
