@@ -56,6 +56,6 @@ saveWidget(w, 'SOC_locs.html', selfcontained = T)
 # Exploratory plots -------------------------------------------------------
 # ECDF plots of pH
 plot(ecdf(soc$pH), main="", xlab="pH", ylab="Cum. proportion of observations", xlim=c(4, 10), verticals=T, lty=1, lwd=2, col="red", do.points=F)
-abline(v = 5.2, lty=2, col="grey")
+abline(v = 5.5, lty=2, col="grey")
 
 
