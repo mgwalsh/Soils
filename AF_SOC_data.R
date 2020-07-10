@@ -1,4 +1,4 @@
-# Africa-wide SOC data setup 
+# Africa-wide SOC data setup and national estimates
 # M. Walsh, September 2017
 
 # Required packages
@@ -9,6 +9,7 @@ suppressPackageStartupMessages({
   require(raster)
   require(leaflet)
   require(htmlwidgets)
+  require(arm)
 })
 
 # Data downloads -----------------------------------------------------------
@@ -53,9 +54,5 @@ w <- leaflet() %>%
 w ## plot widget 
 saveWidget(w, 'SOC_locs.html', selfcontained = T)
 
-# Exploratory plots -------------------------------------------------------
-# ECDF plots of pH
-plot(ecdf(soc$pH), main="", xlab="pH", ylab="Cum. proportion of observations", xlim=c(4, 10), verticals=T, lty=1, lwd=2, col="red", do.points=F)
-abline(v = 5.5, lty=2, col="grey")
 
 
