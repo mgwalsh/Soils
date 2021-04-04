@@ -44,7 +44,7 @@ if (any(installed_packages == FALSE)) {
 invisible(lapply(packages, library, character.only = TRUE))
 ```
 
-The following chunk then downloads the data that we have assembled, which are needed for running this particular example. Specifically, it assembles georeferenced field observations of soil measurements, e.g. (pH, soil carbon and soil nutrient composition) and links these to remote sensing and GIS images represented by `grids` variable stack. We focus on predicting the topsoil pH measurements here, but the approach is applicable to any given  [Georeferenced](https://en.wikipedia.org/wiki/Georeferencing) soil property or measurement under consideration. 
+The following chunk then downloads the data that we have assembled, which are needed for running this particular example. Specifically, it assembles georeferenced field observations of soil measurements, e.g. (pH, soil carbon and soil nutrient composition) and links these to remote sensing and GIS images represented by the `grids` feature stack. We focus on predicting the topsoil pH measurements here, but the approach is applicable to any given  [Georeferenced](https://en.wikipedia.org/wiki/Georeferencing) soil property or measurement under consideration. 
 
 ```{r}
 # Data downloads -----------------------------------------------------------
@@ -70,10 +70,10 @@ grids <- stack(glist)
 # download figures 
 dir.create("Figures", showWarnings = F)
 download("https://osf.io/42gry/", "./Figures/figures.zip", mode = "wb")
-unzip("figures.zip", overwrite = T)
+unzip("./Figures/figures.zip", overwrite = T)
 ```
 
-The processed Rwanda remote sensing and GIS data (features, ... `grids` in the chunk above) were derived from and transformed from their primary open sources. You can download the entire `grid` raster stack description at [RwaSIS grids](https://osf.io/hp6v7/). The short descriptions of the included features, and their sources are provided in the table immediately below.
+The processed Rwanda remote sensing and GIS data (features, ... `grids` in the chunk above) were derived from and transformed from their primary open sources. You can also download the entire `grids` raster stack at [RwaSIS grids](https://osf.io/hp6v7/). The short descriptions of the included features, and their sources are provided in the table immediately below.
 
 \
 ```{r, echo=FALSE, results='asis'}
@@ -104,7 +104,6 @@ projection(geos) <- projection(grids)
 # extract gridded variables at survey locations
 geosgrid <- extract(grids, geos)
 gsdat <- as.data.frame(cbind(geos, geosgrid))
-str(gsdat) ## display the structure of the resulting dataframe
 ```
 
 The following chunk then writes out the dataframe `RW_soil_data.csv` into your `./Results` directory if you'd like to process those outputs in software other than R. It also provides a location map of where those soil samples were obtained.
@@ -124,9 +123,9 @@ w ## plot widget
 
 # Machine-learning-based predictive mapping
 
-The following chunks predict topsoil soil pH values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (covariate) inputs. The generalized MLA prediction workflow is shown in the figure below. This general approach has won a lot of data science competitions e.g., at [Kaggle](https://www.kaggle.com/). You may want to take a look there. They have some fantastic data science resources, courses and challenges openly available.
+The following chunks predict topsoil soil pH values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (feature) inputs. The generalized MLA prediction workflow is shown in the figure below. This general approach has won a lot of data science competitions e.g., at [Kaggle](https://www.kaggle.com/). You may want to take a look there. They have some fantastic data science resources, courses and challenges openly available.
 
-```{r training_validation_approach, echo=FALSE, fig.align="center", fig.cap="MLA training, validation and prediction workflow.", out.width = '70%', }
+```{r training_validation_approach, echo=FALSE, fig.align="center", fig.cap="MLA training, validation and prediction workflow.", out.width = '70%'}
 knitr::include_graphics("Figures/training_validation.png")
 ```
 
@@ -191,7 +190,7 @@ saveRDS(gm, fname)
 
 Central places are influential variables in places where human impacts occur. They are correlated with both extraction and deposition of soil nutrients and toxic elements, soil erosion and deposition, acidification and many other soil disturbance processes. The model below focuses on central place indicators such as distances to roads and settlements, surface water sources, cell towers and electricity networks among others.
 
-```{r}
+```{r, results='hide'}
 # select central place covariates
 gf_cpv <- gs_cal[,35:48,67]
 
@@ -216,32 +215,30 @@ fname <- paste("./Results/", labs, "_gl1.rds", sep = "")
 saveRDS(gl1, fname)
 ```
 
-## Regularized regression ([glmnet](https://cran.r-project.org/web/packages/glmnet/index.html))
+## GLM model with all the spatial features ([MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf))
 
-This model is quite similar to the *Central place model* above, but it initially contains all of the 56 covariates and uses regularized regression rather than a standard generalized linear model. Regularized regression is a regression method with an additional constraint designed to deal with a large number of features. It does so by imposing a penalty on the unimportant ones, thus shrinking their coefficients towards zero. The main objective of regularization is to end up with a simpler, more interpretable model.
+This model is very similar to the Central place model above, but it contains all of the 46 spatial features and then backward selects from those to generate a prediction via a generalized linear model. Alternatively (or additionally) you could also try regularized regression with e.g., [glmnet](https://cran.r-project.org/web/packages/glmnet/index.html) here. However, in practice the results will be very similar for these data.
 
-```{r}
+```{r, results='hide'}
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
-set.seed(seed)
+set.seed(1385321)
 tc <- trainControl(method="cv", allowParallel=T)
-tg <- expand.grid(alpha = 0:1, lambda = seq(0.0001, 1, length = 10))
 
 # model training
-rr <- train(fcal, lcal,
-            method = "glmnet",
-            preProc = c("center", "scale"),
-            family = "gaussian",
-            tuneGrid = tg,
-            trControl = tc)
+gl2 <- train(fcal, lcal,
+             method = "glmStepAIC",
+             preProc = c("center", "scale"),
+             metric = "RMSE",
+             trControl = tc)
 
-rr.pred <- predict(grids, rr) ## spatial predictions
+gl2.pred <- predict(grids, gl2) ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_rr.rds", sep = "")
-saveRDS(rr, fname)
+fname <- paste("./Results/", labs, "_gl2.rds", sep = "")
+saveRDS(gl2, fname)
 ```
 
 ## Random forest ([randomForest](https://cran.r-project.org/web/packages/randomForest/randomForest.pdf))
@@ -277,7 +274,7 @@ saveRDS(rf, fname)
 
 This next chunk represents one of the *boosting* techniques that can be used for both regression or classification. It is similar to the `randomForest` above, but uses a boosting technique that emphasizes successful predictions rather than penalizing poor predictions via *bagging*. There is a wide-array of literature around the so-called *"greedy algorithms"*. Very good descriptions of these are provided in [Hastie et al, 2009](https://web.stanford.edu/~hastie/ElemStatLearn/).
 
-```{r}
+```{r, results='hide'}
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -335,8 +332,8 @@ The main point here is not to evaluate a *best individual model* but rather to e
 
 ```{r}
 # Stacking setup ------------------------------------------------------------
-preds <- stack(gm.pred, gl1.pred, rr.pred, rf.pred, gb.pred, cu.pred)
-names(preds) <- c("gm","gl1","rr","rf","gb","cu")
+preds <- stack(gm.pred, gl1.pred, gl2.pred, rf.pred, gb.pred, cu.pred)
+names(preds) <- c("gm","gl1","gl2","rf","gb","cu")
 # plot(preds, axes = F)
 
 # extract model predictions
@@ -354,7 +351,6 @@ fval <- gspred[,80:85] ## subset validation features
 This next chunk fits the model ensemble with the `glmStepAIC` function from the `MASS` library using the validation dataframe. You could explore other options here, but we find that this provides a reasonable combination and weighting of the 6 models that were produced in the ensemble training steps.
 
 ```{r, results='hide'}
-# Stacked model -------------------------------------------------------------
 # start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
@@ -385,7 +381,7 @@ Topsoil pH generally takes on values between 3 - 9 in Rwanda, and there are exte
 stll <- projectRaster(st.pred, crs="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 
 # set color pallette
-pal <- colorBin("Reds", domain = 3:9) 
+pal <- colorBin("Blues", domain = 3:9) 
 
 # render map
 w <- leaflet() %>% 
@@ -397,7 +393,7 @@ w ## plot widget
 
 ## Write the prediction grids
 
-This chunk writes out the 7 prediction rasters that you can import as geotif files into any GIS system for visualizations, reports and/or further processing. 
+This chunk writes out the 7 prediction rasters that you can import as geotif files into a GIS system of your choice for visualizations, reports and/or further processing. 
 
 ```{r}
 # Write prediction grids --------------------------------------------------
