@@ -32,7 +32,7 @@ To run this notebook, you will need to load the packages indicated in the chunk 
 
 ```{r}
 # package names
-packages <- c("downloader", "rgdal", "sp", "raster", "quantreg", "arm", "leaflet", "htmlwidgets", "devtools", "caret", "mgcv", "MASS", "randomForest", "gbm", "nnet", "Cubist", "plyr", "doParallel")
+packages <- c("downloader", "rgdal", "sp", "raster", "quantreg", "arm", "leaflet", "DT", "htmlwidgets", "devtools", "caret", "mgcv", "MASS", "randomForest", "gbm", "nnet", "Cubist", "plyr", "doParallel")
 
 # install packages
 installed_packages <- packages %in% rownames(installed.packages())
