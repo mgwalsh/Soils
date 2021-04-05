@@ -77,8 +77,8 @@ The processed Rwanda remote sensing and GIS data (features, ... `grids` in the c
 
 \
 ```{r, echo=FALSE, results='asis'}
-download("https://osf.io/e2x4s?raw=1", "Grid variables.csv", mode = "wb")
-vars <- read.table("Grid variables.csv", header = T, sep = ",")
+download("https://osf.io/e2x4s?raw=1", "./Wetchem/Grid variables.csv", mode = "wb")
+vars <- read.table("./Wetchem/Grid variables.csv", header = T, sep = ",")
 datatable(vars)
 ```
 \
@@ -105,7 +105,7 @@ geosgrid <- extract(grids, geos)
 gsdat <- as.data.frame(cbind(geos, geosgrid))
 ```
 
-The following chunk then writes out the dataframe `RW_soil_data.csv` into your `./Wetchem/Results` directory if you'd like to process those outputs in software other than R. It also provides a location map of where those soil samples were obtained.
+The following chunk then writes out the dataframe `RW_soil_data.csv` into your `./Wetchem/Results` directory if you'd like to process those outputs in software other than R. It also generates a location map of where those soil samples were obtained.
 
 ```{r}
 # Write data frame --------------------------------------------------------
@@ -122,7 +122,7 @@ w ## plot widget
 
 # Machine-learning-based predictive mapping
 
-The following chunks predict topsoil soil pH values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (feature) inputs usin the `[caret](https://topepo.github.io/caret/)` package. The generalized MLA prediction workflow is shown in the figure below. This general approach has won a lot of data science competitions e.g., at [Kaggle](https://www.kaggle.com/). You may want to take a look there. They have some fantastic data science resources, courses and challenges openly available.
+The following chunks predict topsoil soil pH values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (feature) inputs using the [`caret`](https://topepo.github.io/caret/) package. The generalized MLA prediction workflow is shown in the figure below. This general approach has won a lot of data science competitions e.g., at [Kaggle](https://www.kaggle.com/). You may want to take a look there. They have some fantastic data science resources, courses and challenges openly available.
 
 ```{r training_validation_approach, echo=FALSE, fig.align="center", fig.cap="MLA training, validation and prediction workflow.", out.width = '80%'}
 knitr::include_graphics("./Wetchem/Figures/training_validation.png")
@@ -154,7 +154,7 @@ lcal <- as.vector(t(gs_cal[labs]))
 fcal <- gs_cal[,24:48,52:79]
 ```
 
-Note that we are using topsoil (0-20 cm) pH as an example in this context. You can substitute other soil properties like (C, N, P, K, etc.) as labels, in the `labs` (labels) variable. You may want to transform those `labs` variables prior to model fitting, and perhaps also to tune the respective models to better represent the distributional and/or compositional attributes of the individual soil properties, should the need arise. Anyhow, those additional variables are also included in the `gsdat` dataframe.
+Note that we are using topsoil (0-20 cm) pH as an example in this context. You can substitute other soil properties like (C, N, P, K, etc.) as labels, in the `labs` (labels) variable. You may want to transform those `labs` variables prior to model fitting, and perhaps also to tune the respective models to better represent the distributional and/or compositional attributes of the individual soil properties, should the need arise. Anyhow, those additional variables are also included in the `RW_soil_data.csv` data file.
 
 ## Spatial trend model ([mgcv](https://cran.r-project.org/web/packages/mgcv/mgcv.pdf))
 
@@ -181,7 +181,7 @@ gm <- train(gf_cpv, lcal,
 
 gm.pred <- predict(grids, gm) ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_gm.rds", sep = "")
+fname <- paste("./Wetchem/Results/", labs, "_gm.rds", sep = "")
 saveRDS(gm, fname)
 ```
 
@@ -210,13 +210,13 @@ gl1 <- train(gf_cpv, lcal,
 
 gl1.pred <- predict(grids, gl1) ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_gl1.rds", sep = "")
+fname <- paste("./Wetchem/Results/", labs, "_gl1.rds", sep = "")
 saveRDS(gl1, fname)
 ```
 
 ## GLM model with all the spatial features ([MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf))
 
-This model is very similar to the Central place model above, but it contains all of the 56 spatial features and then backward selects from those to generate a prediction via a generalized linear model. Alternatively (or additionally) you could also try regularized regression with e.g., [glmnet](https://cran.r-project.org/web/packages/glmnet/index.html) here. In practice the results will be very similar for this particular dataset.
+This model is very similar to the Central place model above, but it contains all of the 56 spatial features and then backward selects from those to generate a prediction via a generalized linear model. Alternatively (or additionally) you could also try regularized regression with e.g., [glmnet](https://cran.r-project.org/web/packages/glmnet/index.html) here. In practice, the results will be very similar for this particular dataset.
 
 ```{r, results='hide'}
 # start doParallel to parallelize model fitting
@@ -236,7 +236,7 @@ gl2 <- train(fcal, lcal,
 
 gl2.pred <- predict(grids, gl2) ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_gl2.rds", sep = "")
+fname <- paste("./Wetchem/Results/", labs, "_gl2.rds", sep = "")
 saveRDS(gl2, fname)
 ```
 
@@ -265,7 +265,7 @@ rf <- train(fcal, lcal,
 
 rf.pred <- predict(grids, rf) ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_rf.rds", sep = "")
+fname <- paste("./Wetchem/Results/", labs, "_rf.rds", sep = "")
 saveRDS(rf, fname)
 ```
 
@@ -296,7 +296,7 @@ gb <- train(fcal, lcal,
 
 gb.pred <- predict(grids, gb) ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_gb.rds", sep = "")
+fname <- paste("./Wetchem/Results/", labs, "_gb.rds", sep = "")
 saveRDS(gb, fname)
 ```
 
@@ -321,7 +321,7 @@ cu <- train(fcal, lcal,
 
 cu.pred <- predict(grids, cu) ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_cu.rds", sep = "")
+fname <- paste("./Wetchem/Results/", labs, "_cu.rds", sep = "")
 saveRDS(cu, fname)
 ```
 
@@ -333,7 +333,6 @@ The main point here is not to evaluate a *best individual model* but rather to e
 # Stacking setup ------------------------------------------------------------
 preds <- stack(gm.pred, gl1.pred, gl2.pred, rf.pred, gb.pred, cu.pred)
 names(preds) <- c("gm","gl1","gl2","rf","gb","cu")
-# plot(preds, axes = F)
 
 # extract model predictions
 coordinates(gs_val) <- ~x+y
@@ -347,7 +346,7 @@ lval <- as.vector(t(gs_val[labs]))
 fval <- gspred[,80:85] ## subset validation features
 ```
 
-This next chunk fits the model ensemble with the `glmStepAIC` function from the `MASS` library using the validation dataframe. You could explore other options here, but we find that this provides a reasonable combination and weighting of the 6 models that were produced in the ensemble training steps.
+This next chunk fits the model ensemble with the `glmStepAIC` function from the `MASS` library using the **validation dataframe**. You could explore other options here, but we find that this provides a reasonable combination and weighting of the 6 models that were produced in the ensemble training steps.
 
 ```{r, results='hide'}
 # start doParallel to parallelize model fitting
@@ -365,7 +364,7 @@ st <- train(fval, lval,
 
 st.pred <- predict(preds, st) ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Results/", labs, "_st.rds", sep = "")
+fname <- paste("./Wetchem/Results/", labs, "_st.rds", sep = "")
 saveRDS(st, fname)
 ```
 
@@ -376,8 +375,14 @@ summary(st)
 Topsoil pH generally takes on values between 3 - 9 in Rwanda, and there are extensive areas of very acid soils in the country. The chunk below generates the prediction map of pH across the RwaSIS cropland ROI.
 
 ```{r}
-# project st.pred to EPSG:3857
-stll <- projectRaster(st.pred, crs="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+# download and apply cropland mask
+dir.create("./Wetchem/Mask", showWarnings=F)
+download("https://osf.io/b642y/?raw=1", "./Wetchem/Mask/RW_CP_mask.tif", mode = "wb")
+cpmask <- raster("./Wetchem/Mask/RW_CP_mask.tif")
+stm.pred <- mask(st.pred, cpmask, inverse=FALSE, maskvalue=NA, updatevalue=NA)
+
+# project stm.pred to EPSG:3857
+stll <- projectRaster(stm.pred, crs="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 
 # set color pallette
 pal <- colorBin("Reds", domain = 3:9, reverse = TRUE, na.color = "transparent")
@@ -399,7 +404,7 @@ This chunk writes out the 7 prediction rasters that you can import as geotif fil
 # Write prediction grids --------------------------------------------------
 gspreds <- stack(preds, st.pred)
 names(gspreds) <- c("gm","gl1","gl2","rf","gb","cu","st")
-fname <- paste("./Results/","RW_", labs, "_preds_2020.tif", sep = "")
+fname <- paste("./Wetchem/Results/","RW_", labs, "_preds_2020.tif", sep = "")
 writeRaster(gspreds, filename=fname, datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 ```
 
@@ -425,5 +430,5 @@ curve(stQ$coefficients[4]*x+stQ$coefficients[3], add=T, from=3, to=9, col="red",
 curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=3, to=9, col="blue", lwd=2)
 ```
 
-As a final thought about this notebook, should you come up with a better set of existing data-sources, analysis suggestions, approaches, algorithms or predictions around these data, we would certainly like to hear about them! You can always contact us at [AFSIS](mgw.africasoils.info). We shall also provide more guidance around other soil property predictions.
+As a final thought about this notebook: should you come up with a better set of data-sources, analysis suggestions, approaches, algorithms or predictions around these data, we would certainly like to hear about them! You can always contact us at [AFSIS](mgw.africasoils.info). We shall also provide more guidance around other soil property predictions.
 
