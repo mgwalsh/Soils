@@ -20,7 +20,7 @@ This notebook provides practical guidelines for predictive soil mapping using ma
 
 The first section of the notebook sets up georeferenced soil survey, remote sensing and GIS data of Rwanda for spatial analyses  and predictions. We focus on **croplands**, which are the primary [Region of Interest (ROI)](https://en.wikipedia.org/wiki/Region_of_interest) and the target for various land management interventions of the [RwaSIS project](https://minagri.prod.risa.rw/updates/news-details/rwanda-launches-soil-information-service-project-to-improve-agriculture-productivity). Based on a recent high-resolution [GeoSurvey (2019)](https://osf.io/w5e6c/), croplands are currently estimated to occupy ~68% of Rwanda's overall land area (of ~2.37 Mha). The gridded data offer several advantages including: Africa-wide coverage and consistency, and a robust analysis process that ensures high quality predictions for use in your soil mapping applications.
 
-The subsequent sections illustrate prediction workflows, which use ensembles of machine learning algorithms (MLAs). See the various review articles at: [Emsemble models](https://www.sciencedirect.com/topics/computer-science/ensemble-modeling)) with various remote sensing and GIS training input and validation layers. There are also some really good free-and-open books (e.g. [Lovelace et al, 2021](https://geocompr.robinlovelace.net/) and [Hengl & MacMillan, 2019](https://soilmapper.org/)) available if you'd like to get into the subject matter at greater depth.
+The subsequent sections illustrate prediction workflows, which use ensembles of machine learning algorithms (MLAs). See the various review articles at: [Emsemble models](https://www.sciencedirect.com/topics/computer-science/ensemble-modeling), with various remote sensing and GIS training input and validation layers. There are also some really good free-and-open books (e.g. [Lovelace et al, 2021](https://geocompr.robinlovelace.net/) and [Hengl & MacMillan, 2019](https://soilmapper.org/)) available if you'd like to get into the subject matter at greater depth.
 
 While the [Legacy soil data](https://en.wikipedia.org/wiki/Legacy_system) used in this example were not collected on a replicable geostatistical sampling frame, they may provide an initial indication of where specific soil problems or nutrient deficiencies/imbalances are prevalent in Rwanda. As new data become available over the course of the project, RwaSIS and its partners should update the relevant data sources and soil mapping workflows.
 
@@ -44,7 +44,7 @@ if (any(installed_packages == FALSE)) {
 invisible(lapply(packages, library, character.only = TRUE))
 ```
 
-The following chunk then downloads the data that we have assembled, which are needed for running this particular example. Specifically, it assembles georeferenced field observations of soil measurements, e.g. (pH, soil carbon and soil nutrient composition) and links these to remote sensing and GIS images represented by the `grids` feature stack. We focus on predicting the topsoil pH measurements here, but the approach is equally applicable to any given  [Georeferenced](https://en.wikipedia.org/wiki/Georeferencing) soil property or measurement under consideration. 
+The following chunk then downloads the data that we have assembled, which are needed for running this particular example. Specifically, it assembles georeferenced field observations of soil measurements, e.g. (pH, soil carbon and soil nutrient composition) and links these to remote sensing and GIS images represented by the `grids` feature stack. We focus on predicting the topsoil pH measurements here, but the approach is equally applicable to any given  [Georeferenced](https://en.wikipedia.org/wiki/Georeferencing) soil property or measurement under consideration. Note that this chunk is Mac or Linux specific and so the directory structures would need to be changed to run on Windows machines.
 
 ```{r}
 # Data downloads -----------------------------------------------------------
@@ -67,10 +67,15 @@ unzip("RW_GS_preds.zip", overwrite = T)
 glist <- list.files(pattern="tif", full.names = T)
 grids <- stack(glist)
 
+# download cropland mask
+download("https://osf.io/bmysp/", "RW_CP_mask.zip", mode = "wb")
+exdir <- "./Mask" 
+unzip("RW_CP_mask.zip", exdir = exdir, overwrite = T)
+
 # download figures
-dir.create("Figures", showWarnings = F)
-download("https://osf.io/42gry/", "./Figures/figures.zip", mode = "wb")
-unzip("./Figures/figures.zip", overwrite = T)
+download("https://osf.io/42gry/", "figures.zip", mode = "wb")
+exdir <- "./Figures" 
+unzip("figures.zip", exdir = exdir, overwrite = T)
 ```
 
 The processed Rwanda remote sensing and GIS data (features, ... `grids` in the chunk above) were derived from and transformed from their primary open sources. You can also download the entire `grids` raster stack directly at [RwaSIS grids](https://osf.io/hp6v7/). The short descriptions of the included features, and their sources are provided in the table immediately below.
@@ -133,7 +138,6 @@ The main idea is to train a number of potentially contrasting models with [k-fol
 The following chunk scrubs some of the objects in memory, removes incomplete cases (if there are any), sets-up labels and features, and creates a randomized partition between the training and validation dataframes. Everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are other options available for this (e.g. [foreach](https://cran.r-project.org/web/packages/foreach/vignettes/foreach.html), among others.
 
 ```{r}
-# Data setup --------------------------------------------------------------
 rm(list=setdiff(ls(), c("gsdat","grids","glist"))) ## scrub extraneous objects in memory
 gsdat <- gsdat[complete.cases(gsdat[ ,c(24:77)]),] ## removes incomplete cases
 
@@ -154,7 +158,7 @@ lcal <- as.vector(t(gs_cal[labs]))
 fcal <- gs_cal[,24:48,52:79]
 ```
 
-Note that we are using topsoil (0-20 cm) pH as an example in this context. You can substitute other soil properties like (C, N, P, K, etc.) as labels, in the `labs` (labels) variable. You may want to transform those `labs` variables prior to model fitting, and perhaps also to tune the respective models to better represent the distributional and/or compositional attributes of the individual soil properties, should the need arise. Anyhow, those additional variables are also included in the `RW_soil_data.csv` data file.
+Note that we are using topsoil (0-20 cm) pH as an example in this context. You can substitute other soil properties like (C, N, P, K, etc.) as labels, in the `labs` variable. You may want to transform those `labs` variables prior to model fitting, and perhaps also to tune the respective models to better represent the distributional and/or compositional attributes of the individual soil properties, should the need arise. Anyhow, those additional variables are also included in the `RW_soil_data.csv` data file.
 
 ## Spatial trend model ([mgcv](https://cran.r-project.org/web/packages/mgcv/mgcv.pdf))
 
@@ -187,7 +191,7 @@ saveRDS(gm, fname)
 
 ## Central place model ([MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf))
 
-Central places are influential variables in places where human impacts occur. They are correlated with both extraction and deposition of soil nutrients and toxic elements, soil erosion and deposition, acidification and many other soil disturbance processes. The model below focuses on central place indicators such as distances to roads and settlements, surface water sources, cell towers and electricity networks among others.
+Central places are influential variables for places where human impacts occur. They are correlated with both extraction and deposition of soil nutrients and toxic elements, soil erosion and deposition, acidification and many other soil disturbance processes. The model below focuses on central place indicators such as distances to roads and settlements, surface water sources, cell towers and electricity networks among other anthropic factors.
 
 ```{r, results='hide'}
 # select central place covariates
@@ -242,7 +246,7 @@ saveRDS(gl2, fname)
 
 ## Random forest ([randomForest](https://cran.r-project.org/web/packages/randomForest/randomForest.pdf))
 
-The below is a bagging chunk that uses [Breiman & Cutler's](https://link.springer.com/article/10.1023/A:1010933404324) algorithm with all of the covariate data. A good, short article to look at for reference in context here is [Barnard et al.](https://www.researchgate.net/publication/331328203_Can't_see_the_random_forest_for_the_decision_trees_selecting_predictive_models_for_restoration_ecology).
+The below is a bagging chunk that uses [Breiman & Cutler's](https://link.springer.com/article/10.1023/A:1010933404324) algorithm with all of the feature data. A good, short article to look at for reference in context here is [Barnard et al.](https://www.researchgate.net/publication/331328203_Can't_see_the_random_forest_for_the_decision_trees_selecting_predictive_models_for_restoration_ecology).
 
 ```{r, results='hide'}
 # start doParallel to parallelize model fitting
@@ -375,9 +379,7 @@ summary(st)
 Topsoil pH generally takes on values between 3 - 9 in Rwanda, and there are extensive areas of very acid soils in the country. The chunk below generates the prediction map of pH across the RwaSIS cropland ROI.
 
 ```{r}
-# download and apply cropland mask
-dir.create("./Wetchem/Mask", showWarnings=F)
-download("https://osf.io/b642y/?raw=1", "./Wetchem/Mask/RW_CP_mask.tif", mode = "wb")
+# apply cropland mask
 cpmask <- raster("./Wetchem/Mask/RW_CP_mask.tif")
 stm.pred <- mask(st.pred, cpmask, inverse=FALSE, maskvalue=NA, updatevalue=NA)
 
