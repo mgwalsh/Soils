@@ -1,0 +1,114 @@
+---
+title: Spectral predictions for diagnosing soil acidity
+author: M.G. Walsh
+date: "`r format(Sys.time(), '%d, %B, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 1
+    fig_caption: true
+    css: style.css
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+# Introduction
+
+Soil acidity can be thought of as occurring in two forms: active or soil solution acidity as measured by pH in water, and reserve acidity. The reserve acidity (Hp) controls the level of soluble or active acidity in the soil solution, and is always many times higher than the active acidity. Hp levels depend on several properties such as the amount and type of clay, the amount of organic matter, and the soluble aluminum, manganese and iron concentration of the soil. Thus, two soils may have the same soil pH but completely different lime requirements. To effectively raise the soil pH over the long-term, both the active and reserve acidity must be neutralized. Soil test labs typically determine the buffering capacity and the lime requirement by measuring or estimating the reserve acidity; see e.g., the introductory tutorial in [Moorberg & Crouse (v.2)](https://kstatelibraries.pressbooks.pub/soilslabmanual/chapter/soil-acidity-and-adjusting-soil-ph/).
+
+Spectral signatures of soils, and materials generally, are defined by their reflectance or absorbance as a function of wavelength in the electromagnetic spectrum. Under controlled conditions, the signatures result from electronic transitions of atoms and vibrational stretching and bending of structural groups of atoms that form molecules or crystals. Mid-infrared (MIR) spectroscopy has been shown to provide highly repeatable, rapid and low cost measurements of many different soil properties in numerous studies. The amount of light absorbed by a soil sample is measured with minimal sample preparation across a wide range of wavelengths to provide a unique spectral signature. A measurement can be performed in about 30 seconds, in contrast to conventional soil tests, which are typically slow, labor-intensive, expensive and may use harmful chemicals.
+
+This notebook does not go into the details of [spectroscopy](https://en.wikipedia.org/wiki/Spectroscopy) itself but instead focuses on the spectrometry, that is the step that is needed to generate useful predictions from spectral signatures (features) relative to reference measurements (labels). I'll be using a machine learning (algorithmic) approach
+
+# General data setup
+
+To run the notebook, you will need to load the packages indicated in the chunk directly below. This allows you to assemble the wet chemistry and spectral dataframes providing a lot of options to generate spectral predictions of acidity relevant soil properties such as pH, EC, Hp, eCEC Ca:Mg, among others. The notebook itself is being maintained on my [Github]() and you can fork and modify it from there as you see fit.
+
+```{r}
+# package names
+packages <- c("downloader", "caret", "caretEnsemble", "MASS", "pls", "glmnet", "randomForest", "gbm", "nnet", "Cubist", "leaflet", "htmlwidgets", "plyr", "doParallel")
+
+# install packages
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+  install.packages(packages[!installed_packages])
+}
+
+# load packages
+invisible(lapply(packages, library, character.only = TRUE))
+```
+
+The next chunk downloads the data needed for running this particular example. It assembles georeferenced soil measurements collected across Africa by the Africa Soil Information Service (AfSIS) project and links these to [Bruker Alpha FT-IR](https://www.bruker.com/en/products-and-solutions/infrared-and-raman/ft-ir-routine-spectrometer/alpha-ii-compact-ft-ir-spectrometer.html) spectra. Note that this chunk is Mac or Linux specific and so the directory structures would need to be changed slightly to run on Windows machines.
+
+```{r}
+# Create a data folder in your current working directory
+dir.create("soil_acidity", showWarnings = F)
+setwd("./soil_acidity")
+dir.create("Results", showWarnings = F)
+
+# Data download
+download("https://osf.io/f4dpw/?raw=1", "acidity_data.zip", mode="wb")
+unzip("acidity_data.zip", overwrite = T)
+prof <- read.table("profiles.csv", header=T, sep=",") ## sample locations and depths
+cnls <- read.table("cnls.csv", header=T, sep=",") ## wet chemistry data from CNLS, Nairobi
+cnls$eCEC <- cnls$m3Ca/200+cnls$m3Mg/120+cnls$m3K/390+cnls$m3Na/230 ## calculates eCEC  
+text <- read.table("text.csv", header=T, sep=",") ## AfSIS LDPSA soil texture
+oxid <- read.table("oxid.csv", header=T, sep=",") ## AfSIS XRF metal oxide data
+spec <- read.table("alpha_spec.csv", header=T, sep=",") ## AFSIS MIR spectral data
+
+# Merge dataframes
+adata <- merge(prof, cnls, by = "ssid")
+adata <- merge(adata, text, by = "ssid")
+adata <- merge(adata, oxid, by = "ssid")
+adata <- merge(adata, spec, by = "ssid")
+
+# download figures
+download("https://osf.io/42gry/", "figures.zip", mode = "wb")
+exdir <- "./Figures" 
+unzip("figures.zip", exdir = exdir, overwrite = T)
+```
+
+The following chunk then writes out the dataframe `AfSIS_acidity_data.csv` into your `./soil_acidity/Results` directory if you'd like to process those outputs in software other than R. It also generates a location map of where those soil samples were obtained.
+
+```{r}
+# Write data frame --------------------------------------------------------
+write.csv(adata, "./soil_acidity/Results/AfSIS_acidity_data.csv", row.names = F)
+
+# Soil sample locations ---------------------------------------------------
+w <- leaflet() %>%
+  setView(lng = mean(adata$lon), lat = mean(adata$lat), zoom = 3) %>%
+  addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+  addCircleMarkers(adata$lon, adata$lat, clusterOptions = markerClusterOptions())
+w ## plot widget 
+```
+
+# Spectral predictions with machine-learning
+
+The following chunks predict soil Hp values using different machine learning algorithms (MLAs) with MIR spectral (feature) inputs using both the [`caret`](https://topepo.github.io/caret/) [`caretEnsemble`]() packages. This general approach has won a lot of data science competitions e.g., at [Kaggle](https://www.kaggle.com/). You may want to take a look there. They have some fantastic data science resources, courses and challenges openly available. You can also check out the AfSIS sponsored [Africa Soil Property Prediction Challenge (2014)](https://www.kaggle.com/c/afsis-soil-properties/overview/timeline) from which the approach that is presented here was developed.
+
+The main idea is to train a number of potentially contrasting models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models are ensembled (combined/stacked) on an *independent* validation dataset. When applied consistently over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field, lab data and MLAs are obtained and run.
+
+The following chunk scrubs some of the extraneous objects in memory, sets-up labels and features, and creates a randomized partition between the training and validation dataframes. Everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are other options available for this e.g., [snowfall](https://cran.r-project.org/web/packages/snowfall/snowfall.pdf), among others.
+
+```{r}
+rm(list=setdiff(ls(), c("adata"))) ## scrubs extraneous objects in memory
+
+# set randomization seed
+seed <- 1385321
+set.seed(seed)
+
+# split data into calibration and validation sets
+gsIndex <- createDataPartition(adata$Hp, p = 8/10, list=F, times = 1)
+cal <- adata[ gsIndex,]
+val <- adata[-gsIndex,]
+
+# calibration labels
+labs <- c("Hp") ## insert other labels (pH, EC, eCEC, ...) here!
+lcal <- as.vector(t(cal[labs]))
+
+# spectral calibration features
+fcal <- cal[,25:2567]
+```
+
