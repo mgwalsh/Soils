@@ -135,7 +135,7 @@ knitr::include_graphics("./Wetchem/Figures/training_validation.png")
 
 The main idea is to train a number of potentially contrasting models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models are ensembled (combined/stacked) on an *independent* validation dataset. When applied over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field, lab data and MLAs are obtained and run.
 
-The following chunk scrubs some of the objects in memory, removes incomplete cases (if there are any), sets-up labels and features, and creates a randomized partition between the training and validation dataframes. Everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are other options available for this (e.g. [foreach](https://cran.r-project.org/web/packages/foreach/vignettes/foreach.html), among others.
+The following chunk scrubs some of the objects in memory, removes incomplete cases (if there are any), sets-up labels and features, and creates a randomized partition between the training and validation dataframes. Everything is parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are other options available for this (e.g. [snowfall](https://cran.r-project.org/web/packages/snowfall/snowfall.pdf), among others.
 
 ```{r}
 rm(list=setdiff(ls(), c("gsdat","grids","glist"))) ## scrub extraneous objects in memory
@@ -151,7 +151,7 @@ gs_cal <- gsdat[ gsIndex,]
 gs_val <- gsdat[-gsIndex,]
 
 # Soil calibration labels
-labs <- c("pH") ## insert other labels (e.g. "C","N","P","K" ...) here!
+labs <- c("pH") ## insert other labels (e.g. "C","N","P","K", "eCEC", ...) here!
 lcal <- as.vector(t(gs_cal[labs]))
 
 # raster calibration features
