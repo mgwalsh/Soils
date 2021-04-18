@@ -3,7 +3,7 @@ title: Spectral predictions for diagnosing soil acidity
 author: M.G. Walsh
 date: "`r format(Sys.time(), '%d, %B, %Y')`"
 output:
-  html_docum occurringent:
+  html_document:
     toc: true
     toc_depth: 1
     fig_caption: true
@@ -16,21 +16,21 @@ knitr::opts_chunk$set(message = FALSE)
 
 # Introduction
 
-Soil acidity can be thought of as occurring in two forms: active or soil solution acidity as measured by pH in water, and reserve acidity. The reserve (or exchangeable) acidity (Hp) held on soil colloids controls the level of soluble or active acidity in the soil solution, and is generally many times higher than the active acidity. Hp levels depend on several properties such as the amount and type of clay ([mineralogy](https://en.wikipedia.org/wiki/Mineralogy)), the amount of organic matter, and the soluble aluminum, manganese and iron concentrations of the soil. Thus, two soils may have the same soil pH but completely different lime requirements. To effectively raise the soil pH over the long-term, both the active and reserve acidity must be neutralized. Soil test labs typically determine the buffering capacity and the lime requirement by measuring or estimating the reserve acidity; see e.g., the excellent introductory tutorial in [Moorberg & Crouse (v.2)](https://kstatelibraries.pressbooks.pub/soilslabmanual/chapter/soil-acidity-and-adjusting-soil-ph/).
+Soil acidity can be thought of as occurring in two forms: active or soil solution acidity as measured by pH in water, and reserve acidity. The reserve (or exchangeable) acidity (Hp) held on soil colloids controls the overall level of soluble or active acidity in the soil solution, and is generally many times higher than the active acidity. Hp levels depend on several properties such as the amount and type of clay ([mineralogy](https://en.wikipedia.org/wiki/Mineralogy)), the amount of organic matter, and the soluble aluminum, manganese and iron concentrations of the soil. Thus, two soils may have the same soil pH but completely different lime requirements. To effectively raise the soil pH over the long-term, both the active and reserve acidity must be neutralized. Soil test labs typically determine the buffering capacity and the lime requirement by measuring or estimating the reserve acidity; see e.g., the excellent introductory tutorial in [Moorberg & Crouse (v.2)](https://kstatelibraries.pressbooks.pub/soilslabmanual/chapter/soil-acidity-and-adjusting-soil-ph/).
 
 Spectral signatures of soils, and materials generally, are defined by their reflectance or absorbance as a function of wavelength in the electromagnetic spectrum. Under controlled conditions, the signatures result from electronic transitions of atoms and vibrational stretching and bending of structural groups of atoms that form molecules or crystals. Mid-infrared (MIR) spectroscopy has been shown to provide highly repeatable, rapid and low cost measurements of many different soil properties in numerous studies. The amount of light absorbed by a soil sample is measured with minimal sample preparation across a wide range of wavelengths to provide a unique spectral signature. A measurement can be performed in about 30 seconds, in contrast to conventional soil tests, which are typically slow, labor-intensive, expensive and may use harmful chemicals.
 
-This notebook does not go into the details of [spectroscopy](https://en.wikipedia.org/wiki/Spectroscopy) itself but instead focuses on the **spectrometry**, that is the steps that are needed to generate useful predictions from a population of spectral signatures (features) relative to reference measurements (labels). In this particlar example, I shall use topsoil (0-20 cm) and subsoil (20-50 cm) data that were sampled as part of the AfSIS project covering the major Köppen climate zones of Africa with the exception of deserts, urban and other non-photosynthetically active land areas. 
+This notebook does not go into the details of [spectroscopy](https://en.wikipedia.org/wiki/Spectroscopy) itself but instead focuses on the **spectrometry**, that is the steps that are needed to generate useful predictions from a population of spectral signatures (features) relative to reference measurements (labels). In this particlar example, I shall use topsoil (0-20 cm) and subsoil (20-50 cm) data that were sampled as part of the AfSIS project which covered the major Köppen climate zones of Africa with the exception of deserts, urban and other non-photosynthetically active land areas. 
 
 ```{r training_validation_approach, echo=FALSE, fig.align="center", fig.cap="MLA training, validation and prediction workflow.", out.width = '80%'}
 knitr::include_graphics("./Wetchem/Figures/training_validation.png")
 ```
 
-I'll be using a machine learning (algorithmic, rather than data modeling) approach. The figure above shows the basic workflow of that approach for predicting reserve acidity (Hp). The main motivation for this is that AfSIS is currently involved in several new, large-area projects that are focusing on acid soil management and cropland lime requirements.
+I'll be using a machine learning (algorithmic, rather than data modeling) approach. The figure above shows the basic workflow of that approach for predicting reserve acidity (Hp). The main motivation for this is that AfSIS is currently involved in several new, large-area projects that are focusing on acid soil management and cropland lime requirements in Africa. The other operational management aspect of this is that acidity problems should generally be addressed/fixed before attempting to solve e.g., fertilizer and/or other agronomic management issues.
 
-# General data setup (wrangling)
+# General data setup
 
-To run the notebook, you will need to load the packages indicated in the chunk directly below. This allows you to assemble the wet chemistry and spectral dataframes providing a lot of options to generate spectral predictions of acidity relevant soil properties such as pH, EC, Hp, eCEC Ca:Mg, among others. The notebook itself is maintained on my [Github](https://github.com/mgwalsh/Soils/blob/master/Spec_acidity_preds.Rmd) and you can fork and modify it from there as you see fit.
+To actually run the notebook, you will need to load the packages indicated in the chunk directly below. This allows you to assemble the wet chemistry and spectral dataframes providing a lot of options to generate spectral predictions of acidity relevant soil properties such as pH, EC, Hp, eCEC Ca:Mg, among others. The notebook itself is maintained on my [Github](https://github.com/mgwalsh/Soils/blob/master/Spec_acidity_preds.Rmd) and you can fork and modify it from there as you see fit.
 
 ```{r}
 # package names
@@ -62,9 +62,9 @@ cnls <- read.table("cnls.csv", header=T, sep=",") ## wet chemistry data from CNL
 cnls$eCEC <- cnls$m3Ca/200+cnls$m3Mg/120+cnls$m3K/390+cnls$m3Na/230 ## calculates eCEC  
 text <- read.table("text.csv", header=T, sep=",") ## AfSIS LDPSA soil texture
 oxid <- read.table("oxid.csv", header=T, sep=",") ## AfSIS XRF metal oxide data
-spec <- read.table("alpha_spec.csv", header=T, sep=",") ## AFSIS MIR spectral data
-
-# Merge reference dataframes
+spec <- read.table("alpha_spec.csv", header=T, sep=",") ## AfSIS spectral absorbance data
+  
+# Merge the wet chemistry reference dataframes
 adata <- merge(prof, cnls, by = "ssid")
 adata <- merge(adata, text, by = "ssid")
 adata <- merge(adata, oxid, by = "ssid")
@@ -82,10 +82,10 @@ unzip("figures.zip", exdir = exdir, overwrite = T)
 The following chunk then writes out the dataframe `AfSIS_reference_data.csv` into your `./soil_acidity/Results` directory if you'd like to process those outputs in software other than R. It also generates a location map of where those soil samples were obtained.
 
 ```{r}
-# Write data frame --------------------------------------------------------
+# Write data frame
 write.csv(adata, "./soil_acidity/Results/AfSIS_reference_data.csv", row.names = F)
 
-# Soil sample locations ---------------------------------------------------
+# Soil sample locations
 w <- leaflet() %>%
   setView(lng = mean(adata$lon), lat = mean(adata$lat), zoom = 3) %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
@@ -95,22 +95,23 @@ w ## plot widget
 
 # Spectral feature conversions
 
-One potentially problematic factor for many MLAs is the [Curse of dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality) that is imposed by the high dimensionality of the spectral data: w = 2,542 wavebands in this particular case. Moreover, many of those wavebands are strongly collinear (correlated), particularly those proximal to one another on the spectrum. These types of data pose generalization and prediction challenges for MLAs such as [Random forests](https://en.wikipedia.org/wiki/Random_forest) and [Neural networks](https://en.wikipedia.org/wiki/Neural_network). Other algorithms such as [Partial least squares regression](https://en.wikipedia.org/wiki/Partial_least_squares_regression) and [Ridge regression](https://en.wikipedia.org/wiki/Ridge_regression) handle the high dimensional data and collinearities well in a linear context but are frequently not very good at predicting common non-linear and/or threshold relationships between the spectral signatures and their reference measurements.
+One potentially problematic factor for many MLAs is the [Curse of dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality) that is imposed by the high dimensionality of the spectral data: w = 2,541 individual wavebands in this particular case. Moreover, many of those wavebands are strongly collinear (correlated), particularly those proximal to one another on the spectrum. These types of data pose generalization and prediction challenges for MLAs such as [Random forests](https://en.wikipedia.org/wiki/Random_forest) and [Neural networks](https://en.wikipedia.org/wiki/Neural_network). Other algorithms such as [Partial least squares regression](https://en.wikipedia.org/wiki/Partial_least_squares_regression) and [Ridge regression](https://en.wikipedia.org/wiki/Ridge_regression) handle the high dimensional data and collinearities well in a linear context but are frequently not very good at predicting common non-linear and/or threshold relationships between the spectral signatures and their reference measurements.
 
-There are some ways of mitigating these tradeoffs. The first is to reduce the dimensionality and collinearity of the data. There are a number of techniques that can be applied in that context including: [Principal components analysis](https://en.wikipedia.org/wiki/Principal_component_analysis), [Independent components analysis](https://en.wikipedia.org/wiki/Independent_component_analysis) or other signal pre-processing techniques.
+There are some ways of mitigating these tradeoffs. The first is to reduce the dimensionality and collinearity of the spectral data. There are a number of techniques that can be applied in that context including: [Principal components analysis (PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis), [Independent components analysis (ICA)](https://en.wikipedia.org/wiki/Independent_component_analysis) as well as other signal processing techniques such as [Non-negative matrix factorization (NMF)](https://en.wikipedia.org/wiki/Non-negative_matrix_factorization). I use PCA here, and the next chunk appends the spectra and resulting spectral component scores to the wet chemistry reference data.
 
 ```{r}
-# Spectral principal components -------------------------------------------
-spec.pca <- prcomp(spec[,2:2543], center=T, scale=T)
-screeplot(spec.pca)
+# Spectral principal components
+spec.pca <- prcomp(spec[,2:2542], center=T, scale=T)
 pcas <- predict(spec.pca, spec)
-pcas <- pcas[,1:20]
+pcas <- pcas[,1:20] ## save the first 20 components (which explain ~95% of the total spectral variance)
 
-# Merge & write files -----------------------------------------------------
+# Merge & write files
 spec <- cbind(spec, pcas)
 adata <- merge(adata, spec, by = "ssid")
-write.csv(adata, "./Results/acidity_data.csv", row.names=F)
+write.csv(adata, "./soil_acidity/Results/AfSIS_acidity_data.csv", row.names=F)
 ```
+
+The other main option is of course to run both types of algorithms and then look at if they can be usefully combined. This is the approach that I take here.
 
 # Spectral predictions with machine-learning
 
