@@ -28,7 +28,7 @@ knitr::include_graphics("./Wetchem/Figures/training_validation.png")
 
 I'll be using a machine learning (algorithmic, rather than data modeling) approach. The figure above shows the basic workflow of that approach for predicting reserve acidity (Hp). The main motivation for this is that AfSIS is currently involved in several new, large-area projects that are focusing on acid soil management and cropland lime requirements.
 
-# General data setup
+# General data setup (wrangling)
 
 To run the notebook, you will need to load the packages indicated in the chunk directly below. This allows you to assemble the wet chemistry and spectral dataframes providing a lot of options to generate spectral predictions of acidity relevant soil properties such as pH, EC, Hp, eCEC Ca:Mg, among others. The notebook itself is maintained on my [Github](https://github.com/mgwalsh/Soils/blob/master/Spec_acidity_preds.Rmd) and you can fork and modify it from there as you see fit.
 
@@ -64,11 +64,10 @@ text <- read.table("text.csv", header=T, sep=",") ## AfSIS LDPSA soil texture
 oxid <- read.table("oxid.csv", header=T, sep=",") ## AfSIS XRF metal oxide data
 spec <- read.table("alpha_spec.csv", header=T, sep=",") ## AFSIS MIR spectral data
 
-# Merge dataframes
+# Merge reference dataframes
 adata <- merge(prof, cnls, by = "ssid")
 adata <- merge(adata, text, by = "ssid")
 adata <- merge(adata, oxid, by = "ssid")
-adata <- merge(adata, spec, by = "ssid")
 
 # Randomize dataframe
 set.seed(1235813)
@@ -80,11 +79,11 @@ exdir <- "./Figures"
 unzip("figures.zip", exdir = exdir, overwrite = T)
 ```
 
-The following chunk then writes out the dataframe `AfSIS_acidity_data.csv` into your `./soil_acidity/Results` directory if you'd like to process those outputs in software other than R. It also generates a location map of where those soil samples were obtained.
+The following chunk then writes out the dataframe `AfSIS_reference_data.csv` into your `./soil_acidity/Results` directory if you'd like to process those outputs in software other than R. It also generates a location map of where those soil samples were obtained.
 
 ```{r}
 # Write data frame --------------------------------------------------------
-write.csv(adata, "./soil_acidity/Results/AfSIS_acidity_data.csv", row.names = F)
+write.csv(adata, "./soil_acidity/Results/AfSIS_reference_data.csv", row.names = F)
 
 # Soil sample locations ---------------------------------------------------
 w <- leaflet() %>%
@@ -96,7 +95,22 @@ w ## plot widget
 
 # Spectral feature conversions
 
+One potentially problematic factor for many MLAs is the [Curse of dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality) that is imposed by the high dimensionality of the spectral data: w = 2,542 wavebands in this particular case. Moreover, many of those wavebands are strongly collinear (correlated), particularly those proximal to one another on the spectrum. These types of data pose generalization and prediction challenges for MLAs such as [Random forests](https://en.wikipedia.org/wiki/Random_forest) and [Neural networks](https://en.wikipedia.org/wiki/Neural_network). Other algorithms such as [Partial least squares regression](https://en.wikipedia.org/wiki/Partial_least_squares_regression) and [Ridge regression](https://en.wikipedia.org/wiki/Ridge_regression) handle the high dimensional data and collinearities well in a linear context but are frequently not very good at predicting common non-linear and/or threshold relationships between the spectral signatures and their reference measurements.
 
+There are some ways of mitigating these tradeoffs. The first is to reduce the dimensionality and collinearity of the data. There are a number of techniques that can be applied in that context including: [Principal components analysis](https://en.wikipedia.org/wiki/Principal_component_analysis), [Independent components analysis](https://en.wikipedia.org/wiki/Independent_component_analysis) or other signal pre-processing techniques.
+
+```{r}
+# Spectral principal components -------------------------------------------
+spec.pca <- prcomp(spec[,2:2543], center=T, scale=T)
+screeplot(spec.pca)
+pcas <- predict(spec.pca, spec)
+pcas <- pcas[,1:20]
+
+# Merge & write files -----------------------------------------------------
+spec <- cbind(spec, pcas)
+adata <- merge(adata, spec, by = "ssid")
+write.csv(adata, "./Results/acidity_data.csv", row.names=F)
+```
 
 # Spectral predictions with machine-learning
 
