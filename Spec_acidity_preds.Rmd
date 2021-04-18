@@ -20,13 +20,13 @@ Soil acidity can be thought of as occurring in two forms: active or soil solutio
 
 Spectral signatures of soils, and materials generally, are defined by their reflectance or absorbance as a function of wavelength in the electromagnetic spectrum. Under controlled conditions, the signatures result from electronic transitions of atoms and vibrational stretching and bending of structural groups of atoms that form molecules or crystals. Mid-infrared (MIR) spectroscopy has been shown to provide highly repeatable, rapid and low cost measurements of many different soil properties in numerous studies. The amount of light absorbed by a soil sample is measured with minimal sample preparation across a wide range of wavelengths to provide a unique spectral signature. A measurement can be performed in about 30 seconds, in contrast to conventional soil tests, which are typically slow, labor-intensive, expensive and may use harmful chemicals.
 
-This notebook does not go into the details of [spectroscopy](https://en.wikipedia.org/wiki/Spectroscopy) itself but instead focuses on the **spectrometry**, that is the steps that are needed to generate useful predictions from a population of spectral signatures (features) relative to reference measurements (labels). In this particlar example, I shall use topsoil (0-20 cm) and subsoil (20-50 cm) data that were sampled as part of the AfSIS project which covered the major Köppen climate zones of Africa with the exception of deserts, urban and other non-photosynthetically active land areas. 
+This notebook does not go into the details of [spectroscopy](https://en.wikipedia.org/wiki/Spectroscopy) itself, but instead it focuses on the **spectrometry**, that is the steps that are needed to generate useful predictions from a population of spectral signatures (features) relative to reference measurements (labels). In this particlar example, I shall use topsoil (0-20 cm) and subsoil (20-50 cm) data that were sampled as part of the AfSIS project which covered the major Köppen climate zones of Africa with the exception of deserts, urban and other non-photosynthetically active land areas. 
 
 ```{r training_validation_approach, echo=FALSE, fig.align="center", fig.cap="MLA training, validation and prediction workflow.", out.width = '80%'}
 knitr::include_graphics("./Wetchem/Figures/training_validation.png")
 ```
 
-I'll be using a machine learning (algorithmic, rather than data modeling) approach. The figure above shows the basic workflow of that approach for predicting reserve acidity (Hp). The main motivation for this is that AfSIS is currently involved in several new, large-area projects that are focusing on acid soil management and cropland lime requirements in Africa. The other operational management aspect of this is that acidity problems should generally be addressed/fixed before attempting to solve e.g., fertilizer and/or other agronomic management issues.
+I'll be using a machine learning (algorithmic, rather than a data modeling) approach. The figure above shows the basic workflow of that approach for predicting reserve acidity (Hp). The main motivation for this is that AfSIS is currently involved in several new, large-area projects that are focusing on acid soil management and cropland lime requirements. The other operational management aspect of this is that acidity problems should probably be addressed/fixed before attempting to solve e.g., fertilizer and/or other pertinent agronomic management issues.
 
 # General data setup
 
@@ -97,7 +97,7 @@ w ## plot widget
 
 One potentially problematic factor for many MLAs is the [Curse of dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality) that is imposed by the high dimensionality of the spectral data: w = 2,541 individual wavebands in this particular case. Moreover, many of those wavebands are strongly collinear (correlated), particularly those proximal to one another on the spectrum. These types of data pose generalization and prediction challenges for MLAs such as [Random forests](https://en.wikipedia.org/wiki/Random_forest) and [Neural networks](https://en.wikipedia.org/wiki/Neural_network). Other algorithms such as [Partial least squares regression](https://en.wikipedia.org/wiki/Partial_least_squares_regression) and [Ridge regression](https://en.wikipedia.org/wiki/Ridge_regression) handle the high dimensional data and collinearities well in a linear context but are frequently not very good at predicting common non-linear and/or threshold relationships between the spectral signatures and their reference measurements.
 
-There are some ways of mitigating these tradeoffs. The first is to reduce the dimensionality and collinearity of the spectral data. There are a number of techniques that can be applied in that context including: [Principal components analysis (PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis), [Independent components analysis (ICA)](https://en.wikipedia.org/wiki/Independent_component_analysis) as well as other signal processing techniques such as [Non-negative matrix factorization (NMF)](https://en.wikipedia.org/wiki/Non-negative_matrix_factorization). I use PCA here, and the next chunk appends the spectra and resulting spectral component scores to the wet chemistry reference data.
+There are some ways of mitigating these tradeoffs. The first is to reduce the dimensionality and collinearity of the spectral data. There are a number of techniques that can be applied in that context including: [Principal components analysis (PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis), [Independent components analysis (ICA)](https://en.wikipedia.org/wiki/Independent_component_analysis) as well as other signal processing techniques such as [Non-negative matrix factorization (NMF)](https://en.wikipedia.org/wiki/Non-negative_matrix_factorization). I use PCA here, and the next chunk appends the spectra and their resulting spectral component scores to the wet chemistry reference data.
 
 ```{r}
 # Spectral principal components
@@ -111,7 +111,7 @@ adata <- merge(adata, spec, by = "ssid")
 write.csv(adata, "./soil_acidity/Results/AfSIS_acidity_data.csv", row.names=F)
 ```
 
-The other main option is of course to run both types of algorithms and then look at if they can be usefully combined. This is the approach that I take here.
+The other main option is of course to run both types of algorithms (data selection and data reduction based) and then look at if they can be usefully combined. This is the approach that I will take here.
 
 # Spectral predictions with machine-learning
 
