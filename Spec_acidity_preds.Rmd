@@ -26,7 +26,7 @@ This notebook does not go into the details of [spectroscopy](https://en.wikipedi
 knitr::include_graphics("./Wetchem/Figures/training_validation.png")
 ```
 
-I'll be using a machine learning (algorithmic, rather than a data modeling) approach here. The figure above shows the basic workflow of that approach for predicting reserve acidity (Hp). The main motivation for this is that AfSIS is currently involved in several new, large-area projects that are focusing on acid soil management and cropland lime requirements. The other operational management aspect of this is that acidity problems should probably be addressed/fixed in the areas where they occur before attempting to solve e.g., fertilizer input and/or other pertinent agronomic management issues.
+I'll be using a machine learning approach which is largely *algorithmic*, rather than *data modeling* based. You might want to take a look at [Breiman (2001)](http://staff.pubhealth.ku.dk/~tag/Teaching/share/material/Breiman-two-cultures.pdf)] to gauge the difference the *"two cultures"*. The figure above shows the basic workflow of algorithmic approach, which I apply to predicting reserve acidity (Hp) as an example. The main motivation for using Hp in this example is that AfSIS is currently involved in several new, large-area projects that are focusing on acid soil management and cropland lime requirements. The other operational management aspect of this is that acidity problems should probably be addressed/fixed first, in the areas where they occur, before attempting to solve e.g., fertilizer input and/or other soil related, agronomic management issues.
 
 # General data setup
 
