@@ -140,5 +140,7 @@ fcal <- cal[,26:2566] ## full Alpha FT-IR spectral signatures
 pcal <- cal[,2567:2586] ## spectral principal components
 ```
 
-All of the subsequent model fitting processes are parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are other options available for this e.g., the [`snowfall`](https://cran.r-project.org/web/packages/snowfall/snowfall.pdf) package, among others.
+`**caretEnsemble**` has 3 primary functions: `caretList`, `caretEnsemble` and `caretStack`. `caretList` is used to build lists of caret models on the same training data, with the same model resampling parameters. `caretEnsemble` and `caretStack` are used to create ensemble models from such lists of individua `caret` models. `caretEnsemble` uses a generalized linear model [glm](https://en.wikipedia.org/wiki/Generalized_linear_model) to create a simple weighted combination of models and `caretStack` uses a specific caret model to combine the outputs from a choice of other component caret models. The main advantage of running `caretEnsemble` is that all of the intended individual `caret` models can be run all-at-once, rather than each model seperately, shortening and clarifying the model ensemble code.
+
+All model fitting processes can be parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are also other options available for this e.g., the [`snowfall`](https://cran.r-project.org/web/packages/snowfall/snowfall.pdf) package, among others.
 
