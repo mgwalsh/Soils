@@ -111,7 +111,7 @@ adata <- merge(adata, spec, by = "ssid")
 write.csv(adata, "./soil_acidity/Results/AfSIS_acidity_data.csv", row.names=F)
 ```
 
-The other main option is of course to run both types of algorithms (data regularization-based and data reduction-based) and then look at if they can be usefully combined. This is the approach that I will take here.
+The other main option is of course to run both types of algorithms (the data regularization-based and the data reduction-based ones) and then look at if they can be usefully combined. This is the approach that I will take here.
 
 # Spectral predictions with machine-learning
 
