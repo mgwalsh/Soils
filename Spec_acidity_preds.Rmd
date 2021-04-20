@@ -1,5 +1,5 @@
 ---
-title: Spectral predictions for diagnosing soil acidity
+title: Spectral ensemble predictions for diagnosing soil acidity
 author: M.G. Walsh
 date: "`r format(Sys.time(), '%d, %B, %Y')`"
 output:
@@ -113,7 +113,7 @@ write.csv(adata, "./soil_acidity/Results/AfSIS_acidity_data.csv", row.names=F)
 
 The other main option is of course to run both types of algorithms (the data regularization-based and the data reduction-based ones) and then look at if they can be usefully combined. This is the approach that I will take here.
 
-# Spectral predictions with machine-learning
+# Spectral predictions with `caretEnsemble`
 
 The following chunks predict soil Hp values using different machine learning algorithms (MLAs) with MIR spectral (feature) inputs using the [`caretEnsemble`](https://cran.r-project.org/web/packages/caretEnsemble/index.html) package. This general approach has won a lot of data science competitions e.g., at [Kaggle](https://www.kaggle.com/). You may want to take a look there. They have some fantastic data science resources, courses and challenges openly available. You can also check out the AfSIS sponsored [Africa Soil Property Prediction Challenge (2014)](https://www.kaggle.com/c/afsis-soil-properties/overview/timeline), from which the approach that is presented here was developed.
 
