@@ -98,16 +98,20 @@ These Rwanda-wide (actually Africa-wide) features will change over time and we w
 The next chunk then sets up the properties in a dataframe that will generate the the training and validation subsets for the different MLAs we shall apply to the spatial prediction of cropland properties. The soil property data presented here are courtesy of [CROPNUTS](https://cropnuts.com/). 
 
 ```{r}
-# project legacy data coords to grid CRS
+# Project legacy data coords to grid CRS
 geos.proj <- as.data.frame(project(cbind(geos$lon, geos$lat), "+proj=laea +ellps=WGS84 +lon_0=20 +lat_0=5 +units=m +no_defs"))
 colnames(geos.proj) <- c("x","y")
 geos <- cbind(geos, geos.proj)
 coordinates(geos) <- ~x+y
 projection(geos) <- projection(grids)
 
-# extract gridded variables at survey locations
+# Extract gridded variables at survey locations
 geosgrid <- extract(grids, geos)
 gsdat <- as.data.frame(cbind(geos, geosgrid))
+
+# Randomize dataframe
+set.seed(1235813)
+gsdat <- gsdat[sample(1:nrow(gsdat)), ]
 ```
 
 The following chunk then writes out the dataframe `RW_soil_data.csv` into your `./Wetchem/Results` directory if you'd like to process those outputs in software other than R. It also generates a location map of where those soil samples were obtained.
