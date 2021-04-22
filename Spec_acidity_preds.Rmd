@@ -101,7 +101,7 @@ One potentially problematic factor for many MLAs is the [*"Curse of dimensionali
 
 Other algorithms such as [Partial least squares regression (PLS)](https://en.wikipedia.org/wiki/Partial_least_squares_regression), [Ridge regression](https://en.wikipedia.org/wiki/Ridge_regression) and/or [Lasso regression](https://en.wikipedia.org/wiki/Lasso_(statistics)) handle the high dimensional data and collinearities well in a linear context but are frequently not very good at predicting the common non-linear and/or threshold relationships between the spectral signatures and their reference measurements.
 
-There are some ways of mitigating these tradeoffs. The first is to reduce the dimensionality and collinearity of the spectral data. There are a number of techniques that can be applied in that context including: [Principal components analysis (PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis), [Independent components analysis (ICA)](https://en.wikipedia.org/wiki/Independent_component_analysis) as well as other signal processing techniques such as, [Non-negative matrix factorization (NMF)](https://en.wikipedia.org/wiki/Non-negative_matrix_factorization). I use PCA here, and the next chunk appends the spectra and their resulting spectral component scores to the wet chemistry reference data.
+There are some ways of mitigating these tradeoffs. The first is to reduce the dimensionality and collinearity of the spectral data. There are a number of pre-processing techniques that can be applied in that context including: [Principal components analysis (PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis), [Independent components analysis (ICA)](https://en.wikipedia.org/wiki/Independent_component_analysis) as well as other signal processing techniques such as, [Non-negative matrix factorization (NMF)](https://en.wikipedia.org/wiki/Non-negative_matrix_factorization). I use PCA here, and the next chunk appends the spectra and their resulting spectral component scores to the wet chemistry reference data.
 
 ```{r}
 # Spectral principal components
@@ -146,7 +146,7 @@ pcal <- cal[,2567:2586] ## spectral principal components
 
 [**`caretEnsemble`**](https://cran.r-project.org/web/packages/caretEnsemble/caretEnsemble.pdf) has 3 primary functions: `caretList`, `caretEnsemble` and `caretStack`. `caretList` is used to build lists of caret models on the same training data, with the same model resampling parameters. `caretEnsemble` and `caretStack` are used to create ensemble models from such lists of individual `caret` models. `caretEnsemble` uses a generalized linear model [glm](https://en.wikipedia.org/wiki/Generalized_linear_model) to create a simple weighted combination of the constituent models and `caretStack` uses a specific caret model to combine the outputs from a choice of other component `caret` models. The main advantage of running `caretEnsemble` is that all of the intended individual [`caret`](https://topepo.github.io/caret/) models can be run *"all-at-once"*, rather than running each model seperately ... abbreviating and hopefully clarifying the code. All model fitting processes can be (are) parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are also other options available for this e.g., the [`snowfall`](https://cran.r-project.org/web/packages/snowfall/snowfall.pdf) package, among others. 
 
-The next chunk fits 3 initial models that use the full spectral signatures i.e., the *w* = 2,541 individual wavebands. These are reasonably common [Chemometric](https://en.wikipedia.org/wiki/Chemometrics) linear algorithms and you can learn more about how they work in R from the following links: [`pls`](https://www.rdocumentation.org/packages/mixOmics/versions/6.3.2/topics/pls), [`glmnet`](https://www.rdocumentation.org/packages/glmnet/versions/4.1-1/topics/glmnet) and [`xgbLinear`](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/). I fit these with 10-fold cross-validation and default-tuning of the relevant [hyperparameters](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)). Also, note that that this chunk can take about 1 hour to run on a personal computer with 4 cores. There is a lot to sort through.
+The next chunk fits 3 initial models that use the full spectral signatures i.e., the *w* = 2,541 individual wavebands. These are reasonably common [Chemometric](https://en.wikipedia.org/wiki/Chemometrics) linear algorithms and you can learn more about how they work in R from the following links: [`pls`](https://www.rdocumentation.org/packages/mixOmics/versions/6.3.2/topics/pls), [`glmnet`](https://www.rdocumentation.org/packages/glmnet/versions/4.1-1/topics/glmnet) and [`xgbLinear`](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/). I fit these with 10-fold cross-validation and default-tuning of the relevant [hyperparameters](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)). Also, note that that this chunk can take about 1 hour to run on a normal computer with 4 cores. There are just a lot of variables to sort through.
 
 ```{r}
 # Start doParallel to parallelize model fitting
@@ -158,7 +158,7 @@ set.seed(seed)
 tg <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
 
 # Fit the 3 initial calibration models
-alist <- caretList(fcal, lcal,
+llist <- caretList(fcal, lcal,
                    trControl = tg,
                    tuneList = NULL,
                    methodList = c("pls", "glmnet", "xgbLinear"),
@@ -166,17 +166,18 @@ alist <- caretList(fcal, lcal,
                    metric = "RMSE")
 ```
 
-The 10-fold cross-validation RMSE's of the calibration alist models are as follows: 
+The 10-fold cross-validation RMSE's of the calibration llist models are as follows: 
 
 ```{r}
 options(digits = 3)
-alist_results <- data.frame(
-                 pls = min(model_list$pls$results$RMSE),
-                 glm = min(model_list$glmnet$results$RMSE),
-                 xbl = min(model_list$rf$results$RMSE))
-print(alist_results)
+llist_results <- data.frame(
+                 pls = min(llist$pls$results$RMSE),
+                 gln = min(llist$glmnet$results$RMSE),
+                 xbl = min(llist$rf$results$RMSE))
+print(llist_results)
 ```
 
+The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (spc = 20). You can learn more about how they work in R, from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)).
 
 ```{r}
 # Start doParallel to parallelize model fitting
@@ -188,12 +189,21 @@ registerDoParallel(mc)
 tg <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
 
 # Fit 3 calibration models with the spectral principal components
-blist <- caretList(pcal, lcal,
+tlist <- caretList(pcal, lcal,
                    trControl = tg,
                    tuneList = NULL,
                    methodList = c("rf", "xgbTree", "cubist"),
                    preProcess = c("center","scale"),
                    metric = "RMSE")
+```
+
+```{r}
+options(digits = 3)
+tlist_results <- data.frame(
+                 rfo = min(tlist$rf$results$RMSE),
+                 xbt = min(tlist$xgbTree$results$RMSE),
+                 cub = min(tlist$cubist$results$RMSE))
+print(tlist_results)
 ```
 
 # Model stacking and prediction
