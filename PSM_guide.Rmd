@@ -1,6 +1,6 @@
 ---
 title: Machine learning workflows for predictive soil mapping 
-author: M.G. Walsh, ...
+author: M.G. Walsh and R. Rodrígues Iglesias
 date: "`r format(Sys.time(), '%d, %B, %Y')`"
 output:
   html_document:
