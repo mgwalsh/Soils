@@ -297,7 +297,7 @@ xb <- train(fcal, lcal,
             trControl = tc,
             metric = "RMSE")
 
-xb.pred <- predict(grids, gb) ## spatial predictions
+xb.pred <- predict(grids, xb) ## spatial predictions
 stopCluster(mc)
 fname <- paste("./Wetchem/Results/", labs, "_xb.rds", sep = "")
 saveRDS(xb, fname)
@@ -335,7 +335,7 @@ The main point here is not to evaluate a *best individual model* but rather to e
 ```{r}
 # Stacking setup ------------------------------------------------------------
 preds <- stack(gm.pred, gl1.pred, gl2.pred, rf.pred, xb.pred, cu.pred)
-names(preds) <- c("gm","gl1","gl2","rf","gb","cu")
+names(preds) <- c("gm","gl1","gl2","rf","xb","cu")
 
 # extract model predictions
 coordinates(gs_val) <- ~x+y
