@@ -181,7 +181,7 @@ mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
-set.seed(1385321)
+set.seed(seed)
 tc <- trainControl(method = "cv", allowParallel = T)
 
 # model training
@@ -210,7 +210,7 @@ mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
-set.seed(1385321)
+set.seed(seed)
 tc <- trainControl(method = "cv", allowParallel = T)
 
 # model training
@@ -236,7 +236,7 @@ mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
-set.seed(1385321)
+set.seed(seed)
 tc <- trainControl(method="cv", allowParallel=T)
 
 # model training
@@ -262,7 +262,7 @@ mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
-set.seed(1385321)
+set.seed(seed)
 tc <- trainControl(method = "cv", allowParallel = T)
 tg <- expand.grid(mtry = seq(5,10, by=1)) ## model tuning steps
 
@@ -291,7 +291,7 @@ mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # control setup
-set.seed(1385321)
+set.seed(seed)
 tc <- trainControl(method = "cv", allowParallel = T)
 
 # model training
@@ -337,17 +337,17 @@ saveRDS(cu, fname)
 The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another. 
 
 ```{r}
-# Stacking setup ------------------------------------------------------------
+# Stacking setup
 preds <- stack(gm.pred, gl1.pred, gl2.pred, rf.pred, xb.pred, cu.pred)
 names(preds) <- c("gm","gl1","gl2","rf","xb","cu")
 
-# extract model predictions
+# Extract model predictions
 coordinates(gs_val) <- ~x+y
 projection(gs_val) <- projection(preds)
 gspred <- extract(preds, gs_val)
 gspred <- as.data.frame(cbind(gs_val, gspred))
 
-# stacking model validation labels and features
+# Stacking model validation labels and features
 gs_val <- as.data.frame(gs_val)
 lval <- as.vector(t(gs_val[labs]))
 fval <- gspred[,80:85] ## subset validation features
@@ -401,12 +401,12 @@ w <- leaflet() %>%
 w ## plot widget  
 ```
 
-## Write out prediction grids
+## Write out prediction grid geotifs
 
 This chunk writes out the 7 prediction rasters that you can import as geotif files into a GIS system of your choice for visualizations, reports and/or further processing. 
 
 ```{r}
-# Write prediction grids --------------------------------------------------
+# Write prediction grids
 gspreds <- stack(preds, st.pred)
 names(gspreds) <- c("gm","gl1","gl2","rf","xb","cu","st")
 fname <- paste("./Wetchem/Results/","RW_", labs, "_preds_2020.tif", sep = "")
