@@ -44,6 +44,8 @@ if (any(installed_packages == FALSE)) {
 invisible(lapply(packages, library, character.only = TRUE))
 ```
 
+## Data downloads
+
 The following chunk then downloads the data that we have assembled, which are needed for running this particular example. Specifically, it assembles georeferenced field observations of soil measurements, e.g. (pH, soil carbon and soil nutrient composition) and links these to remote sensing and GIS images represented by the `grids` feature stack. We focus on predicting the topsoil pH measurements here, but the approach is equally applicable to any given  [Georeferenced](https://en.wikipedia.org/wiki/Georeferencing) soil property or measurement under consideration. Note that this chunk is Mac or Linux specific and so the directory structures would need to be changed to run on Windows machines.
 
 ```{r}
@@ -94,6 +96,8 @@ These Rwanda-wide (actually Africa-wide) features will change over time and we w
 * o - organismal (primarily vegetative/land cover related)
 * r - relief/topographical/geographical variables
 * s - parent material and soil related variables
+
+## Data assembly
 
 The next chunk then sets up the properties in a dataframe that will generate the the training and validation subsets for the different MLAs we shall apply to the spatial prediction of cropland properties. The soil property data presented here are courtesy of [CROPNUTS](https://cropnuts.com/). 
 
