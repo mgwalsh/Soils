@@ -1,6 +1,6 @@
 ---
 title: Machine learning workflows for predictive soil mapping 
-author: M.G. Walsh and R. Rodrígues Iglesias
+author: M.G. Walsh and R. Rodríguez Iglesias
 date: "`r format(Sys.time(), '%d, %B, %Y')`"
 output:
   html_document:
@@ -125,7 +125,7 @@ w <- leaflet() %>%
 w ## plot widget 
 ```
 
-# Machine-learning-based predictive mapping
+# Machine-learning-based predictive mapping with `caret`
 
 The following chunks predict topsoil soil pH values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (feature) inputs using the [`caret`](https://topepo.github.io/caret/) package. The generalized MLA prediction workflow is shown in the figure below. This general approach has won a lot of data science competitions e.g., at [Kaggle](https://www.kaggle.com/). You may want to take a look there. They have some fantastic data science resources, courses and challenges openly available.
 
