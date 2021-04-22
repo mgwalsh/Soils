@@ -164,6 +164,7 @@ llist <- caretList(fcal, lcal,
                    methodList = c("pls", "glmnet", "xgbLinear"),
                    preProcess = c("center","scale"),
                    metric = "RMSE")
+stopCluster(mc)
 ```
 
 The 10-fold cross-validation RMSE's of the calibration llist models are as follows: 
@@ -195,6 +196,7 @@ tlist <- caretList(pcal, lcal,
                    methodList = c("rf", "xgbTree", "cubist"),
                    preProcess = c("center","scale"),
                    metric = "RMSE")
+stopCluster(mc)
 ```
 
 ```{r}
