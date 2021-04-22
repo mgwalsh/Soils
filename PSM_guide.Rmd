@@ -32,7 +32,7 @@ To run this notebook, you will need to load the packages indicated in the chunk 
 
 ```{r}
 # package names
-packages <- c("downloader", "rgdal", "sp", "raster", "quantreg", "arm", "leaflet", "DT", "htmlwidgets", "devtools", "caret", "mgcv", "MASS", "randomForest", "xgboost", "nnet", "Cubist", "plyr", "doParallel")
+packages <- c("downloader", "rgdal", "sp", "raster", "quantreg", "leaflet", "DT", "htmlwidgets", "devtools", "caret", "mgcv", "MASS", "randomForest", "xgboost", "nnet", "Cubist", "plyr", "doParallel")
 
 # install packages
 installed_packages <- packages %in% rownames(installed.packages())
@@ -291,16 +291,16 @@ set.seed(1385321)
 tc <- trainControl(method = "cv", allowParallel = T)
 
 # model training
-gb <- train(fcal, lcal, 
+xb <- train(fcal, lcal, 
             method = "xgbTree", 
             preProc = c("center", "scale"),
             trControl = tc,
             metric = "RMSE")
 
-gb.pred <- predict(grids, gb) ## spatial predictions
+xb.pred <- predict(grids, gb) ## spatial predictions
 stopCluster(mc)
-fname <- paste("./Wetchem/Results/", labs, "_gb.rds", sep = "")
-saveRDS(gb, fname)
+fname <- paste("./Wetchem/Results/", labs, "_xb.rds", sep = "")
+saveRDS(xb, fname)
 ```
 
 ## Cubist ([Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf))
@@ -334,7 +334,7 @@ The main point here is not to evaluate a *best individual model* but rather to e
 
 ```{r}
 # Stacking setup ------------------------------------------------------------
-preds <- stack(gm.pred, gl1.pred, gl2.pred, rf.pred, gb.pred, cu.pred)
+preds <- stack(gm.pred, gl1.pred, gl2.pred, rf.pred, xb.pred, cu.pred)
 names(preds) <- c("gm","gl1","gl2","rf","gb","cu")
 
 # extract model predictions
@@ -378,17 +378,17 @@ summary(st)
 Topsoil pH generally takes on values between 3 - 9 in Rwanda, and there are extensive areas of very acid soils in the country. The chunk below generates the prediction map of pH across the RwaSIS cropland ROI.
 
 ```{r}
-# apply cropland mask
+# Apply cropland mask
 cpmask <- raster("./Wetchem/Mask/RW_CP_mask.tif")
 stm.pred <- mask(st.pred, cpmask, inverse=FALSE, maskvalue=NA, updatevalue=NA)
 
-# project stm.pred to EPSG:3857
+# Project stm.pred to EPSG:3857
 stll <- projectRaster(stm.pred, crs="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 
-# set color pallette
+# Set color pallette
 pal <- colorBin("Reds", domain = 3:9, reverse = TRUE, na.color = "transparent")
 
-# render map
+# Render map
 w <- leaflet() %>% 
   setView(lng = mean(gsdat$lon), lat = mean(gsdat$lat), zoom = 8) %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
@@ -397,14 +397,14 @@ w <- leaflet() %>%
 w ## plot widget  
 ```
 
-## Write the prediction grids
+## Write out prediction grids
 
 This chunk writes out the 7 prediction rasters that you can import as geotif files into a GIS system of your choice for visualizations, reports and/or further processing. 
 
 ```{r}
 # Write prediction grids --------------------------------------------------
 gspreds <- stack(preds, st.pred)
-names(gspreds) <- c("gm","gl1","gl2","rf","gb","cu","st")
+names(gspreds) <- c("gm","gl1","gl2","rf","xb","cu","st")
 fname <- paste("./Wetchem/Results/","RW_", labs, "_preds_2020.tif", sep = "")
 writeRaster(gspreds, filename=fname, datatype="FLT4S", options="INTERLEAVE=BAND", overwrite=T)
 ```
