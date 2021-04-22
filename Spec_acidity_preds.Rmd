@@ -142,9 +142,9 @@ fcal <- cal[,26:2566] ## full Alpha FT-IR spectral signatures
 pcal <- cal[,2567:2586] ## spectral principal components
 ```
 
-[**`caretEnsemble`**](https://cran.r-project.org/web/packages/caretEnsemble/caretEnsemble.pdf) has 3 primary functions: `caretList`, `caretEnsemble` and `caretStack`. `caretList` is used to build lists of caret models on the same training data, with the same model resampling parameters. `caretEnsemble` and `caretStack` are used to create ensemble models from such lists of individual `caret` models. `caretEnsemble` uses a generalized linear model [glm](https://en.wikipedia.org/wiki/Generalized_linear_model) to create a simple weighted combination of the constituent models and `caretStack` uses a specific caret model to combine the outputs from a choice of other component `caret` models. The main advantage of running `caretEnsemble` is that all of the intended individual [`caret`](https://topepo.github.io/caret/) models can be run *"all-at-once"*, rather than running each model seperately ... abbreviating and hopefully clarifying the code. All model fitting processes can be parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are also other options available for this e.g., the [`snowfall`](https://cran.r-project.org/web/packages/snowfall/snowfall.pdf) package, among others. 
+[**`caretEnsemble`**](https://cran.r-project.org/web/packages/caretEnsemble/caretEnsemble.pdf) has 3 primary functions: `caretList`, `caretEnsemble` and `caretStack`. `caretList` is used to build lists of caret models on the same training data, with the same model resampling parameters. `caretEnsemble` and `caretStack` are used to create ensemble models from such lists of individual `caret` models. `caretEnsemble` uses a generalized linear model [glm](https://en.wikipedia.org/wiki/Generalized_linear_model) to create a simple weighted combination of the constituent models and `caretStack` uses a specific caret model to combine the outputs from a choice of other component `caret` models. The main advantage of running `caretEnsemble` is that all of the intended individual [`caret`](https://topepo.github.io/caret/) models can be run *"all-at-once"*, rather than running each model seperately ... abbreviating and hopefully clarifying the code. All model fitting processes can be (are) parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are also other options available for this e.g., the [`snowfall`](https://cran.r-project.org/web/packages/snowfall/snowfall.pdf) package, among others. 
 
-The next chunk fits 3 initial models that use the full spectral signatures i.e., the *w* = 2,541 individual wavebands. These are reasonably common [Chemometric](https://en.wikipedia.org/wiki/Chemometrics) linear techniques and you can learn more about how they work in R from the following links: [`pls`](https://www.rdocumentation.org/packages/mixOmics/versions/6.3.2/topics/pls), [`glmnet`](https://www.rdocumentation.org/packages/glmnet/versions/4.1-1/topics/glmnet) and [`xgbLinear`](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/). I fit these with 10-fold cross-validation and default-tuning. Also, note that that this chunk takes about 1 hour to run on a personal computer with 4 cores.
+The next chunk fits 3 initial models that use the full spectral signatures i.e., the *w* = 2,541 individual wavebands. These are reasonably common [Chemometric](https://en.wikipedia.org/wiki/Chemometrics) linear algorithms and you can learn more about how they work in R from the following links: [`pls`](https://www.rdocumentation.org/packages/mixOmics/versions/6.3.2/topics/pls), [`glmnet`](https://www.rdocumentation.org/packages/glmnet/versions/4.1-1/topics/glmnet) and [`xgbLinear`](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/). I fit these with 10-fold cross-validation and default-tuning of the relevant [hyperparameters](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)). Also, note that that this chunk can take about 1 hour to run on a personal computer with 4 cores. There is a lot to sort through.
 
 ```{r}
 # Start doParallel to parallelize model fitting
@@ -154,7 +154,7 @@ registerDoParallel(mc)
 # Specify model training controls
 tg <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
 
-# Fit the 3 calibration models
+# Fit the 3 initial calibration models
 alist <- caretList(fcal, lcal,
                    trControl = tg,
                    tuneList = NULL,
@@ -173,7 +173,7 @@ registerDoParallel(mc)
 # Specify model training controls
 tg <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
 
-# Fit the 3 calibration models
+# Fit 3 calibration models with the spectral principal components
 blist <- caretList(pcal, lcal,
                    trControl = tg,
                    tuneList = NULL,
