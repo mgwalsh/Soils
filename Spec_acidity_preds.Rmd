@@ -148,14 +148,14 @@ pcal <- cal[,2567:2586] ## spectral principal components
 
 The next chunk fits 3 initial models that use the full spectral signatures i.e., the *w* = 2,541 individual wavebands. These are reasonably common [Chemometric](https://en.wikipedia.org/wiki/Chemometrics) linear algorithms and you can learn more about how they work in R from the following links: [`pls`](https://www.rdocumentation.org/packages/mixOmics/versions/6.3.2/topics/pls), [`glmnet`](https://www.rdocumentation.org/packages/glmnet/versions/4.1-1/topics/glmnet) and [`xgbLinear`](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/). I fit these with 10-fold cross-validation and default-tuning of the relevant [hyperparameters](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)). Also, note that that this chunk can take about 1 hour to run on a normal computer with 4 cores. There are just a lot of variables to sort through.
 
-```{r}
+```{r, warning = FALSE}
 # Start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # Specify model training controls
 set.seed(seed)
-tg <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
+tg <- trainControl(method = "cv", number = 10, allowParallel = TRUE, savePredictions="final")
 
 # Fit the 3 initial calibration models
 llist <- caretList(fcal, lcal,
@@ -163,6 +163,7 @@ llist <- caretList(fcal, lcal,
                    tuneList = NULL,
                    methodList = c("pls", "glmnet", "xgbLinear"),
                    preProcess = c("center","scale"),
+                   savePredictions="final",
                    metric = "RMSE")
 stopCluster(mc)
 ```
@@ -174,20 +175,20 @@ options(digits = 3)
 llist_results <- data.frame(
                  pls = min(llist$pls$results$RMSE),
                  gln = min(llist$glmnet$results$RMSE),
-                 xbl = min(llist$rf$results$RMSE))
+                 xbl = min(llist$xgbLinear$results$RMSE))
 print(llist_results)
 ```
 
 The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (spc = 20). You can learn more about how they work in R, from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)).
 
-```{r}
+```{r, warning = FALSE}
 # Start doParallel to parallelize model fitting
 set.seed(seed)
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # Specify model training controls
-tg <- trainControl(method = "cv", number = 10, allowParallel = TRUE)
+tg <- trainControl(method = "cv", number = 10, allowParallel = TRUE, savePredictions="final")
 
 # Fit 3 calibration models with the spectral principal components
 tlist <- caretList(pcal, lcal,
