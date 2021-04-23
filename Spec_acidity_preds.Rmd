@@ -111,7 +111,7 @@ adata <- merge(adata, spec, by = "ssid")
 write.csv(adata, "./soil_acidity/Results/AfSIS_acidity_data.csv", row.names=F)
 ```
 
-The other main option is of course to run both types of algorithms (the data regularization/data-selection-based and the data reduction-based) and then look at if they can be usefully combined. This is the approach that I will take here.
+The other main option is of course to run both types of algorithms (the data regularization/data-selection-based and the data reduction-based), and then look at if they can be usefully combined. This is the approach that I will take here.
 
 # Model training with `caretEnsemble`
 
@@ -200,7 +200,7 @@ stopCluster(mc)
 The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another. This chunk initially generates the individual model predictions for the validation dataframe.
 
 ```{r, warning = FALSE}
-# Calibration features
+# Validation features
 fval <- select(val,26:2566,9) ## full Alpha FT-IR spectral signatures + pH
 pval <- select(val,2567:2586,9) ## spectral principal components + pH
 
@@ -240,9 +240,10 @@ summary(st)
 
 # Ensemble prediction uncertainty estimates
 
-There are many ways to quantify the uncertainty inherent in these predictions. We take a simple but quite robust approach here using quantile regression with ([quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)). I am mainly interested in the initial spread of the spectral ensemble predictions (sensu, their 95% probable intervals).
+There are many ways to quantify the uncertainty inherent in these predictions. We take a simple but quite robust approach here using quantile regression with ([quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)). I am mainly interested in the overall spread of the spectral ensemble predictions (sensu, their 95% probable intervals for the entire dataset).
 
 ```{r, warning = FALSE}
+# All features
 fall <- select(adata,26:2566,9) ## full Alpha FT-IR spectral signatures + pH
 pall <- select(adata,2567:2586,9) ## spectral principal components + pH
 
@@ -253,6 +254,13 @@ adata$rfo <- predict(tlist$rf, pall)
 adata$xbt <- predict(tlist$xgbTree, pall)
 adata$cub <- predict(tlist$cubist, pall)
 adata$st <- predict(st, adata)
+```
+
+Run and plot the quantile regression of Hp against the spectral ensemble predictions for the entire dataset.
+
+```{r}
+stQ <- rq(Hp~st, tau=c(0.025,0.5,0.975), data = adata) ## quantile regression fit
+print(stQ)
 ```
 
 ```{r, fig.align = "center", fig.cap = "Quantile regression plot of modeled vs observed reserve acidity (Hp). The blue lines are the 2.5% and 97.5% quantile regression estimates."}
