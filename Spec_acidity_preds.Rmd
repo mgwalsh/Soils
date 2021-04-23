@@ -121,7 +121,7 @@ The other main option is of course to run both types of algorithms (the data reg
 
 The following chunks predict soil Hp values using different machine learning algorithms (MLAs) with MIR spectral (feature) inputs using the [`caretEnsemble`](https://cran.r-project.org/web/packages/caretEnsemble/index.html) package. This general approach has won a lot of data science competitions e.g., at [Kaggle](https://www.kaggle.com/). You may want to take a look there. They have some fantastic data science resources, courses and challenges openly available. You can also check out the AfSIS sponsored [Africa Soil Property Prediction Challenge (2014)](https://www.kaggle.com/c/afsis-soil-properties/overview/timeline), from which the notebook that is presented here was developed.
 
-The main idea is to train a number of potentially competing MLA models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models are ensembled (combined/stacked) on an *independent* validation dataset. When applied consistently over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field, lab data and MLAs are obtained and run. The following chunk initially scrubs some of the extraneous objects in memory, sets-up labels and features, and creates a randomized partition between the training and validation dataframes. 
+The main idea is to train a number of potentially competing MLA models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models are ensembled (combined/stacked) on an *independent* validation dataset. When applied consistently over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field, lab data and MLAs are obtained and run. The following chunk initially scrubs some of the extraneous objects in memory, sets-up labels and features, and creates a randomized partition between the training and validation dataframes.
 
 ```{r}
 rm(list=setdiff(ls(), c("adata"))) ## scrubs extraneous objects in memory
@@ -140,11 +140,17 @@ labs <- c("Hp") ## insert other labels (pH, EC, eCEC, ...) here!
 lcal <- as.vector(t(cal[labs]))
 
 # Spectral calibration features
-fcal <- select[cal,26:2566,9] ## full Alpha FT-IR spectral signatures + pH
+fcal <- select(cal,26:2566,9) ## full Alpha FT-IR spectral signatures + pH
 pcal <- select(cal,2567:2586,9) ## spectral principal components + pH
 ```
 
-Note that I have also included pH (water) in the calibration features beacuse it is routinely, quickly and cheaply measured in most soil labs. It is also closely related to Hp.
+Note that I also include soil pH (in water) in the calibration features beacuse it is routinely, quickly and cheaply measured in most soil spectral labs (and frequently even in the field). It is also closely related to Hp. The general notion is that soils with a pH > 7 is unlikely to have any measurable reserve acidity. See the figure below.
+
+```{r, fig.align = "center", fig.cap = "Relationship between soil pH and reserve acidity (Hp)."}
+par(pty="s", mar=c(4,4,1,1))
+plot(Hp~pH, xlab="pH (water)", ylab="Hp (meq / 100 g soil)", cex.lab=1.3, 
+     xlim=c(3,10), ylim=c(0,5), adata)
+```
 
 [**`caretEnsemble`**](https://cran.r-project.org/web/packages/caretEnsemble/caretEnsemble.pdf) has 3 primary functions: `caretList`, `caretEnsemble` and `caretStack`. `caretList` is used to build lists of caret models on the same training data, with the same model resampling parameters. `caretEnsemble` and `caretStack` are used to create ensemble models from such lists of individual `caret` models. `caretEnsemble` uses a generalized linear model [glm](https://en.wikipedia.org/wiki/Generalized_linear_model) to create a simple weighted combination of the constituent models and `caretStack` uses a specific caret model to combine the outputs from a choice of other component `caret` models. The main advantage of running `caretEnsemble` is that all of the intended individual [`caret`](https://topepo.github.io/caret/) models can be run *"all-at-once"*, rather than running each model seperately ... abbreviating and hopefully clarifying the calibration code. All model fitting processes can be (are) parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are also other options available for this e.g., the [`snowfall`](https://cran.r-project.org/web/packages/snowfall/snowfall.pdf) package, among others. 
 
@@ -170,7 +176,7 @@ llist <- caretList(fcal, lcal,
 stopCluster(mc)
 ```
 
-The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (spc = 20). You can learn more about how they work in R from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)). This chunk runs very quickly.
+The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (spc = 20). You can learn more about how they work in R from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)). This chunk runs quite quickly.
 
 ```{r, warning = FALSE}
 # Start doParallel to parallelize model fitting
