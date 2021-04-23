@@ -20,7 +20,7 @@ Soil acidity can be thought of as occurring in two forms: as active or *"soil so
 
 To effectively raise the soil pH over the long-term, both active and reserve acidity should be neutralized. Soil test labs typically determine the buffering capacity and the lime requirement by measuring or estimating reserve acidity; see e.g., the excellent introductory tutorial in [Moorberg & Crouse (v.2)](https://kstatelibraries.pressbooks.pub/soilslabmanual/chapter/soil-acidity-and-adjusting-soil-ph/).
 
-Spectral signatures of soils, and materials generally, are defined by their reflectance or absorbance as a function of wavelength in the electromagnetic spectrum. Under controlled conditions, the signatures result from electronic transitions of atoms and vibrational stretching and bending of structural groups of atoms that form molecules or crystals. Mid-infrared (MIR) spectroscopy has been shown to provide highly repeatable, rapid and low cost measurements of many different soil properties in numerous studies. The amount of light absorbed by a soil sample is measured with minimal sample preparation across a wide range of wavelengths to provide a unique spectral signature. A measurement can be performed in about 30 seconds, in contrast to conventional soil tests, which are typically slow, labor-intensive, expensive and may use harmful chemicals.
+Spectral signatures of soils, and materials generally, are defined by their reflectance or absorbance as a function of wavelength in the electromagnetic spectrum. Under controlled conditions, the signatures result from electronic transitions of atoms and vibrational stretching and bending of structural groups of atoms that form molecules or crystals. Mid-infrared (MIR) spectroscopy has been shown to provide highly repeatable, rapid and low cost measurements of many different soil properties in numerous studies. The amount of light absorbed by a soil sample is measured with minimal sample preparation across a wide range of wavelengths to provide a unique spectral signature. A measurement can be performed in about 30 seconds, in contrast to conventional soil tests, which are typically slow, labor-intensive, expensive and/or use harmful chemicals.
 
 This notebook is intended for self-learning. It does not go into the details of [spectroscopy](https://en.wikipedia.org/wiki/Spectroscopy) itself, but instead it focuses on the **spectrometry**, that is the steps that are needed to generate useful predictions from a population of spectral signatures (features) relative to their corresponding reference measurements (labels). In this particlar example, I shall use topsoil (0-20 cm) and subsoil (20-50 cm) data that were sampled as part of the AfSIS project which sampled the major [Köppen-Geiger climate zones](http://koeppen-geiger.vu-wien.ac.at/) of Africa excluding deserts, urban and other non-photosynthetically active land areas. 
 
@@ -28,7 +28,7 @@ This notebook is intended for self-learning. It does not go into the details of 
 knitr::include_graphics("./Wetchem/Figures/training_validation.png")
 ```
 
-I'll be using a machine learning approach, which is largely *algorithmic*, rather than *data modeling* based. You might want to take a look at [Breiman (2001)](http://staff.pubhealth.ku.dk/~tag/Teaching/share/material/Breiman-two-cultures.pdf) to gauge the differences between the *"two cultures"* he describes. The figure above shows the basic workflow of the algorithmic approach that I apply here to predicting reserve acidity (Hp) as an example. The main motivation for using Hp in this example is that AfSIS is currently involved in several new, large-area projects that are focusing on acid soil management and cropland lime requirements. The other operational management aspect of this is that acidity problems should probably be addressed/fixed first, in the areas where they occur, and before attempting to solve e.g., fertilizer input and/or other soil related, agronomic management issues.
+I'll be using a machine learning approach, which is *algorithmic*, rather than *data modeling* based. You might want to take a look at [Breiman (2001)](http://staff.pubhealth.ku.dk/~tag/Teaching/share/material/Breiman-two-cultures.pdf) to gauge the differences between the *"two cultures"* he describes. The figure above shows the basic workflow of the algorithmic approach that I apply here to predicting reserve acidity (Hp) as an example. The main motivation for using Hp in this example is that AfSIS is currently involved in several new, large-area projects that are focusing on acid soil management and cropland lime requirements. The other operational management aspect of this is that acidity problems should probably be addressed/fixed first, in the areas where they occur, and before attempting to solve e.g., fertilizer input and/or other soil related, agronomic management issues.
 
 # General data setup
 
@@ -117,7 +117,7 @@ write.csv(adata, "./soil_acidity/Results/AfSIS_acidity_data.csv", row.names=F)
 
 The other main option is of course to run both types of algorithms (the data regularization/data-selection-based and the data reduction-based ones) and then look at if they can be usefully combined. This is the approach that I will take here.
 
-# Spectral predictions with `caretEnsemble`
+# Model training with `caretEnsemble`
 
 The following chunks predict soil Hp values using different machine learning algorithms (MLAs) with MIR spectral (feature) inputs using the [`caretEnsemble`](https://cran.r-project.org/web/packages/caretEnsemble/index.html) package. This general approach has won a lot of data science competitions e.g., at [Kaggle](https://www.kaggle.com/). You may want to take a look there. They have some fantastic data science resources, courses and challenges openly available. You can also check out the AfSIS sponsored [Africa Soil Property Prediction Challenge (2014)](https://www.kaggle.com/c/afsis-soil-properties/overview/timeline), from which the notebook that is presented here was developed.
 
@@ -155,11 +155,11 @@ registerDoParallel(mc)
 
 # Specify model training controls
 set.seed(seed)
-tg <- trainControl(method = "cv", number = 10, allowParallel = TRUE, savePredictions="final")
+tc <- trainControl(method = "cv", number = 10, allowParallel = TRUE, savePredictions="final")
 
 # Fit the 3 initial calibration models
 llist <- caretList(fcal, lcal,
-                   trControl = tg,
+                   trControl = tc,
                    tuneList = NULL,
                    methodList = c("pls", "glmnet", "xgbLinear"),
                    preProcess = c("center","scale"),
@@ -168,18 +168,7 @@ llist <- caretList(fcal, lcal,
 stopCluster(mc)
 ```
 
-The 10-fold cross-validation RMSE's of the calibration llist models are as follows: 
-
-```{r}
-options(digits = 3)
-llist_results <- data.frame(
-                 pls = min(llist$pls$results$RMSE),
-                 gln = min(llist$glmnet$results$RMSE),
-                 xbl = min(llist$xgbLinear$results$RMSE))
-print(llist_results)
-```
-
-The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (spc = 20). You can learn more about how they work in R, from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)).
+The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (spc = 20). You can learn more about how they work in R from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)).
 
 ```{r, warning = FALSE}
 # Start doParallel to parallelize model fitting
@@ -188,11 +177,11 @@ mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # Specify model training controls
-tg <- trainControl(method = "cv", number = 10, allowParallel = TRUE, savePredictions="final")
+tc <- trainControl(method = "cv", number = 10, allowParallel = TRUE, savePredictions="final")
 
-# Fit 3 calibration models with the spectral principal components
+# Fit 3 calibration models using the spectral principal component features
 tlist <- caretList(pcal, lcal,
-                   trControl = tg,
+                   trControl = tc,
                    tuneList = NULL,
                    methodList = c("rf", "xgbTree", "cubist"),
                    preProcess = c("center","scale"),
@@ -200,16 +189,43 @@ tlist <- caretList(pcal, lcal,
 stopCluster(mc)
 ```
 
+# Model stacking and prediction with `caret`
+
+The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another.
+
 ```{r}
-options(digits = 3)
-tlist_results <- data.frame(
-                 rfo = min(tlist$rf$results$RMSE),
-                 xbt = min(tlist$xgbTree$results$RMSE),
-                 cub = min(tlist$cubist$results$RMSE))
-print(tlist_results)
+# Model predictions for the validation data
+val$pls <- predict.train(llist$pls, val)
+val$glm <- predict.train(llist$glmnet, val)
+val$xbl <- predict.train(llist$xgbLinear, val)
+val$rfo <- predict.train(tlist$rf, val)
+val$xbt <- predict.train(tlist$xgbTree, val)
+val$cub <- predict.train(tlist$xgbLinear, val)
 ```
 
-# Model stacking and prediction
+This next chunk fits the model ensemble with the `glmStepAIC` function from the `MASS` library using the **validation dataframe**. You could explore other options here, but I that that this provides a reasonable combination and weighting of the 6 models that were produced in the ensemble training steps.
 
+```{r, results='hide'}
+lval <- as.vector(t(val[labs]))
+fval <- val[,19:21] ## subset validation features
 
+# start doParallel to parallelize model fitting
+mc <- makeCluster(detectCores())
+registerDoParallel(mc)
 
+# model setup
+set.seed(seed)
+tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel=T)
+
+st <- train(fval, lval,
+            method = "glmStepAIC",
+            trControl = tc,
+            metric = "RMSE")
+
+summary(st)
+gs_val$st <- predict(st, gs_val) ## stacked predictions
+stopCluster(mc)
+fname <- paste("./Results/", labs, "_st.rds", sep = "")
+saveRDS(st, fname)
+summary(st)
+```
