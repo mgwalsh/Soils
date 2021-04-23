@@ -71,10 +71,6 @@ adata <- merge(prof, cnls, by = "ssid")
 adata <- merge(adata, text, by = "ssid")
 adata <- merge(adata, oxid, by = "ssid")
 
-# Randomize dataframe
-set.seed(1235813)
-adata <- adata[sample(1:nrow(adata)), ]
-
 # Download figures
 download("https://osf.io/42gry/", "figures.zip", mode = "wb")
 exdir <- "./Figures" 
@@ -115,7 +111,7 @@ adata <- merge(adata, spec, by = "ssid")
 write.csv(adata, "./soil_acidity/Results/AfSIS_acidity_data.csv", row.names=F)
 ```
 
-The other main option is of course to run both types of algorithms (the data regularization/data-selection-based and the data reduction-based ones) and then look at if they can be usefully combined. This is the approach that I will take here.
+The other main option is of course to run both types of algorithms (the data regularization/data-selection-based and the data reduction-based) and then look at if they can be usefully combined. This is the approach that I will take here.
 
 # Model training with `caretEnsemble`
 
@@ -129,6 +125,9 @@ rm(list=setdiff(ls(), c("adata"))) ## scrubs extraneous objects in memory
 # Set randomization seed
 seed <- 1235813
 set.seed(seed)
+
+# Randomize dataframe
+adata <- adata[sample(1:nrow(adata)), ]
 
 # Split data into calibration and validation sets
 gsIndex <- createDataPartition(adata$Hp, p = 8/10, list=F, times = 1)
