@@ -171,7 +171,6 @@ llist <- caretList(fcal, lcal,
                    tuneList = NULL,
                    methodList = c("pls", "glmnet", "xgbLinear"),
                    preProcess = c("center","scale"),
-                   savePredictions="final",
                    metric = "RMSE")
 stopCluster(mc)
 ```
