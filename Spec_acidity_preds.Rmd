@@ -1,5 +1,5 @@
 ---
-title: Spectral predictions for diagnosing soil acidity
+title: Spectral predictions for diagnosing reserve soil acidity
 author: M.G. Walsh
 date: "`r format(Sys.time(), '%d, %B, %Y')`"
 output:
@@ -36,7 +36,7 @@ To actually run the notebook, you will need to load the packages indicated in th
 
 ```{r}
 # package names
-packages <- c("downloader", "caret", "caretEnsemble", "MASS", "pls", "glmnet", "randomForest", "xgboost", "Cubist", "quantreg", "leaflet", "htmlwidgets", "plyr", "doParallel")
+packages <- c("downloader", "caret", "caretEnsemble", "MASS", "pls", "glmnet", "randomForest", "xgboost", "Cubist", "quantreg", "leaflet", "htmlwidgets", "plyr", "dplyr", "doParallel")
 
 # install packages
 installed_packages <- packages %in% rownames(installed.packages())
@@ -140,13 +140,15 @@ labs <- c("Hp") ## insert other labels (pH, EC, eCEC, ...) here!
 lcal <- as.vector(t(cal[labs]))
 
 # Spectral calibration features
-fcal <- cal[,26:2566] ## full Alpha FT-IR spectral signatures
-pcal <- cal[,2567:2586] ## spectral principal components
+fcal <- select[cal,26:2566,9] ## full Alpha FT-IR spectral signatures + pH
+pcal <- select(cal,2567:2586,9) ## spectral principal components + pH
 ```
 
-[**`caretEnsemble`**](https://cran.r-project.org/web/packages/caretEnsemble/caretEnsemble.pdf) has 3 primary functions: `caretList`, `caretEnsemble` and `caretStack`. `caretList` is used to build lists of caret models on the same training data, with the same model resampling parameters. `caretEnsemble` and `caretStack` are used to create ensemble models from such lists of individual `caret` models. `caretEnsemble` uses a generalized linear model [glm](https://en.wikipedia.org/wiki/Generalized_linear_model) to create a simple weighted combination of the constituent models and `caretStack` uses a specific caret model to combine the outputs from a choice of other component `caret` models. The main advantage of running `caretEnsemble` is that all of the intended individual [`caret`](https://topepo.github.io/caret/) models can be run *"all-at-once"*, rather than running each model seperately ... abbreviating and hopefully clarifying the code. All model fitting processes can be (are) parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are also other options available for this e.g., the [`snowfall`](https://cran.r-project.org/web/packages/snowfall/snowfall.pdf) package, among others. 
+Note that I have also included pH (water) in the calibration features beacuse it is routinely, quickly and cheaply measured in most soil labs. It is also closely related to Hp.
 
-The next chunk fits 3 initial models that use the full spectral signatures i.e., the *w* = 2,541 individual wavebands. These are reasonably common [Chemometric](https://en.wikipedia.org/wiki/Chemometrics) linear algorithms and you can learn more about how they work in R from the following links: [`pls`](https://www.rdocumentation.org/packages/mixOmics/versions/6.3.2/topics/pls), [`glmnet`](https://www.rdocumentation.org/packages/glmnet/versions/4.1-1/topics/glmnet) and [`xgbLinear`](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/). I fit these with 10-fold cross-validation and default-tuning of the relevant [hyperparameters](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)). Also, note that that this chunk can take about 1 hour to run on a normal computer with 4 cores. There are just a lot of variables to sort through.
+[**`caretEnsemble`**](https://cran.r-project.org/web/packages/caretEnsemble/caretEnsemble.pdf) has 3 primary functions: `caretList`, `caretEnsemble` and `caretStack`. `caretList` is used to build lists of caret models on the same training data, with the same model resampling parameters. `caretEnsemble` and `caretStack` are used to create ensemble models from such lists of individual `caret` models. `caretEnsemble` uses a generalized linear model [glm](https://en.wikipedia.org/wiki/Generalized_linear_model) to create a simple weighted combination of the constituent models and `caretStack` uses a specific caret model to combine the outputs from a choice of other component `caret` models. The main advantage of running `caretEnsemble` is that all of the intended individual [`caret`](https://topepo.github.io/caret/) models can be run *"all-at-once"*, rather than running each model seperately ... abbreviating and hopefully clarifying the calibration code. All model fitting processes can be (are) parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are also other options available for this e.g., the [`snowfall`](https://cran.r-project.org/web/packages/snowfall/snowfall.pdf) package, among others. 
+
+The next chunk fits 3 initial models that use the full spectral signatures i.e., the *w* = 2,541 individual wavebands. These are reasonably common linear [Chemometric](https://en.wikipedia.org/wiki/Chemometrics) algorithms and you can learn more about how they work in R from the following links: [`pls`](https://www.rdocumentation.org/packages/mixOmics/versions/6.3.2/topics/pls), [`glmnet`](https://www.rdocumentation.org/packages/glmnet/versions/4.1-1/topics/glmnet) and [`xgbLinear`](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/). I fit these with 10-fold cross-validation and default-tuning of the relevant [hyperparameters](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)). Also, note that that this chunk can take up to 1 hour to run on a normal computer with 4 cores. There are just a lot of variables to sort through.
 
 ```{r, warning = FALSE}
 # Start doParallel to parallelize model fitting
@@ -230,4 +232,24 @@ summary(st)
 
 # Ensemble prediction uncertainty estimates
 
-There are many ways to quantify the uncertainty inherent in these predictions. We take a simple but quite robust approach here using quantile regression with ([quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)). We are mainly interested in the initial spread of the spectral predictions (sensu, their 95% probable intervals).
+There are many ways to quantify the uncertainty inherent in these predictions. We take a simple but quite robust approach here using quantile regression with ([quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)). I am mainly interested in the initial spread of the spectral ensemble predictions (sensu, their 95% probable intervals).
+
+```{r, warning = FALSE}
+adata$pls <- predict.train(llist$pls, adata)
+adata$glm <- predict.train(llist$glmnet, adata)
+adata$xbl <- predict.train(llist$xgbLinear, adata)
+adata$rfo <- predict.train(tlist$rf, adata)
+adata$xbt <- predict.train(tlist$xgbTree, adata)
+adata$cub <- predict.train(tlist$xgbLinear, adata)
+adata$st <- predict(st, adata)
+```
+
+```{r, fig.align = "center", fig.cap = "Quantile regression plot of modeled vs observed reserve acidity (Hp). The blue lines are the 2.5% and 97.5% quantile regression estimates."}
+par(pty="s", mar=c(4,4,1,1))
+plot(Hp~st, xlab="Spectral ensemble Hp prediction", ylab="Measured Hp", cex.lab=1.3, 
+     xlim=c(0,5), ylim=c(0,5), adata)
+curve(stQ$coefficients[2]*x+stQ$coefficients[1], add=T, from=0, to=5, col="blue", lwd=2)
+curve(stQ$coefficients[4]*x+stQ$coefficients[3], add=T, from=0, to=5, col="red", lwd=2)
+curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=5, col="blue", lwd=2)
+```
+
