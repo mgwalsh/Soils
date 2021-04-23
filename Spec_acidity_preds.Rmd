@@ -28,7 +28,7 @@ This notebook is intended for self-learning. It does not go into the details of 
 knitr::include_graphics("./Wetchem/Figures/training_validation.png")
 ```
 
-I'll be using a machine learning approach, which is *algorithmic*, rather than *data modeling* based. You might want to take a look at [Breiman (2001)](http://staff.pubhealth.ku.dk/~tag/Teaching/share/material/Breiman-two-cultures.pdf) to gauge the differences between the *"two cultures"* he describes. The figure above shows the basic workflow of the algorithmic approach that I apply here to predicting reserve acidity (Hp) as an example. The main motivation for using Hp in this example is that AfSIS is currently involved in several new, large-area projects that are focusing on acid soil management and cropland lime requirements. The other operational management aspect of this is that acidity problems should probably be addressed/fixed first, in the areas where they occur, and before attempting to solve e.g., fertilizer input and/or other soil related, agronomic management issues.
+I'll be using a machine learning approach, which is *algorithmic*, rather than *data modeling* based. You might want to take a look at [Breiman (2001)](http://staff.pubhealth.ku.dk/~tag/Teaching/share/material/Breiman-two-cultures.pdf) to gauge the differences between the *"two cultures"* he describes. The figure above shows the basic workflow of the algorithmic approach that I apply here to predicting reserve acidity (Hp) as an example. The main motivation for using Hp in this example is that AfSIS is currently involved in several new, large-area projects that are focusing on acid soil management and cropland lime requirements. The other operational management aspect of this is that acidity problems should probably be diagnosed and fixed first, in the areas where they occur, and before attempting to solve e.g., fertilizer input and/or other soil related, agronomic management issues.
 
 # General data setup
 
@@ -139,7 +139,7 @@ val <- adata[-gsIndex,]
 labs <- c("Hp") ## insert other labels (pH, EC, eCEC, ...) here!
 lcal <- as.vector(t(cal[labs]))
 
-# Spectral calibration features
+# Calibration features
 fcal <- select(cal,26:2566,9) ## full Alpha FT-IR spectral signatures + pH
 pcal <- select(cal,2567:2586,9) ## spectral principal components + pH
 ```
@@ -201,19 +201,23 @@ stopCluster(mc)
 The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another. This chunk initially generates the individual model predictions for the validation dataframe.
 
 ```{r, warning = FALSE}
-val$pls <- predict.train(llist$pls, val)
-val$glm <- predict.train(llist$glmnet, val)
-val$xbl <- predict.train(llist$xgbLinear, val)
-val$rfo <- predict.train(tlist$rf, val)
-val$xbt <- predict.train(tlist$xgbTree, val)
-val$cub <- predict.train(tlist$xgbLinear, val)
+# Calibration features
+fval <- select(val,26:2566,9) ## full Alpha FT-IR spectral signatures + pH
+pval <- select(val,2567:2586,9) ## spectral principal components + pH
+
+val$pls <- predict(llist$pls, fval)
+val$glm <- predict(llist$glmnet, fval)
+val$xbl <- predict(llist$xgbLinear, fval)
+val$rfo <- predict(tlist$rf, pval)
+val$xbt <- predict(tlist$xgbTree, pval)
+val$cub <- predict(tlist$cubist, pval)
 ```
 
 This next chunk fits the model ensemble with the `glmStepAIC` function from the `MASS` library using the **validation dataframe**. You could explore other options here, but I that that this provides a reasonable combination and weighting of the 6 models that were produced in the ensemble training steps.
 
 ```{r, results='hide'}
 lval <- as.vector(t(val[labs]))
-fval <- val[,19:21] ## subset validation features
+fval <- select(val, c("pls", "glm", "xbl", "rfo", "xbt", "cub")) ## subset validation features
 
 # Start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
@@ -240,12 +244,15 @@ summary(st)
 There are many ways to quantify the uncertainty inherent in these predictions. We take a simple but quite robust approach here using quantile regression with ([quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)). I am mainly interested in the initial spread of the spectral ensemble predictions (sensu, their 95% probable intervals).
 
 ```{r, warning = FALSE}
-adata$pls <- predict.train(llist$pls, adata)
-adata$glm <- predict.train(llist$glmnet, adata)
-adata$xbl <- predict.train(llist$xgbLinear, adata)
-adata$rfo <- predict.train(tlist$rf, adata)
-adata$xbt <- predict.train(tlist$xgbTree, adata)
-adata$cub <- predict.train(tlist$xgbLinear, adata)
+fall <- select(adata,26:2566,9) ## full Alpha FT-IR spectral signatures + pH
+pall <- select(adata,2567:2586,9) ## spectral principal components + pH
+
+adata$pls <- predict(llist$pls, fall)
+adata$glm <- predict(llist$glmnet, fall)
+adata$xbl <- predict(llist$xgbLinear, fall)
+adata$rfo <- predict(tlist$rf, pall)
+adata$xbt <- predict(tlist$xgbTree, pall)
+adata$cub <- predict(tlist$cubist, pall)
 adata$st <- predict(st, adata)
 ```
 
