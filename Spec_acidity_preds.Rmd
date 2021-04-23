@@ -174,7 +174,7 @@ llist <- caretList(fcal, lcal,
 stopCluster(mc)
 ```
 
-The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (spc = 20). You can learn more about how they work in R from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)). This chunk runs quite quickly.
+The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (pc = 20). You can learn more about how they work in R from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)). This chunk runs quite quickly.
 
 ```{r, warning = FALSE}
 # Start doParallel to parallelize model fitting
@@ -216,7 +216,7 @@ This next chunk fits the model ensemble with the `glmStepAIC` function from the 
 
 ```{r, results='hide'}
 lval <- as.vector(t(val[labs]))
-fval <- select(val, c("pls", "glm", "xbl", "rfo", "xbt", "cub")) ## subset validation features
+fval <- select(val,pls,glm,xbl,rfo,xbt,cub) ## subset validation features
 
 # Start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
@@ -256,7 +256,7 @@ adata$cub <- predict(tlist$cubist, pall)
 adata$st <- predict(st, adata)
 ```
 
-Run and plot the quantile regression of Hp against the spectral ensemble predictions for the entire dataset.
+Run and plot the quantile regression of Hp against the spectral ensemble predictions.
 
 ```{r}
 stQ <- rq(Hp~st, tau=c(0.025,0.5,0.975), data = adata) ## quantile regression fit
