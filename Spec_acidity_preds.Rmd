@@ -1,5 +1,5 @@
 ---
-title: Spectral ensemble predictions for diagnosing soil acidity
+title: Spectral predictions for diagnosing soil acidity
 author: M.G. Walsh
 date: "`r format(Sys.time(), '%d, %B, %Y')`"
 output:
@@ -36,7 +36,7 @@ To actually run the notebook, you will need to load the packages indicated in th
 
 ```{r}
 # package names
-packages <- c("downloader", "caret", "caretEnsemble", "MASS", "pls", "glmnet", "randomForest", "xgboost", "Cubist", "leaflet", "htmlwidgets", "plyr", "doParallel")
+packages <- c("downloader", "caret", "caretEnsemble", "MASS", "pls", "glmnet", "randomForest", "xgboost", "Cubist", "quantreg", "leaflet", "htmlwidgets", "plyr", "doParallel")
 
 # install packages
 installed_packages <- packages %in% rownames(installed.packages())
@@ -168,7 +168,7 @@ llist <- caretList(fcal, lcal,
 stopCluster(mc)
 ```
 
-The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (spc = 20). You can learn more about how they work in R from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)).
+The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (spc = 20). You can learn more about how they work in R from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)). This chunk runs very quickly.
 
 ```{r, warning = FALSE}
 # Start doParallel to parallelize model fitting
@@ -191,10 +191,9 @@ stopCluster(mc)
 
 # Model stacking and prediction with `caret`
 
-The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another.
+The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another. This chunk initially generates the individual model predictions for the validation dataframe.
 
-```{r}
-# Model predictions for the validation data
+```{r, warning = FALSE}
 val$pls <- predict.train(llist$pls, val)
 val$glm <- predict.train(llist$glmnet, val)
 val$xbl <- predict.train(llist$xgbLinear, val)
@@ -209,11 +208,11 @@ This next chunk fits the model ensemble with the `glmStepAIC` function from the 
 lval <- as.vector(t(val[labs]))
 fval <- val[,19:21] ## subset validation features
 
-# start doParallel to parallelize model fitting
+# Start doParallel to parallelize model fitting
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
-# model setup
+# Model setup and fitting
 set.seed(seed)
 tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel=T)
 
@@ -222,10 +221,13 @@ st <- train(fval, lval,
             trControl = tc,
             metric = "RMSE")
 
-summary(st)
-gs_val$st <- predict(st, gs_val) ## stacked predictions
+val$st <- predict(st, val) ## stacked predictions
 stopCluster(mc)
 fname <- paste("./Results/", labs, "_st.rds", sep = "")
 saveRDS(st, fname)
 summary(st)
 ```
+
+# Ensemble prediction uncertainty estimates
+
+There are many ways to quantify the uncertainty inherent in these predictions. We take a simple but quite robust approach here using quantile regression with ([quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)). We are mainly interested in the initial spread of the spectral predictions (sensu, their 95% probable intervals).
