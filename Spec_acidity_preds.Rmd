@@ -282,5 +282,5 @@ curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=5, col="blue"
 abline(c(0,1), col="grey", lwd=1)
 ```
 
-# Notebook summary & recommendations
+# Summary & recommendations
 
