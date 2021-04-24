@@ -18,7 +18,7 @@ knitr::opts_chunk$set(message = FALSE)
 
 Soil acidity can be thought of as occurring in two forms: as active or *"soil solution acidity"*, measured by pH in water, and as *"reserve acidity"*. The reserve (or exchangeable) acidity, measured by *Hp* (meq H^+^ + Al^3+^ / 100 g soil), is held on soil colloids and controls the overall level of the solution acidity and is generally many times higher than the solution acidity. Hp levels depend on several properties such as the amount and type of clay ([mineralogy](https://en.wikipedia.org/wiki/Mineralogy)), the amount of organic matter, and the exchangeable Ca^2+^, Mg^2+^, K^+^ and Na^+^ cation concentrations of the soil. Thus, two soils may have the same soil pH but completely different lime requirements. 
 
-To effectively raise the soil pH of acid soils over the long-term, both active and reserve acidity should be neutralized. Soil test labs typically determine the buffering capacity and the lime requirement by measuring or estimating reserve acidity; see e.g., the excellent introductory tutorial in [Moorberg & Crouse (v.2)](https://kstatelibraries.pressbooks.pub/soilslabmanual/chapter/soil-acidity-and-adjusting-soil-ph/). Although, soil pH is the trigger for determining when lime is needed for mineral soils, it is not used to determine how much lime is needed to increase pH to the recommended pH range for a specific crop.
+To effectively raise the soil pH of acid soils over the long-term, both active and reserve acidity should be neutralized. Soil test labs typically determine the buffering capacity and the lime requirement by measuring or estimating reserve acidity; see e.g., the excellent introductory tutorial in [Moorberg & Crouse (v.2)](https://kstatelibraries.pressbooks.pub/soilslabmanual/chapter/soil-acidity-and-adjusting-soil-ph/). Although, soil pH is the trigger for determining when lime is needed for mineral soils, it is not used to determine how much lime is needed to increase pH to the recommended pH range for a specific crop. Also, while Hp measurements are not hard to do in a wet chemistry lab, but they are slow and hard to do well. 
 
 The spectral signatures of soils, and materials generally, are defined by their reflectance or absorbance as a function of wavelength in the electromagnetic spectrum. Under controlled conditions, the signatures result from electronic transitions of atoms and vibrational stretching and bending of structural groups of atoms that form molecules or crystals. Mid-infrared (MIR) spectroscopy has been shown to provide highly repeatable, rapid and low cost measurements of many different soil properties in numerous studies. The amount of light absorbed by a soil sample is measured with minimal sample preparation across a wide range of wavelengths to provide a unique spectral signature. A measurement can be performed in about 30 seconds, in contrast to conventional soil tests, which are typically slow, labor-intensive, expensive and/or use harmful chemicals.
 
@@ -146,7 +146,7 @@ fcal <- select(cal,26:2566,9) ## full Alpha FT-IR spectral signatures + pH
 pcal <- select(cal,2567:2586,9) ## spectral principal components + pH
 ```
 
-Note that I also include soil pH (in water) in the calibration features because it is routinely, quickly and cheaply measured in most soil spectral labs (and frequently even in the field). It is also inversely related to Hp. The general notion is that soils with a pH > 7 are unlikely to have any measurable reserve acidity. See the figure below.
+Note that I also include soil pH (in water) in the calibration features because it is routinely, quickly and cheaply measured in most soil spectral labs (and frequently even in the field). It is also inversely (though loosely) related to Hp. The general notion is that soils with a pH > 7 are unlikely to have any significant reserve acidity. See the figure below.
 
 ```{r, fig.align = "center", fig.cap = "Relationship between soil pH and reserve acidity (Hp)."}
 par(pty="s", mar=c(4,4,1,1))
@@ -177,7 +177,7 @@ llist <- caretList(fcal, lcal,
 stopCluster(mc)
 ```
 
-The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (pc = 20). You can learn more about how they work in R from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)). This chunk runs quite quickly.
+The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (pc = 20) + pH. You can learn more about how they work in R from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)). This chunk runs quite quickly.
 
 ```{r, warning = FALSE}
 # Start doParallel to parallelize model fitting
@@ -272,7 +272,7 @@ stQ <- rq(Hp~st, tau=c(0.05,0.5,0.95), data = adata) ## full stacked model
 cuQ <- rq(Hp~cub, tau=c(0.05,0.5,0.95), data = adata) ## cubist model only
 ```
 
-```{r, fig.align = "center", figures-side, fig.show='hold', out.width="50%", fig.cap = "Quantile regression fits of modeled vs observed reserve acidity (Hp). The blue lines are the 5% and 95% quantile regression estimates. On the left are the stacked model predictions, `st`. On the right are the `cubist` based predictions."}
+```{r, fig.align = "center", figures-side, fig.show='hold', out.width="50%", fig.cap = "Quantile regression fits of modeled vs observed reserve acidity (Hp). The blue lines are the 5% and 95% quantile regression estimates. On the left are the stacked model `st` predictions. On the right are the `cubist` based predictions."}
 
 par(pty="s", mar=c(4,4,1,1))
 plot(Hp~st, xlab="Stacked model Hp prediction", ylab="Measured Hp", cex.lab=1.3, 
