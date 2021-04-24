@@ -261,7 +261,7 @@ adata$cub <- predict(tlist$cubist, pall)
 adata$st <- predict(st, adata)
 ```
 
-Run and plot the quantile regression of Hp against the spectral ensemble predictions.
+Run and plot the quantile regression estimates of Hp against the spectral ensemble predictions.
 
 ```{r}
 stQ <- rq(Hp~st, tau=c(0.025,0.5,0.975), data = adata) ## quantile regression fit
