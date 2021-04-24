@@ -16,11 +16,11 @@ knitr::opts_chunk$set(message = FALSE)
 
 # Introduction
 
-Soil acidity can be thought of as occurring in two forms: as active or *"soil solution acidity"*, measured by pH in water, and as *"reserve acidity"*. The reserve (or exchangeable) acidity, measured by *Hp* (meq H^+^ + Al^3+^ / 100 g soil), is held on soil colloids and controls the overall level of soluble or active acidity in the soil solution and is generally many times higher than the active acidity. Hp levels depend on several properties such as the amount and type of clay ([mineralogy](https://en.wikipedia.org/wiki/Mineralogy)), the amount of organic matter, and the exchangeable Ca^2+^, Mg^2+^, K^+^ and Na^+^ cation concentrations of the soil. Thus, two soils may have the same soil pH but completely different lime requirements. 
+Soil acidity can be thought of as occurring in two forms: as active or *"soil solution acidity"*, measured by pH in water, and as *"reserve acidity"*. The reserve (or exchangeable) acidity, measured by *Hp* (meq H^+^ + Al^3+^ / 100 g soil), is held on soil colloids and controls the overall level of the solution acidity and is generally many times higher than the solution acidity. Hp levels depend on several properties such as the amount and type of clay ([mineralogy](https://en.wikipedia.org/wiki/Mineralogy)), the amount of organic matter, and the exchangeable Ca^2+^, Mg^2+^, K^+^ and Na^+^ cation concentrations of the soil. Thus, two soils may have the same soil pH but completely different lime requirements. 
 
-To effectively raise the soil pH of acid soils over the long-term, both active and reserve acidity should be neutralized. Soil test labs typically determine the buffering capacity and the lime requirement by measuring or estimating reserve acidity; see e.g., the excellent introductory tutorial in [Moorberg & Crouse (v.2)](https://kstatelibraries.pressbooks.pub/soilslabmanual/chapter/soil-acidity-and-adjusting-soil-ph/). Although soil pH is the trigger for determining when lime is needed for mineral soils, it is not used to determine how much is needed to increase pH to the recommended pH range for a specific crop.
+To effectively raise the soil pH of acid soils over the long-term, both active and reserve acidity should be neutralized. Soil test labs typically determine the buffering capacity and the lime requirement by measuring or estimating reserve acidity; see e.g., the excellent introductory tutorial in [Moorberg & Crouse (v.2)](https://kstatelibraries.pressbooks.pub/soilslabmanual/chapter/soil-acidity-and-adjusting-soil-ph/). Although, soil pH is the trigger for determining when lime is needed for mineral soils, it is not used to determine how much lime is needed to increase pH to the recommended pH range for a specific crop.
 
-Spectral signatures of soils, and materials generally, are defined by their reflectance or absorbance as a function of wavelength in the electromagnetic spectrum. Under controlled conditions, the signatures result from electronic transitions of atoms and vibrational stretching and bending of structural groups of atoms that form molecules or crystals. Mid-infrared (MIR) spectroscopy has been shown to provide highly repeatable, rapid and low cost measurements of many different soil properties in numerous studies. The amount of light absorbed by a soil sample is measured with minimal sample preparation across a wide range of wavelengths to provide a unique spectral signature. A measurement can be performed in about 30 seconds, in contrast to conventional soil tests, which are typically slow, labor-intensive, expensive and/or use harmful chemicals.
+The spectral signatures of soils, and materials generally, are defined by their reflectance or absorbance as a function of wavelength in the electromagnetic spectrum. Under controlled conditions, the signatures result from electronic transitions of atoms and vibrational stretching and bending of structural groups of atoms that form molecules or crystals. Mid-infrared (MIR) spectroscopy has been shown to provide highly repeatable, rapid and low cost measurements of many different soil properties in numerous studies. The amount of light absorbed by a soil sample is measured with minimal sample preparation across a wide range of wavelengths to provide a unique spectral signature. A measurement can be performed in about 30 seconds, in contrast to conventional soil tests, which are typically slow, labor-intensive, expensive and/or use harmful chemicals.
 
 This notebook is intended for self-learning. It does not go into the details of the [spectroscopy](https://en.wikipedia.org/wiki/Spectroscopy) itself, but instead it focuses on the **spectrometry** and the associated computing workflows that are needed to generate useful predictions from a population of spectral signatures (features) relative to their corresponding reference measurements (labels). In this particular example, I shall use topsoil (0-20 cm) and co-located subsoil (20-50 cm) data that were collected as part of the AfSIS project which sampled the major [Köppen-Geiger climate zones](http://koeppen-geiger.vu-wien.ac.at/) of Africa excluding deserts, urban and other non-photosynthetically active land areas.
 
@@ -62,7 +62,7 @@ download("https://osf.io/f4dpw/?raw=1", "acidity_data.zip", mode="wb")
 unzip("acidity_data.zip", overwrite = T)
 prof <- read.table("profiles.csv", header=T, sep=",") ## sample locations and depths
 cnls <- read.table("cnls.csv", header=T, sep=",") ## wet chemistry data from CNLS, Nairobi
-cnls$xCEC <- cnls$m3Ca/200+cnls$m3Mg/120+cnls$m3K/390+cnls$m3Na/230 ## calculates extractable (xCEC)  
+cnls$xCEC <- cnls$m3Ca/200+cnls$m3Mg/120+cnls$m3K/390+cnls$m3Na/230+cnls$Hp ## calculates extractable (xCEC)  
 text <- read.table("text.csv", header=T, sep=",") ## AfSIS LDPSA soil texture
 oxid <- read.table("oxid.csv", header=T, sep=",") ## AfSIS XRF metal oxide data
 spec <- read.table("alpha_spec.csv", header=T, sep=",") ## AfSIS spectral absorbance data
@@ -114,7 +114,7 @@ adata <- merge(adata, spec, by = "ssid")
 write.csv(adata, "./soil_acidity/Results/AfSIS_acidity_data.csv", row.names=F)
 ```
 
-The other main option is of course to run both types of algorithms (the data regularization/data-selection-based and the data reduction-based), and then look at if they can be usefully combined. This is the approach that I will take here.
+The other main option is of course to run both types of algorithms (the data regularization/selection-based and the data reduction-based), and then look at if they can be usefully combined. This is the approach that I will take here.
 
 # Model training with `caretEnsemble`
 
@@ -244,7 +244,7 @@ saveRDS(st, fname)
 summary(st)
 ```
 
-As can be seen from summary output above panel, the `cubist` predictions outweigh the influence of all of the other model predictions in the `st` ensemble on the validation set, with much smaller contributions from the `glmnet` and `xgbLinear` predictions. This raises the question if a simpler, more parsimonious model, which only uses `cubist` with the spectral principal components plus pH would be a potential alternative as an operational diagnoses of Hp. This would certainly reduce computing times. I explore this in the next section.
+As can be seen from summary output panel above, the `cubist` predictions outweigh the influence of all of the other model predictions in the `st` ensemble on the validation set, with much smaller contributions from the `glmnet` and `xgbLinear` predictions. This raises the question if a simpler, more parsimonious model, which only uses `cubist` with the spectral principal components plus pH would be a potential alternative as an operational diagnoses of Hp. This would certainly reduce computing times. I explore this in the next section.
 
 # Ensemble prediction uncertainty estimates
 
@@ -272,9 +272,9 @@ stQ <- rq(Hp~st, tau=c(0.05,0.5,0.95), data = adata) ## full stacked model
 cuQ <- rq(Hp~cub, tau=c(0.05,0.5,0.95), data = adata) ## cubist model only
 ```
 
-```{r, fig.align = "center", figures-side, fig.show="hold", out.width="50%", fig.cap = "Quantile regression fits of modeled vs observed reserve acidity (Hp). The blue lines are the 5% and 95% quantile regression estimates. On the left is the stacked model predictions, `st`. On the right are the `cubist` based predictions."}
+```{r, fig.align = "center", figures-side, fig.show='hold', out.width="50%", fig.cap = "Quantile regression fits of modeled vs observed reserve acidity (Hp). The blue lines are the 5% and 95% quantile regression estimates. On the left are the stacked model predictions, `st`. On the right are the `cubist` based predictions."}
 
-par(pty="s", mar=c(2,2,1,1))
+par(pty="s", mar=c(4,4,1,1))
 plot(Hp~st, xlab="Stacked model Hp prediction", ylab="Measured Hp", cex.lab=1.3, 
      xlim=c(0,5), ylim=c(0,5), adata)
 curve(stQ$coefficients[2]*x+stQ$coefficients[1], add=T, from=0, to=5, col="blue", lwd=2)
@@ -282,14 +282,13 @@ curve(stQ$coefficients[4]*x+stQ$coefficients[3], add=T, from=0, to=5, col="red",
 curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=5, col="blue", lwd=2)
 abline(c(0,1), col="grey", lwd=1)
 
-par(pty="s", mar=c(2,2,1,1))
 plot(Hp~cub, xlab="Cubist Hp prediction", ylab="Measured Hp", cex.lab=1.3, 
      xlim=c(0,5), ylim=c(0,5), adata)
-curve(stQ$coefficients[2]*x+stQ$coefficients[1], add=T, from=0, to=5, col="blue", lwd=2)
-curve(stQ$coefficients[4]*x+stQ$coefficients[3], add=T, from=0, to=5, col="red", lwd=2)
-curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=0, to=5, col="blue", lwd=2)
+curve(cuQ$coefficients[2]*x+cuQ$coefficients[1], add=T, from=0, to=5, col="blue", lwd=2)
+curve(cuQ$coefficients[4]*x+cuQ$coefficients[3], add=T, from=0, to=5, col="red", lwd=2)
+curve(cuQ$coefficients[6]*x+cuQ$coefficients[5], add=T, from=0, to=5, col="blue", lwd=2)
 abline(c(0,1), col="grey", lwd=1)
 ```
 
-# Summary & recommendations
+# Conclusions and recommendations
 ...
