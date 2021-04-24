@@ -16,13 +16,13 @@ knitr::opts_chunk$set(message = FALSE)
 
 # Introduction
 
-Soil acidity can be thought of as occurring in two forms: as active or *"soil solution acidity"*, measured by pH in water, and as *"reserve acidity"*. The reserve (or exchangeable) acidity, measured by Hp (meq H^+^ + Al^3+^ / 100 g soil), is held on soil colloids and controls the overall level of soluble or active acidity in the soil solution, and is generally many times higher than the active acidity. Hp levels depend on several properties such as the amount and type of clay ([mineralogy](https://en.wikipedia.org/wiki/Mineralogy)), the amount of organic matter, and the soluble Al, Ca, Mg, K and Na cation concentrations of the soil. Thus, two soils may have the same soil pH but completely different lime requirements. 
+Soil acidity can be thought of as occurring in two forms: as active or *"soil solution acidity"*, measured by pH in water, and as *"reserve acidity"*. The reserve (or exchangeable) acidity, measured by *Hp* (meq H^+^ + Al^3+^ / 100 g soil), is held on soil colloids and controls the overall level of soluble or active acidity in the soil solution and is generally many times higher than the active acidity. Hp levels depend on several properties such as the amount and type of clay ([mineralogy](https://en.wikipedia.org/wiki/Mineralogy)), the amount of organic matter, and the exchangeable Ca^2+^, Mg^2+^, K^+^ and Na^+^ cation concentrations of the soil. Thus, two soils may have the same soil pH but completely different lime requirements. 
 
-To effectively raise the soil pH over the long-term, both active and reserve acidity should be neutralized. Soil test labs typically determine the buffering capacity and the lime requirement by measuring or estimating reserve acidity; see e.g., the excellent introductory tutorial in [Moorberg & Crouse (v.2)](https://kstatelibraries.pressbooks.pub/soilslabmanual/chapter/soil-acidity-and-adjusting-soil-ph/). Although soil tests determine pH cheaply and rapidly, it is not possible to make an accurate lime recommendation based solely pH measurements.
+To effectively raise the soil pH of acid soils over the long-term, both active and reserve acidity should be neutralized. Soil test labs typically determine the buffering capacity and the lime requirement by measuring or estimating reserve acidity; see e.g., the excellent introductory tutorial in [Moorberg & Crouse (v.2)](https://kstatelibraries.pressbooks.pub/soilslabmanual/chapter/soil-acidity-and-adjusting-soil-ph/). Although soil pH is the trigger for determining when lime is needed for mineral soils, it is not used to determine how much is needed to increase pH to the recommended pH range for a specific crop.
 
 Spectral signatures of soils, and materials generally, are defined by their reflectance or absorbance as a function of wavelength in the electromagnetic spectrum. Under controlled conditions, the signatures result from electronic transitions of atoms and vibrational stretching and bending of structural groups of atoms that form molecules or crystals. Mid-infrared (MIR) spectroscopy has been shown to provide highly repeatable, rapid and low cost measurements of many different soil properties in numerous studies. The amount of light absorbed by a soil sample is measured with minimal sample preparation across a wide range of wavelengths to provide a unique spectral signature. A measurement can be performed in about 30 seconds, in contrast to conventional soil tests, which are typically slow, labor-intensive, expensive and/or use harmful chemicals.
 
-This notebook is intended for self-learning. It does not go into the details of [spectroscopy](https://en.wikipedia.org/wiki/Spectroscopy) itself, but instead it focuses on the **spectrometry**, that is the steps that are needed to generate useful predictions from a population of spectral signatures (features) relative to their corresponding reference measurements (labels). In this particular example, I shall use topsoil (0-20 cm) and subsoil (20-50 cm) data that were sampled as part of the AfSIS project which sampled the major [Köppen-Geiger climate zones](http://koeppen-geiger.vu-wien.ac.at/) of Africa excluding deserts, urban and other non-photosynthetically active land areas. 
+This notebook is intended for self-learning. It does not go into the details of [spectroscopy](https://en.wikipedia.org/wiki/Spectroscopy) itself, but instead it focuses on the **spectrometry** and computing workflows that are needed to generate useful predictions from a population of spectral signatures (features) relative to their corresponding reference measurements (labels). In this particular example, I shall use topsoil (0-20 cm) and subsoil (20-50 cm) data that were collected as part of the AfSIS project which sampled the major [Köppen-Geiger climate zones](http://koeppen-geiger.vu-wien.ac.at/) of Africa excluding deserts, urban and other non-photosynthetically active land areas. 
 
 ```{r training_validation_approach, echo=FALSE, fig.align="center", fig.cap="MLA training, validation and prediction workflow.", out.width = '80%'}
 knitr::include_graphics("./Wetchem/Figures/training_validation.png")
@@ -61,7 +61,7 @@ download("https://osf.io/f4dpw/?raw=1", "acidity_data.zip", mode="wb")
 unzip("acidity_data.zip", overwrite = T)
 prof <- read.table("profiles.csv", header=T, sep=",") ## sample locations and depths
 cnls <- read.table("cnls.csv", header=T, sep=",") ## wet chemistry data from CNLS, Nairobi
-cnls$xCEC <- cnls$m3Ca/200+cnls$m3Mg/120+cnls$m3K/390+cnls$m3Na/230 ## calculates extractable xCEC  
+cnls$xCEC <- cnls$m3Ca/200+cnls$m3Mg/120+cnls$m3K/390+cnls$m3Na/230 ## calculates extractable (xCEC)  
 text <- read.table("text.csv", header=T, sep=",") ## AfSIS LDPSA soil texture
 oxid <- read.table("oxid.csv", header=T, sep=",") ## AfSIS XRF metal oxide data
 spec <- read.table("alpha_spec.csv", header=T, sep=",") ## AfSIS spectral absorbance data
@@ -145,7 +145,7 @@ fcal <- select(cal,26:2566,9) ## full Alpha FT-IR spectral signatures + pH
 pcal <- select(cal,2567:2586,9) ## spectral principal components + pH
 ```
 
-Note that I also include soil pH (in water) in the calibration features because it is routinely, quickly and cheaply measured in most soil spectral labs (and frequently even in the field). It is also closely related to Hp. The general notion is that soils with a pH > 7 are unlikely to have any measurable reserve acidity. See the figure below.
+Note that I also include soil pH (in water) in the calibration features because it is routinely, quickly and cheaply measured in most soil spectral labs (and frequently even in the field). It is also related to Hp. The general notion is that soils with a pH > 7 are unlikely to have any measurable reserve acidity. See the figure below.
 
 ```{r, fig.align = "center", fig.cap = "Relationship between soil pH and reserve acidity (Hp)."}
 par(pty="s", mar=c(4,4,1,1))
@@ -155,7 +155,7 @@ plot(Hp~pH, xlab="pH (water)", ylab="Hp (meq / 100 g soil)", cex.lab=1.3,
 
 [**`caretEnsemble`**](https://cran.r-project.org/web/packages/caretEnsemble/caretEnsemble.pdf) has 3 primary functions: `caretList`, `caretEnsemble` and `caretStack`. `caretList` is used to build lists of caret models on the same training data, with the same model resampling parameters. `caretEnsemble` and `caretStack` are used to create ensemble models from such lists of individual `caret` models. `caretEnsemble` uses a generalized linear model [glm](https://en.wikipedia.org/wiki/Generalized_linear_model) to create a simple weighted combination of the constituent models and `caretStack` uses a specific caret model to combine the outputs from a choice of other component `caret` models. The main advantage of running `caretEnsemble` is that the intended individual [`caret`](https://topepo.github.io/caret/) models can be run *"all-at-once"*, rather than running each model separately ... abbreviating and hopefully clarifying the calibration code. All model fitting processes can be (are) parallelized to facilitate efficient use of either local or cloud-based computing resources. Note that there are also other options available for this e.g., the [`snowfall`](https://cran.r-project.org/web/packages/snowfall/snowfall.pdf) package, among others. 
 
-The next chunk fits 3 initial models that use the full spectral signatures i.e., the *w* = 2,541 individual wavebands. These are reasonably common linear [Chemometric](https://en.wikipedia.org/wiki/Chemometrics) algorithms and you can learn more about how they work in R from the following links: [`pls`](https://www.rdocumentation.org/packages/mixOmics/versions/6.3.2/topics/pls), [`glmnet`](https://www.rdocumentation.org/packages/glmnet/versions/4.1-1/topics/glmnet) and [`xgbLinear`](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/). I fit these with 10-fold cross-validation and default-tuning of the relevant [hyperparameters](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)). Also, note that that this chunk can take up to 1 hour to run on a normal computer with 4 cores. There are just a lot of variables to sort through.
+The next chunk fits 3 initial models that use the full spectral signatures i.e., the *w* = 2,541 individual wavebands. These are reasonably common linear [Chemometric](https://en.wikipedia.org/wiki/Chemometrics) algorithms and you can learn more about how they work in R from the following links: [`pls`](https://www.rdocumentation.org/packages/mixOmics/versions/6.3.2/topics/pls), [`glmnet`](https://www.rdocumentation.org/packages/glmnet/versions/4.1-1/topics/glmnet) and [`xgbLinear`](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/). I fit these with 10-fold cross-validation and default-tuning of the relevant [hyperparameters](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)). Also, note that that this chunk can take up to 1 hour to run on a normal computer with 4 cores and 16 Gb of RAM. There are just a lot of variables to sort through.
 
 ```{r, warning = FALSE}
 # Start doParallel to parallelize model fitting
@@ -243,9 +243,11 @@ saveRDS(st, fname)
 summary(st)
 ```
 
+As can be seen from summary output above the `cubist` predictions outweigh the influence of all of the other model predictions in the `st` ensemble on the validation set. This raises the question if a simpler, more pasimonious model, which just uses the `cubist` MLA with the spectral principal components plus pH would be a potential alternative for operational diagnoses of Hp. This would certainly reduce computing times and might be implemented in an online system.
+
 # Ensemble prediction uncertainty estimates
 
-There are many ways to quantify the uncertainty inherent in these predictions. We take a simple but quite robust approach here using quantile regression with ([quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)). I am mainly interested in the overall spread of the spectral ensemble predictions (sensu, their 95% probable intervals for the entire dataset).
+There are many ways to quantify the uncertainty inherent in these predictions. We take a simple but quite robust approach here using quantile regression with ([quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf)). I am mainly interested in the overall spread of the spectral ensemble predictions (sensu, their 90% probable intervals for the entire dataset).
 
 ```{r, warning = FALSE}
 # All features
@@ -261,14 +263,14 @@ adata$cub <- predict(tlist$cubist, pall)
 adata$st <- predict(st, adata)
 ```
 
-Run and plot the quantile regression estimates of Hp against the spectral ensemble predictions.
+Run and plot the quantile regression estimates of Hp against the `st` spectral ensemble predictions.
 
 ```{r}
-stQ <- rq(Hp~st, tau=c(0.025,0.5,0.975), data = adata) ## quantile regression fit
+stQ <- rq(Hp~st, tau=c(0.05,0.5,0.95), data = adata) ## quantile regression fit
 print(stQ)
 ```
 
-```{r, fig.align = "center", fig.cap = "Quantile regression fits of modeled vs observed reserve acidity (Hp). The blue lines are the 2.5% and 97.5% quantile regression estimates."}
+```{r, fig.align = "center", fig.cap = "Quantile regression fits of modeled vs observed reserve acidity (Hp). The blue lines are the 5% and 95% quantile regression estimates."}
 par(pty="s", mar=c(4,4,1,1))
 plot(Hp~st, xlab="Spectral ensemble Hp prediction", ylab="Measured Hp", cex.lab=1.3, 
      xlim=c(0,5), ylim=c(0,5), adata)
