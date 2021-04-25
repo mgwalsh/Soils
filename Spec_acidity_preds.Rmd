@@ -146,7 +146,7 @@ fcal <- select(cal,26:2566,9) ## full Alpha FT-IR spectral signatures + pH
 pcal <- select(cal,2567:2586,9) ## spectral principal components + pH
 ```
 
-Note that I also include soil pH (in water) in the calibration features because it is routinely, quickly and cheaply measured in most soil spectral labs (and frequently even in the field). It is also inversely (though loosely) related to Hp. The general notion is that soils with a pH > 7 are unlikely to have any significant reserve acidity. See the figure below.
+Note that I also include soil pH (in water) in the calibration features because it is routinely, quickly and cheaply measured in most soil spectral labs (and frequently even in the field). It is also inversely (though loosely) related to Hp. The general notion is that soils with a pH > 7 are unlikely to have any significant reserve acidity (see the figure below).
 
 ```{r, fig.align = "center", fig.cap = "Relationship between soil pH and reserve acidity (Hp)."}
 par(pty="s", mar=c(4,4,1,1))
