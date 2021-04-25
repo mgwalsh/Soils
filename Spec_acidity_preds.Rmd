@@ -244,7 +244,7 @@ saveRDS(st, fname)
 summary(st)
 ```
 
-As can be seen from summary output panel above, the `cubist` predictions outweigh the influence of all of the other models in the `st` ensemble predictions on the validation set, with much smaller contributions from the `glmnet` and `xgbLinear` models. This raises the question if a simpler, more parsimonious model, which only uses `cubist` with the spectral principal components plus pH would be a potential alternative to provide operational diagnoses of Hp. This would certainly reduce computing times and also lend itself automization. I explore this in the next section.
+As can be seen from summary output panel above, the `cubist` predictions outweigh the influence of all of the other models in the `st` ensemble predictions on the validation set, with much smaller contributions from the `glmnet` and `xgbLinear` models. This raises the question if a simpler, more parsimonious model, which only uses `cubist` with the spectral principal components plus pH would be a potential alternative to provide operational diagnoses of Hp. This would certainly reduce computing times and also lend itself automation. I explore this in the next section.
 
 # Ensemble prediction uncertainty estimates
 
@@ -294,5 +294,5 @@ curve(cuQ$coefficients[6]*x+cuQ$coefficients[5], add=T, from=0, to=5, col="blue"
 abline(c(0,1), col="grey", lwd=1)
 ```
 
-Just by visual inspection of the 2 plots, they do not appear to be much different. Note however, that this is a somewhat atypical situation that would not be the case for most other soil properties. The general rule is that a properly calibrated and validated ensemble model will not perform any worse than the best constituent model in the stack, `st` ... but sometimes much better. This statement also describes the example used in the this notebook with the ensemble having a slightly lower (neglible) validation RMSE the `cubist` model. If you have run all of the R chunks in this notebook you can always check that contention. Then if all went well, the prediction file to check should be at `./soil_acidity/Results/Hp_preds.csv` in your working directory. 
+Just by visual inspection the 2 plots are quite similar, and there is actually a near perfect correlation between them. Note however, that this is a somewhat atypical situation that would not be the case for most other soil property predictions. The general rule is that a properly calibrated and validated ensemble model will not perform any worse than the best constituent model in the stack, `st` ... but sometimes much better. This statement also describes the example used in the this notebook with the ensemble having a slightly lower (neglible) validation RMSE the `cubist` model. If you have run all of the R chunks in this notebook you can always check that contention. Then if all went well, the prediction file to check should be at `./soil_acidity/Results/Hp_preds.csv` in your working directory. 
 
