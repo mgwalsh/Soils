@@ -20,9 +20,9 @@ Soil acidity can be thought of as occurring in two forms: as active or *"soil so
 
 To effectively raise the soil pH of acid soils over the long-term, both active and reserve acidity should be neutralized. Soil test labs typically determine the buffering capacity and the lime requirement by measuring or estimating reserve acidity; see e.g., the excellent introductory tutorial in [Moorberg & Crouse (v.2)](https://kstatelibraries.pressbooks.pub/soilslabmanual/chapter/soil-acidity-and-adjusting-soil-ph/). Although, soil pH is the trigger for determining when lime is needed for mineral soils, it is not used to determine how much lime is needed to increase pH to the recommended pH range for a specific crop. Also, while Hp measurements are not hard to do in a wet chemistry lab, they are slow and hard to do well. 
 
-The spectral signatures of soils, and materials generally, are defined by their reflectance or absorbance as a function of wavelength in the electromagnetic spectrum. Under controlled conditions, the signatures result from electronic transitions of atoms and vibrational stretching and bending of structural groups of atoms that form molecules or crystals. Mid-infrared (MIR) spectroscopy has been shown to provide highly repeatable, rapid and low cost measurements of many different soil properties in numerous studies. The amount of light absorbed by a soil sample is measured with minimal sample preparation across a wide range of wavelengths to provide a unique spectral signature. A measurement can be performed in about 30 seconds, in contrast to conventional soil tests, which are typically slow, labor-intensive, expensive and/or use harmful chemicals.
+The spectral signatures of soils, and materials generally, are defined by their reflectance or absorbance as a function of wavelength in the electromagnetic spectrum. Under controlled conditions, the signatures result from electronic transitions of atoms and vibrational stretching and bending of structural groups of atoms that form molecules or crystals. Mid-infrared (MIR) spectroscopy has been shown to provide highly repeatable, rapid and low cost measurements of many different soil properties in numerous studies. The amount of light absorbed by a soil sample is measured with minimal sample preparation (drying and fine grinding) across a wide range of wavelengths to provide a unique spectral signature. An individual measurement can be performed in about 30 seconds, in contrast to conventional soil tests, which are typically slow, labor-intensive, expensive and/or use harmful chemicals.
 
-This notebook is intended for self-learning. It does not go into the details of the [spectroscopy](https://en.wikipedia.org/wiki/Spectroscopy) itself, but instead it focuses on **spectrometry** and the associated computing workflows that are needed to generate useful predictions from a population of spectral signatures (features) relative to their corresponding reference measurements (labels). In this particular example, I shall use topsoil (0-20 cm) and co-located subsoil (20-50 cm) data that were collected as part of the AfSIS project which sampled the major [Köppen-Geiger climate zones](http://koeppen-geiger.vu-wien.ac.at/) of Africa excluding deserts, urban and other non-photosynthetically active land areas.
+This notebook is intended for self-learning. It does not go into the details of the [spectroscopy](https://en.wikipedia.org/wiki/Spectroscopy) itself, but instead it focuses on **spectrometry** processes and the associated computing workflows that are needed to generate useful predictions from a population of spectral signatures (features) relative to their corresponding reference measurements (labels). In this particular example, I shall use topsoil (0-20 cm) and co-located subsoil (20-50 cm) data that were collected as part of the AfSIS project which sampled the major [Köppen-Geiger climate zones](http://koeppen-geiger.vu-wien.ac.at/) of Africa excluding deserts, urban and other non-photosynthetically active land areas.
 
 ```{r training_validation_approach, echo=FALSE, fig.align="center", fig.cap="MLA training, validation and prediction workflow.", out.width = '80%'}
 knitr::include_graphics("./Wetchem/Figures/training_validation.png")
@@ -177,7 +177,7 @@ llist <- caretList(fcal, lcal,
 stopCluster(mc)
 ```
 
-The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (pc = 20) + pH. You can learn more about how they work in R from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)). This chunk runs quite quickly.
+The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (pc = 20) + pH. You can learn more about how they work in R from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)). This actually runs quite quickly on a normal computer.
 
 ```{r, warning = FALSE}
 # Start doParallel to parallelize model fitting
@@ -244,7 +244,7 @@ saveRDS(st, fname)
 summary(st)
 ```
 
-As can be seen from summary output panel above, the `cubist` predictions outweigh the influence of all of the other model predictions in the `st` ensemble on the validation set, with much smaller contributions from the `glmnet` and `xgbLinear` predictions. This raises the question if a simpler, more parsimonious model, which only uses `cubist` with the spectral principal components plus pH would be a potential alternative as an operational diagnoses of Hp. This would certainly reduce computing times. I explore this in the next section.
+As can be seen from summary output panel above, the `cubist` predictions outweigh the influence of all of the other models in the `st` ensemble predictions on the validation set, with much smaller contributions from the `glmnet` and `xgbLinear` models. This raises the question if a simpler, more parsimonious model, which only uses `cubist` with the spectral principal components plus pH would be a potential alternative to provide operational diagnoses of Hp. This would certainly reduce computing times and also lend itself automization. I explore this in the next section.
 
 # Ensemble prediction uncertainty estimates
 
@@ -262,6 +262,10 @@ adata$rfo <- predict(tlist$rf, pall)
 adata$xbt <- predict(tlist$xgbTree, pall)
 adata$cub <- predict(tlist$cubist, pall)
 adata$st <- predict(st, adata)
+
+# Write out predictions
+preds <- select(adata,1,11,2587:2593) ## change manually here if you are analyzing other labels (pH, xCEC etc)
+write.csv(preds, "./soil_acidity/Results/Hp_preds_final.csv", row.names=F)
 ```
 
 Run and plot the quantile regression estimates of Hp against the `st` spectral ensemble predictions.
@@ -290,5 +294,5 @@ curve(cuQ$coefficients[6]*x+cuQ$coefficients[5], add=T, from=0, to=5, col="blue"
 abline(c(0,1), col="grey", lwd=1)
 ```
 
-Just from visual inspection of the 2 plots there does not appear to be much difference between the full ensemble and the cubist models in this particular example. Note that this somewhat unusual and will not be the case for most other soil properties. The general rule is that a properly calibrated and validated ensemble model will not be any worse than the best constituent model in the stack. This also describes the example used in the this notebook with the ensemble having a slightly lower validation RMSE the the cubist model ... you can check this if you wish. 
+Just by visual inspection of the 2 plots, they do not appear to be much different. Note however, that this is somewhat atypical and will not be the case for most other soil properties. The general rule is that a properly calibrated and validated ensemble model will not perform any worse than the best constituent model in the stack, `st` ... but sometimes much better. This statement also describes the example used in the this notebook with the ensemble having a slightly lower (neglible) validation RMSE the `cubist` model. If you have run all of the R chunks in this notebook you can always check that statement. If all went well, the prediction file to check should be at `./soil_acidity/Results/Hp_preds.csv` in your working directory. 
 
