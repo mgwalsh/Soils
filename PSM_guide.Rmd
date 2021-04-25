@@ -118,7 +118,7 @@ set.seed(1235813)
 gsdat <- gsdat[sample(1:nrow(gsdat)), ]
 ```
 
-The following chunk then writes out the randomized dataframe `RW_soil_data.csv` into your `./Wetchem/Results` directory if you'd like to process those outputs in software other than R. It also generates a location map of where those soil samples were obtained.
+The following chunk then writes out the randomized dataframe `RW_soil_data.csv` into your `./Wetchem/Results` directory, if you'd like to process those outputs in software other than R. It also generates a location map of where those soil samples were obtained.
 
 ```{r}
 # Write data frame --------------------------------------------------------
