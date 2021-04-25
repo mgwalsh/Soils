@@ -268,7 +268,7 @@ preds <- select(adata,1,11,2587:2593) ## change manually here if you are analyzi
 write.csv(preds, "./soil_acidity/Results/Hp_preds_final.csv", row.names=F)
 ```
 
-Run and plot the quantile regression estimates of Hp against the `st` spectral ensemble predictions.
+Run and plot the quantile regression estimates of Hp against the spectral predictions.
 
 ```{r}
 # Quantile regression fits
