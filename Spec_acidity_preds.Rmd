@@ -177,7 +177,7 @@ llist <- caretList(fcal, lcal,
 stopCluster(mc)
 ```
 
-The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (pc = 20) + pH. You can learn more about how they work in R from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf)). This actually runs quite quickly on a normal computer.
+The next chunk fits 3 additional, tree/forest based MLAs that use the that use the spectral principal component scores (pc = 20) + pH. You can learn more about how they work in R from the following links at: [randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/) and [Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf). This actually runs quite quickly on a normal computer.
 
 ```{r, warning = FALSE}
 # Start doParallel to parallelize model fitting
