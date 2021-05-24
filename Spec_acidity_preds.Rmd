@@ -301,7 +301,7 @@ The main takeaways for this notebook are the following:
 
 * This notebook produces accurate spectral predictions of the *reserve acidity* of soils based on a completely reproducible, *standard* ensemble machine learning workflow (e.g., see [Rocca, 2019](https://towardsdatascience.com/ensemble-methods-bagging-boosting-and-stacking-c9214a10a205)).
 
-* The workflow can be flexibly extended to model and predict other soil acidity related variables (e.g., pH, xCEC, EC, SOC, Ca:Mg, K, and Na among others). It can also be rapidly extended to cover new geographical regions of interest and soil testing laboratories operationally.
+* The workflow can be flexibly extended to model and predict other soil acidity related variables (e.g., pH, xCEC, EC, SOC, Ca:Mg, K, Na and metal oxides among others). It can also be rapidly extended to support new geographical regions of interest and soil testing laboratories operationally.
 
 * The workflow outputs can be used to improve the precision, reduce the costs of and the environmental footprints of soil acidity monitoring in survey, experimental, monitoring and/or potentially operational applications that focus on soil acidity management.
 
