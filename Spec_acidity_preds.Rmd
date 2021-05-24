@@ -26,7 +26,7 @@ This notebook is intended for self-learning. It does not go into the details of 
 
 # General data setup
 
-To actually run the notebook, you will need to load the packages indicated in the chunk directly below. This allows you to assemble the wet chemistry and spectral dataframes providing a lot of options to generate spectral predictions of acidity relevant soil properties such as pH, EC, Hp, xCEC Ca:Mg, among others. The notebook itself is maintained on my [Github](https://github.com/mgwalsh/Soils/blob/master/Spec_acidity_preds.Rmd), and you can fork and modify it from there as you see fit.
+To actually run the notebook, you will need to load the packages indicated in the chunk directly below. This allows you to assemble the wet chemistry and spectral dataframes providing a lot of options to generate spectral predictions of acidity relevant soil properties such as pH, EC, CEC, SOC, Ca:Mg, mineralogy among others. The notebook itself is maintained on my [Github](https://github.com/mgwalsh/Soils/blob/master/Spec_acidity_preds.Rmd), and you can fork and modify it from there as you see fit.
 
 ```{r}
 # Package names
@@ -91,7 +91,7 @@ One potentially problematic factor for many MLAs is the [*"Curse of dimensionali
 
 Other algorithms such as [Partial least squares regression (PLS)](https://en.wikipedia.org/wiki/Partial_least_squares_regression), [Ridge regression](https://en.wikipedia.org/wiki/Ridge_regression) and/or [Lasso regression](https://en.wikipedia.org/wiki/Lasso_(statistics)) handle the high dimensional data and collinearities well in a linear context but are frequently not very good at predicting the common non-linear and/or threshold relationships between the spectral signatures and their reference measurements.
 
-There are some ways of mitigating these trade offs. The first is to reduce the dimensionality and collinearity of the spectral data. There are a number of pre-processing techniques that can be applied in that context including: [Principal components analysis (PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis), [Independent components analysis (ICA)](https://en.wikipedia.org/wiki/Independent_component_analysis) as well as other signal processing techniques such as, [Non-negative matrix factorization (NMF)](https://en.wikipedia.org/wiki/Non-negative_matrix_factorization). I use PCA here, and the next chunk appends the spectra and their resulting spectral component scores to the wet chemistry reference data.
+There are some ways of mitigating these trade-offs. The first is to reduce the dimensionality and collinearity of the spectral data. There are a number of pre-processing techniques that can be applied in that context including: [Principal components analysis (PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis), [Independent components analysis (ICA)](https://en.wikipedia.org/wiki/Independent_component_analysis) as well as other signal processing techniques such as, [Non-negative matrix factorization (NMF)](https://en.wikipedia.org/wiki/Non-negative_matrix_factorization). I use PCA here, and the next chunk appends the spectra and their resulting spectral component scores to the wet chemistry reference data.
 
 ```{r}
 # Spectral principal components
