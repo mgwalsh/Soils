@@ -305,5 +305,5 @@ The main takeaways for this notebook are the following:
 
 * The workflow's predictions could be used reliably/operationally to improve the precision, reduce the costs of and the environmental footprints of soil acidity monitoring in survey, mapping, experimental and monitoring applications that focus on soil acidity (or alternatively salinity/sodicity) management of agricultural land.
 
-Computationally the calibration and validation code for this notebook are somewhat challenging in R ... and require patience because they run relatively slowly on a *normal computer* (8 core, 16 Gb ... >1 hour). I will try to update those to include cloud-based and/or GPU solutions to those for larger datasets in the future as needed and/or requested.
+Computationally the calibration and validation code for this notebook are somewhat challenging in R ... and require patience because they run relatively slowly on a *normal computer* (8 core, 16 Gb ... >1 hour). I will try to update the code to include cloud-based and/or GPU solutions to those for larger datasets in the future as needed and/or requested.
 
