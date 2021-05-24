@@ -303,5 +303,5 @@ The main takeaways for this notebook are the following:
 
 * The workflow can be flexibly changed to model and predict other soil acidity related variables (e.g., pH, EC, CEC, SOC, Ca:Mg and other metal oxide concentrations, among others). It can also be rapidly extended to support new geographical regions of interest and/or their respective soil testing laboratories operationally.
 
-* The workflow's predictions can be used reliably to improve the precision, reduce the costs of and the environmental footprints of soil acidity monitoring in survey, mapping, experimental, monitoring and/or operational applications that focus on soil acidity (or alternatively salinity/sodicity) management of agricultural land.
+* The workflow's predictions could be used reliably to improve the precision, reduce the costs of and the environmental footprints of soil acidity monitoring in survey, mapping, experimental, monitoring and/or operational applications that focus on soil acidity (or alternatively salinity/sodicity) management of agricultural land.
 
