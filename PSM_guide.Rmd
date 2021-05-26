@@ -31,16 +31,16 @@ In the last section of the notebook, we produce initial (robust) uncertainty est
 To run this notebook, you will need to load the packages indicated in the chunk directly below. This allows you to assemble the different example dataframes and rasters providing a lot of options to generate spatial predictions via machine learning and/or geostatistical algorithms. We encourage you to explore the many options in this context!
 
 ```{r}
-# package names
+# Package names
 packages <- c("downloader", "rgdal", "sp", "raster", "quantreg", "leaflet", "DT", "htmlwidgets", "devtools", "caret", "mgcv", "MASS", "randomForest", "xgboost", "nnet", "Cubist", "plyr", "doParallel")
 
-# install packages
+# Install packages
 installed_packages <- packages %in% rownames(installed.packages())
 if (any(installed_packages == FALSE)) {
   install.packages(packages[!installed_packages])
 }
 
-# load packages
+# Load packages
 invisible(lapply(packages, library, character.only = TRUE))
 ```
 
@@ -135,7 +135,7 @@ w ## plot widget
 
 # Machine-learning-based predictive mapping with `caret`
 
-The following chunks predict topsoil soil pH values using different machine learning algorithms (MLAs) with varying remote sensing and GIS (feature) inputs using the [`caret`](https://topepo.github.io/caret/) package. The generalized MLA prediction workflow is shown in the figure below. This approach has won a lot of data science competitions e.g., at [Kaggle](https://www.kaggle.com/). You may want to take a look there. They have some fantastic data science resources, courses and challenges openly available.
+The following chunks predict topsoil soil pH values using contrasting machine learning algorithms (MLAs) with varying remote sensing and GIS (feature) inputs using the [`caret`](https://topepo.github.io/caret/) package. The generalized MLA prediction workflow is shown in the figure below. This approach has won a lot of data science competitions e.g., at [Kaggle](https://www.kaggle.com/). You may want to take a look there. They have some fantastic data science resources, courses and challenges openly available.
 
 ```{r training_validation_approach, echo=FALSE, fig.align="center", fig.cap="MLA training, validation and prediction workflow.", out.width = '80%'}
 knitr::include_graphics("./Wetchem/Figures/training_validation.png")
@@ -283,7 +283,7 @@ saveRDS(rf, fname)
 
 ## Extreme gradient boosting ([xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/))
 
-This next chunk represents one of the *boosting* techniques that can be used for both regression or classification. It is similar to the `randomForest` above, but uses a boosting technique that emphasizes successful predictions rather than penalizing poor predictions via *bagging*. There is a wide-array of literature around the so-called *"greedy algorithms"*. Very good descriptions of these are provided in [Hastie et al, 2009](https://web.stanford.edu/~hastie/ElemStatLearn/).
+This next chunk represents one of the *boosting* techniques that can be used for both regression or classification. It is similar to the `randomForest` MLA above, but uses a boosting technique that emphasizes successful predictions rather than penalizing poor predictions via *bagging*. There is a wide-array of literature around the so-called *greedy algorithms*. Very good descriptions of these are provided in [Hastie et al, 2009](https://web.stanford.edu/~hastie/ElemStatLearn/).
 
 ```{r, results='hide'}
 # start doParallel to parallelize model fitting
@@ -436,6 +436,10 @@ curve(stQ$coefficients[6]*x+stQ$coefficients[5], add=T, from=3, to=9, col="blue"
 ```
 
 # Takeaways
+
+* The machine learning workflow presented in this notebook produces precise and accurate predictions of topsoil pH values of Rwanda based on georeferenced legacy data. It can be flexibly updated as new data e.g., via the [RwaSIS project](https://minagri.prod.risa.rw/updates/news-details/rwanda-launches-soil-information-service-project-to-improve-agriculture-productivity) become available over the coming year.
+
+* The workflow can be easily changed to model and predict the spatial distributions other important soil properties e.g., SOC, N, P, K, Ca, Mg and Na concentrations, among others. It can also be rapidly extended to support new geographical regions of interest and their respective soil mapping institutions, operationally and at low cost.
 
 As a final thought about this notebook: should you come up with a better set of data-sources, analysis suggestions, approaches, algorithms or predictions around these data, we would certainly like to hear about them! You can always contact us at [AFSIS](mailto:mgw.africasoils.info).
 
