@@ -1,5 +1,5 @@
 ---
-title: Spectral methods for diagnosing reserve soil acidity and soil-test lime requirements
+title: Spectral methods for diagnosing reserve soil acidity and soil-test-based lime requirements
 author: M.G. Walsh
 date: "Last compiled on `r format(Sys.time(), '%d, %B, %Y')`"
 output:
@@ -314,7 +314,7 @@ The main takeaways from this notebook are the following:
 
 * The workflow can be changed to model and predict other soil acidity related variables (e.g., pH, EC, CEC, SOC, Ca:Mg and other mineralogically determined metal oxide concentrations, among others). It can also be rapidly extended to support new geographical regions of interest and/or their respective soil testing laboratories, operationally at low cost.
 
-* The workflow's predictions could be used reliably/operationally to improve the precision, reduce the costs of and the environmental footprints of soil acidity monitoring in survey, mapping, experimental and monitoring applications that focus on soil acidity (or alternatively salinity/sodicity) management of agricultural land.
+* The workflow's predictions could be used reliably/operationally to improve the precision, reduce the costs of and the environmental footprints of soil acidity monitoring in survey, mapping, experimental and monitoring applications that focus on soil acidity management of croplands.
 
 * At the other end of the pH scale the identical workflows can be followed to diagnose e.g., salinity and sodicity levels and certain micro-nutrient deficiencies of cropland soils, which are also prevalent in many parts of Africa. I'll provide provide an additional notebook around this issue in the near future.
 
