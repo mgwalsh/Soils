@@ -1,7 +1,7 @@
 ---
 title: Spectral predictions for diagnosing reserve soil acidity
 author: M.G. Walsh
-date: "`r format(Sys.time(), '%d, %B, %Y')`"
+date: "Last compiled on `r format(Sys.time(), '%d, %B, %Y')`"
 output:
   html_document:
     toc: true
@@ -293,7 +293,7 @@ curve(cuQ$coefficients[6]*x+cuQ$coefficients[5], add=T, from=0, to=5, col="blue"
 abline(c(0,1), col="grey", lwd=1)
 ```
 
-Just by visual inspection the 2 plots are quite similar, and there is actually a near perfect correlation between them. Note however, that this is a somewhat atypical situation that would not be the case for most other soil property predictions. The general rule is that a properly calibrated and validated ensemble model will not perform any worse than the best constituent model in the stack ... but sometimes much better. This statement also describes the example used in the this notebook with the `st` ensemble having a slightly lower (but negligible) validation RMSE the `cubist` model. The `cubist` model also has slightly wider 90% probable intervals than the stacked model. If you have run all of the R chunks in this notebook you can always check those contentions. Then, if all went well, the prediction file to check should be at `./soil_acidity/Results/Hp_preds.csv` in your working directory. You could also try to stack other MLAs on these data. `caretEnsemble` and `caret` offer >180 potential alternatives to the ones presented here.
+Just by visual inspection the 2 plots are quite similar, and there is actually a near perfect correlation between them. Note however, that this is a somewhat atypical situation that would not be the case for most other soil property predictions. The general rule is that a properly calibrated and validated ensemble model will not perform any worse than the best constituent model in the stack ... but sometimes much better. This statement also describes the example used in the this notebook with the `st` ensemble having a slightly lower (but negligible) validation RMSE than the `cubist` model. The `cubist` model also has slightly wider 90% probable intervals than the stacked model. If you have run all of the R chunks in this notebook you can always check those contentions. Then, if all went well, the prediction file to check should be at `./soil_acidity/Results/Hp_preds.csv` in your working directory. You could also try to stack other MLAs on these data. `caretEnsemble` and `caret` offer >180 potential alternatives to the ones presented here.
 
 # Takeaways
 
@@ -305,5 +305,5 @@ The main takeaways from this notebook are the following:
 
 * The workflow's predictions could be used reliably/operationally to improve the precision, reduce the costs of and the environmental footprints of soil acidity monitoring in survey, mapping, experimental and monitoring applications that focus on soil acidity (or alternatively salinity/sodicity) management of agricultural land.
 
-Computationally, the calibration and validation code (see on [Github](https://github.com/mgwalsh/Soils/blob/master/Spec_acidity_preds.Rmd)) for this notebook is somewhat challenging in standard R ... and requires patience because it runs relatively slowly on a *normal computer* (8 core, 16 Gb ... doable but >1 hour). I will try to update both the code and to include cloud-based and/or GPU solutions for larger datasets in the future as needed and/or requested.
+Computationally, the calibration and validation code (see on [Github](https://github.com/mgwalsh/Soils/blob/master/Spec_acidity_preds.Rmd)) for this notebook is somewhat challenging in standard R ... and requires patience because it runs relatively slowly on a *normal computer* (8 core, 16 Gb ... doable but >1 hour). I will try to update both the code and to include cloud-based and/or GPU solutions for larger datasets in the future as needed and/or requested. Any questions or comments about this notebook are most welcome via [AFSIS](mailto:mgw.africasoils.info).
 
