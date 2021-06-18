@@ -1,5 +1,5 @@
 ---
-title: Spectral predictions for diagnosing reserve soil acidity and potential lime requirements
+title: Spectral methods for diagnosing reserve soil acidity and soil-test lime requirements
 author: M.G. Walsh
 date: "Last compiled on `r format(Sys.time(), '%d, %B, %Y')`"
 output:
@@ -26,7 +26,7 @@ This notebook is intended for self-learning. It does not go into the details of 
 
 # General data setup
 
-To actually run the notebook, you will need to load the packages indicated in the chunk directly below. This allows you to assemble the wet chemistry and spectral dataframes providing a lot of options to generate spectral predictions of acidity relevant soil properties such as pH, EC, CEC, SOC, Ca:Mg, mineralogy among others. The notebook itself is maintained on my [Github](https://github.com/mgwalsh/Soils/blob/master/Spec_acidity_preds.Rmd), and you can fork and modify it from there as you see fit.
+To actually run the notebook, you will need to load the packages indicated in the chunk directly below. This allows you to assemble the wet chemistry and spectral dataframes providing a lot of options to generate spectral predictions of acidity relevant soil properties such as pH, EC, CEC, SOC, Ca:Mg, and mineralogy among others. The notebook itself is maintained on my [Github](https://github.com/mgwalsh/Soils/blob/master/Spec_acidity_preds.Rmd), and you can fork and modify it from there as you see fit.
 
 ```{r}
 # Package names
@@ -243,7 +243,7 @@ saveRDS(st, fname)
 summary(st)
 ```
 
-As can be seen from summary output panel above, the `cubist` predictions outweigh the influence of all of the other models in the `st` ensemble predictions on the validation set, with much smaller contributions from the `glmnet` and `xgbLinear` models. This raises the question if a simpler, more parsimonious model, which only uses `cubist` with the spectral principal components plus pH would be a potential alternative to provide operational diagnoses of Hp. This would certainly reduce computing times and would also lend itself to automation. I explore this in the next section.
+As can be seen from summary output panel above, the `cubist` predictions outweigh the influence of all of the other models in the `st` ensemble predictions on the validation set, with much smaller contributions from the `glmnet` and `xgbLinear` models. This raises the question if a simpler, more parsimonious model, which only uses `cubist` with the spectral principal components plus pH would be a potential alternative to provide operational diagnostics for Hp. This would certainly reduce computing times and would also lend itself to automation. I explore this in the next section.
 
 # Ensemble prediction uncertainty estimates
 
@@ -300,7 +300,7 @@ Just by visual inspection the 2 plots are quite similar, and there is actually a
 Lime application is recommended if soil pH is below the optimum range for any of the crops in the cropping system or crop rotation. The minimum pH of the soil is determined by the crop type or crop species with the highest soil pH requirement. This is typically calculated for a rolling 3-year period. To adjust soil pH to a target pH value for a specific cropping system, one must know both the current soil pH and its reserve acidity. 
 Most soil testing laboratories make lime recommendations based on calibrations of pH measured before and after the addition of a pH buffer solution (e.g. Ca(OH)_2_). *Soil test based* lime recommendations (CCE, in kg ha^-1^ CaCO_3_ equivalents, see our schema for this in the figure below) are subsequently adjusted to account for incorporation depth, liming material CCE, lime type (e.g. calcitic vs dolomitic), lime moisture content, parent material and time since previous lime application. The associated calculations are straightforward (see e.g., the excellent [PSU extension material](https://extension.psu.edu/soil-acidity-and-aglime) around this.
 
-```{r, echo=FALSE, fig.align="center", fig.cap="AfSIS schema for field-crop, soil-test based (topsoil, 0-20 cm) ag lime recommendations (LR, in kg ha^-1^ CCE).", out.width = '70%'}
+```{r, echo=FALSE, fig.align="center", fig.cap="AfSIS schema for field-crop, soil-test based (topsoil, 0-20 cm) aglime recommendations (LR, in kg ha^-1^ CCE).", out.width = '70%'}
 knitr::include_graphics("./soil_acidity/Figures/Lime requirement.png")
 ```
 
@@ -315,6 +315,8 @@ The main takeaways from this notebook are the following:
 * The workflow can be changed to model and predict other soil acidity related variables (e.g., pH, EC, CEC, SOC, Ca:Mg and other mineralogically determined metal oxide concentrations, among others). It can also be rapidly extended to support new geographical regions of interest and/or their respective soil testing laboratories, operationally at low cost.
 
 * The workflow's predictions could be used reliably/operationally to improve the precision, reduce the costs of and the environmental footprints of soil acidity monitoring in survey, mapping, experimental and monitoring applications that focus on soil acidity (or alternatively salinity/sodicity) management of agricultural land.
+
+* At the other end of the pH scale the identical workflows can be followed to diagnose e.g., salinity and sodicity levels and certain micro-nutrient deficiencies of cropland soils, which are also prevalent in many parts of Africa. I'll provide provide an additional notebook around this issue in the near future.
 
 Computationally, the calibration and validation code (see on [Github](https://github.com/mgwalsh/Soils/blob/master/Spec_acidity_preds.Rmd)) for this notebook is somewhat challenging in standard R ... and requires patience because it runs relatively slowly on a *normal computer* (8 core, 16 Gb ... doable but >1 hour). I will try to update both the code and to include cloud-based and/or GPU solutions for larger datasets in the future as needed and/or requested. Any questions or comments about this notebook are most welcome via [AFSIS](mailto:mgw.africasoils.info).
 
