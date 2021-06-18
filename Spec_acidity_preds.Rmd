@@ -118,7 +118,7 @@ The following chunks calibrate soil Hp values using different machine learning a
 The main idea is to train a number of potentially competing models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models are ensembled (combined/stacked) on an *independent* validation dataset. When applied consistently over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field, lab data and MLAs are obtained and run. 
 
 ```{r training_validation_approach, echo=FALSE, fig.align="center", fig.cap="MLA training, validation and prediction workflow.", out.width = '80%'}
-knitr::include_graphics("./soil acidity/Figures/training_validation.png")
+knitr::include_graphics("./soil_acidity/Figures/training_validation.png")
 ```
 
 I'll be using a machine learning approach, which is *algorithmic*, rather than *data modeling* based. You might want to take a look at [Breiman (2001)](http://staff.pubhealth.ku.dk/~tag/Teaching/share/material/Breiman-two-cultures.pdf) to gauge the differences between the *"two cultures"* he describes. The figure above shows the basic workflow of the algorithmic approach that I apply here to predicting reserve acidity (Hp). The following chunk initially scrubs some of the extraneous objects in memory, sets-up labels and features, and creates a randomized partition between the training and validation dataframes.
