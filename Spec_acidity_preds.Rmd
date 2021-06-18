@@ -81,7 +81,7 @@ write.csv(adata, "./soil_acidity/Results/AfSIS_reference_data.csv", row.names = 
 
 # Soil sample locations
 w <- leaflet() %>%
-  setView(lng = mean(adata$lon), lat = mean(adata$lat), zoom = 3) %>%
+  setView(lng = mean(adata$lon), lat = mean(adata$lat), zoom = 4) %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
   addCircleMarkers(adata$lon, adata$lat, clusterOptions = markerClusterOptions())
 w ## plot widget 
