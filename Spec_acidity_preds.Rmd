@@ -304,7 +304,7 @@ Lime application is recommended by soil test if soil pH is below the optimum ran
 Most soil testing laboratories and extension services make lime recommendations based on calibrations of pH measured before and after the addition of a pH buffer solution (e.g., CaOH~2~ or the SMP buffer solution, which is commonly used in the US ... among others). Soil-test-based lime recommendations (LR, in kg ha^-1^ CaCO~3~ equivalents, see our AfSIS schema for this in the figure below) are subsequently adjusted to account for incorporation depth, liming material CCE, lime type (e.g. calcitic vs dolomitic), lime moisture content, parent material / mineralogy and time since previous lime application. The associated calculations are pretty straightforward (see e.g., the excellent guidance provided by [PSU extension](https://extension.psu.edu/soil-acidity-and-aglime) about this). The AfSIS approach to purely soil-test-based recommendations is also pretty straightforward (and simplistic) currently ... see the schema for liming topsoils to pH ~ 6.5 directly below.  
 
 \
-```{r, echo=FALSE, fig.align="center", fig.cap="AfSIS schema for field-crop, soil-test based (topsoil, 0-20 cm) Aglime recommendations (LR, in kg ha^-1^ CCE).", out.width = '60%'}
+```{r, echo=FALSE, fig.align="center", fig.cap="AfSIS schema for field-crop, soil-test-based (topsoil, 0-20 cm) Aglime recommendations (LR, in kg ha^-1^ CCE).", out.width = '60%'}
 knitr::include_graphics("./soil_acidity/Figures/Lime requirement.png")
 ```
 
