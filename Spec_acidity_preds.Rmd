@@ -249,7 +249,7 @@ As can be seen from summary output panel above, the `cubist` predictions outweig
 
 # Ensemble prediction uncertainty estimates
 
-There are many ways to quantify the uncertainty inherent in these predictions. I take a simple but quite robust approach here using quantile regression with [quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf). I am mainly interested in the overall spread of the spectral ensemble predictions (sensu, their 90% probable intervals for the entire dataset).
+There are many ways to quantify the uncertainty inherent in these predictions. I take a simple but quite robust approach here using quantile regression with [quantreg](https://cran.r-project.org/web/packages/quantreg/quantreg.pdf). I am mainly interested in the overall spread of the spectral ensemble predictions; that is, the 90% probable intervals for the entire dataset.
 
 ```{r, warning = FALSE}
 # All features
