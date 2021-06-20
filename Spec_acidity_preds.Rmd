@@ -322,7 +322,9 @@ The main takeaways from this notebook are the following:
 
 * At the other end of the pH scale, the identical workflow can be followed to diagnose e.g., salinity and sodicity levels and certain micro-nutrient deficiencies of cropland soils, which are also prevalent and perhaps greater than the soil acidity related problems in many parts of Africa. I'll provide provide additional notebooks around these issues in the near future.
 
-* The main note of caution is that soil-test-based liming recommendations (among others) should always be contextualized within specific crop production environments. Simple soil tests are basically not enough to provide useful and reliable extension advice to farmers.
+* The main note of caution is that soil-test-based liming recommendations (among other agronomic recommendations) should always be contextualized within specific crop production environments. Simple soil tests are basically not enough to provide useful and reliable extension advice to farmers.
 
-Computationally, the calibration and validation code (see on [Github](https://github.com/mgwalsh/Soils/blob/master/Spec_acidity_preds.Rmd)) for this notebook is somewhat challenging in standard R ... and requires a bit of patience because it runs relatively slowly on a *normal computer* (8 core, 16 Gb ... doable in ~1 hour). I will try to update both the code and to include cloud-based and/or GPU solutions for larger datasets in the future as needed and/or requested. Any questions or comments about this notebook are most welcome via [AFSIS](mailto:mgw.africasoils.info).
+* Computationally, the calibration and validation code (see on [Github](https://github.com/mgwalsh/Soils/blob/master/Spec_acidity_preds.Rmd)) for this notebook is somewhat challenging in standard R ... and requires a bit of patience because it runs relatively slowly on a *normal computer* (8 core, 16 Gb ... doable in ~1 hour). I will try to update both the code and to include cloud-based and/or GPU solutions for larger datasets in the future as needed and/or requested. 
+
+Any questions or comments about this notebook are most welcome via [AFSIS](mailto:mgw.africasoils.info).
 
