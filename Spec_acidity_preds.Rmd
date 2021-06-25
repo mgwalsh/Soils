@@ -324,11 +324,11 @@ The main takeaways from this notebook are the following:
 
 * The main note of caution is that soil-test-based liming recommendations (among other agronomic recommendations) should always be contextualized to specific crop production environments. Simple soil tests are a really good start but are basically not enough to provide useful, reliable and complete evidence-based extension advice to farmers. Any such recommendations should also require replicable code and updateable data to test the underlying heuristics.
 
+Any questions or comments about this notebook are most welcome via [AFSIS](mailto:mgw.africasoils.info).
+
 # To-dos
 
 * Computationally, the calibration and validation code for this notebook is somewhat challenging in standard R ... and requires a bit of patience because it runs relatively slowly on a *normal computer* (8 core, 16 Gb ... doable in ~1 hour). I will try to update both the code and to include cloud-based and/or GPU solutions for larger datasets in the future as needed and/or requested.
 
 * Testing and optimization of the aglime recommendation schema under operational field conditions in geographically representative croplands and cropping systems. 
-
-Any questions or comments about this notebook are most welcome via [AFSIS](mailto:mgw.africasoils.info).
 
