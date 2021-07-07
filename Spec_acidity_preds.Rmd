@@ -47,13 +47,15 @@ invisible(lapply(packages, library, character.only = TRUE))
 The next chunk downloads the data needed for running this particular example. It assembles georeferenced soil measurements collected across Africa and links these to [Bruker Alpha FT-IR](https://www.bruker.com/en/products-and-solutions/infrared-and-raman/ft-ir-routine-spectrometer/alpha-ii-compact-ft-ir-spectrometer.html) spectra. Note that this chunk is Mac or Linux specific and so the directory structures would need to be changed slightly to run on Windows machines.
 
 ```{r}
+# Only run this once <else> delete the `./soil_acidity` directory before running it again
+
 # Create a data folder in your current working directory
 dir.create("soil_acidity", showWarnings = F)
 setwd("./soil_acidity")
 dir.create("Results", showWarnings = F)
 
 # Data download
-osf_retrieve_file("f4dpw") %>% osf_download() ## only do this once
+osf_retrieve_file("f4dpw") %>% osf_download()
 unzip("acidity_data.zip", overwrite = T)
 prof <- read.table("profiles.csv", header=T, sep=",") ## sample locations and depths
 cnls <- read.table("cnls.csv", header=T, sep=",") ## wet chemistry data from CNLS, Nairobi
