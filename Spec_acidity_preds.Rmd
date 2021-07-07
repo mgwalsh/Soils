@@ -1,5 +1,5 @@
 ---
-title: Spectral methods for diagnosing reserve soil acidity and soil-test-based lime requirements
+title: Spectral workflows for diagnosing reserve soil acidity and soil-test-based lime requirements
 author: M.G. Walsh
 date: "Last compiled on `r format(Sys.time(), '%d, %B, %Y')`"
 output:
