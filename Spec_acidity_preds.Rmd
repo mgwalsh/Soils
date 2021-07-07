@@ -67,7 +67,7 @@ adata <- merge(prof, cnls, by = "ssid")
 adata <- merge(adata, text, by = "ssid")
 adata <- merge(adata, oxid, by = "ssid")
 
-# Download figures ... another way to download
+# Download figures
 osf_retrieve_file("42gry") %>% osf_download()
 unzip("figures.zip", overwrite = T)
 ```
@@ -117,7 +117,7 @@ The following chunks calibrate soil Hp values using different machine learning a
 The main idea is to train a number of potentially competing models with [k-fold cross-validation](https://en.wikipedia.org/wiki/Cross-validation_(statistics)). At the end of the model training processes, the various models are ensembled (combined/stacked) on an *independent* validation dataset. When applied consistently over time and space, this is a form of [Reinforcement learning](https://en.wikipedia.org/wiki/Reinforcement_learning), which should produce increasingly accurate predictions as new field, lab data and MLAs are obtained and run. 
 
 ```{r training_validation_approach, echo=FALSE, fig.align="center", fig.cap="MLA training, validation and prediction workflow.", out.width = '80%'}
-knitr::include_graphics("./soil_acidity/Figures/training_validation.png")
+knitr::include_graphics("./soil_acidity/training_validation.png")
 ```
 
 I'll be using a machine learning approach, which is *algorithmic*, rather than *data modeling* based. You might want to take a look at [Breiman (2001)](http://staff.pubhealth.ku.dk/~tag/Teaching/share/material/Breiman-two-cultures.pdf) to gauge the differences between the *"two cultures"* he describes. The figure above shows the basic workflow of the algorithmic approach that I apply here to predicting reserve acidity (Hp). The following chunk initially scrubs some of the extraneous objects in memory, sets-up labels and features, and creates a randomized partition between the training and validation dataframes.
@@ -304,7 +304,7 @@ Most soil testing laboratories and extension services make lime recommendations 
 
 \
 ```{r, echo=FALSE, fig.align="center", fig.cap="AfSIS schema for field-crop, soil-test-based (topsoil, 0-20 cm) Aglime recommendations (LR, in kg ha^-1^ CCE).", out.width = '60%'}
-knitr::include_graphics("./soil_acidity/Figures/Lime requirement.png")
+knitr::include_graphics("./soil_acidity/Lime requirement.png")
 ```
 
 While this is just another *rule of thumb* liming recommendation schema that farmers could take or leave on the basis of soil tests, there are of course both much more complex and more dynamic socio-economic and environmental interactions at play e.g., between the effects of applications of lime, nitrogen fertilizers, other nutrient remediation measures, existing cropping systems, farmer investment risk aversion, water-use and greenhouse gas emissions that should be considered. Solving for those [additionalities](https://ghginstitute.org/wp-content/uploads/2015/04/AdditionalityPaper_Part-1ver3FINAL.pdf) will require systematic and spatially/temporally representative surveys and field trials to monitor any potential socio-economic constraints and also any potentially associated environmental side effects. Systematic agronomic field trials should also be used to (*in*)validate and challenge any of the inherent assumptions that are made in using Hp for making soil-test-based liming recommendations to farmers (*sensu* the [Precautionary principle](https://en.wikipedia.org/wiki/Precautionary_principle)). However, that is also true for any other purely soil-test-based procedures that might be used for issuing such recommendations. 
