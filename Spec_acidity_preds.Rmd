@@ -32,7 +32,7 @@ To actually run the notebook, you will need to load the packages indicated in th
 
 ```{r}
 # Package names
-packages <- c("downloader", "osfr", "caret", "caretEnsemble", "MASS", "pls", "glmnet", "randomForest", "xgboost", "Cubist", "quantreg", "leaflet", "htmlwidgets", "plyr", "dplyr", "doParallel")
+packages <- c("osfr", "downloader", "caret", "caretEnsemble", "MASS", "pls", "glmnet", "randomForest", "xgboost", "Cubist", "quantreg", "leaflet", "htmlwidgets", "plyr", "dplyr", "doParallel")
 
 # Install packages
 installed_packages <- packages %in% rownames(installed.packages())
@@ -67,8 +67,8 @@ adata <- merge(prof, cnls, by = "ssid")
 adata <- merge(adata, text, by = "ssid")
 adata <- merge(adata, oxid, by = "ssid")
 
-# Download figures
-download("https://osf.io/42gry/", "figures.zip", mode = "wb")
+# Download figures ... another way to download
+download("https://osf.io/42gry/?raw=1", "figures.zip", mode = "wb")
 exdir <- "./Figures" 
 unzip("figures.zip", exdir = exdir, overwrite = T)
 ```
