@@ -32,7 +32,7 @@ To actually run the notebook, you will need to load the packages indicated in th
 
 ```{r}
 # Package names
-packages <- c("osfr", "downloader", "caret", "caretEnsemble", "MASS", "pls", "glmnet", "randomForest", "xgboost", "Cubist", "quantreg", "leaflet", "htmlwidgets", "plyr", "dplyr", "doParallel")
+packages <- c("osfr", "caret", "caretEnsemble", "MASS", "pls", "glmnet", "randomForest", "xgboost", "Cubist", "quantreg", "leaflet", "htmlwidgets", "plyr", "dplyr", "doParallel")
 
 # Install packages
 installed_packages <- packages %in% rownames(installed.packages())
@@ -53,7 +53,7 @@ setwd("./soil_acidity")
 dir.create("Results", showWarnings = F)
 
 # Data download
-osf_retrieve_file("f4dpw") %>% osf_download() ## only do this once, <else> erase ./soil_acidity before running again
+osf_retrieve_file("f4dpw") %>% osf_download() ## only do this once
 unzip("acidity_data.zip", overwrite = T)
 prof <- read.table("profiles.csv", header=T, sep=",") ## sample locations and depths
 cnls <- read.table("cnls.csv", header=T, sep=",") ## wet chemistry data from CNLS, Nairobi
@@ -68,9 +68,8 @@ adata <- merge(adata, text, by = "ssid")
 adata <- merge(adata, oxid, by = "ssid")
 
 # Download figures ... another way to download
-download("https://osf.io/42gry/?raw=1", "figures.zip", mode = "wb")
-exdir <- "./Figures" 
-unzip("figures.zip", exdir = exdir, overwrite = T)
+osf_retrieve_file("42gry") %>% osf_download()
+unzip("figures.zip", overwrite = T)
 ```
 
 The following chunk then writes out the dataframe `AfSIS_reference_data.csv` into your `./soil_acidity/Results` directory if you'd like to process those outputs in software other than R. It also generates a location map of where those soil samples were obtained.
