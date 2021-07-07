@@ -32,7 +32,7 @@ To actually run the notebook, you will need to load the packages indicated in th
 
 ```{r}
 # Package names
-packages <- c("downloader", "caret", "caretEnsemble", "MASS", "pls", "glmnet", "randomForest", "xgboost", "Cubist", "quantreg", "leaflet", "htmlwidgets", "plyr", "dplyr", "doParallel")
+packages <- c("downloader", "osfr", "caret", "caretEnsemble", "MASS", "pls", "glmnet", "randomForest", "xgboost", "Cubist", "quantreg", "leaflet", "htmlwidgets", "plyr", "dplyr", "doParallel")
 
 # Install packages
 installed_packages <- packages %in% rownames(installed.packages())
@@ -53,11 +53,11 @@ setwd("./soil_acidity")
 dir.create("Results", showWarnings = F)
 
 # Data download
-download("https://osf.io/f4dpw/?raw=1", "acidity_data.zip", mode="wb")
+osf_retrieve_file("f4dpw") %>% osf_download() ## only do this once, <else> erase ./soil_acidity before running again
 unzip("acidity_data.zip", overwrite = T)
 prof <- read.table("profiles.csv", header=T, sep=",") ## sample locations and depths
 cnls <- read.table("cnls.csv", header=T, sep=",") ## wet chemistry data from CNLS, Nairobi
-cnls$xCEC <- cnls$m3Ca/200+cnls$m3Mg/120+cnls$m3K/390+cnls$Hp ## calculates extractable (xCEC)  
+cnls$xCEC <- cnls$m3Ca/200+cnls$m3Mg/120+cnls$m3K/390+cnls$Hp ## calculates extractable xCEC  
 text <- read.table("text.csv", header=T, sep=",") ## AfSIS LDPSA soil texture
 oxid <- read.table("oxid.csv", header=T, sep=",") ## AfSIS XRF metal oxide data
 spec <- read.table("alpha_spec.csv", header=T, sep=",") ## AfSIS spectral absorbance data
@@ -324,11 +324,6 @@ The main takeaways from this notebook are the following:
 
 * The main note of caution is that soil-test-based liming recommendations (among other agronomic recommendations) should always be contextualized to specific crop production environments. Simple soil tests are a really good start but are basically not enough to provide useful, reliable and complete evidence-based extension advice to farmers. Any such recommendations should also require replicable code and updateable data to test the underlying heuristics.
 
+* Computationally, the code presented in this notebook runs fairly (+/-) fast and probably could be automated, such that when a (soil) MIR measurement is received in a laboratory, an Hp prediction could be issued in near-real time. Note that for other spectrometer setups the associated [calibration / validation transfer](https://journals.sagepub.com/doi/full/10.1177/0003702817736064) steps would need to be taken into account. This is also a good reason to properly curate any physical soil reference samples.
+
 Any questions or comments about this notebook are most welcome via [AFSIS](mailto:mgw.africasoils.info).
-
-# To-dos
-
-* Computationally, the calibration and validation code for this notebook is somewhat challenging in standard R ... and requires a bit of patience because it runs relatively slowly on a *normal computer* (8 core, 16 Gb ... doable in ~1 hour). I will try to update both the code and to include cloud-based and/or GPU solutions for larger datasets in the future as needed and/or requested.
-
-* Testing and optimization of the aglime recommendation schema under operational field conditions in geographically representative croplands and cropping systems. 
-
