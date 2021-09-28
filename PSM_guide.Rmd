@@ -157,7 +157,7 @@ gs_cal <- gsdat[ gsIndex,]
 gs_val <- gsdat[-gsIndex,]
 
 # Soil calibration labels
-labs <- c("C") ## insert other labels (e.g. "C","N","P","K", "eCEC", ...) here!
+labs <- c("pH") ## insert other labels (e.g. "C","N","P","K", "eCEC", ...) here!
 lcal <- as.vector(t(gs_cal[labs]))
 
 # raster calibration features
@@ -195,7 +195,7 @@ fname <- paste("./Wetchem/Results/", labs, "_gm.rds", sep = "")
 saveRDS(gm, fname)
 ```
 
-## Central place model ([MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf))
+## Central place theory model ([MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf))
 
 Central places are influential variables for places where human impacts occur. They are correlated with both extraction and deposition of soil nutrients and toxic elements, soil erosion and deposition, acidification and many other soil disturbance processes. The model below focuses on central place indicators such as distances to roads and settlements, surface water sources, cell towers and electricity networks among other anthropic factors.
 
@@ -226,7 +226,7 @@ saveRDS(gl1, fname)
 
 ## GLM model with all the spatial features ([MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf))
 
-This model is very similar to the Central place model above, but it contains all of the 56 spatial features and then backward selects from those to generate a prediction via a generalized linear model. Alternatively (or additionally) you could also try regularized regression with e.g., [glmnet](https://cran.r-project.org/web/packages/glmnet/index.html) here. In practice, the results will be very similar for this particular dataset.
+This model is very similar to the central place theory model above, but it contains all of the 56 spatial features and then backward selects from those to generate a prediction via a generalized linear model. Alternatively (or additionally) you could also try regularized regression with e.g., [glmnet](https://cran.r-project.org/web/packages/glmnet/index.html) here. In practice, the results will be very similar for this particular dataset.
 
 ```{r, results='hide'}
 # start doParallel to parallelize model fitting
