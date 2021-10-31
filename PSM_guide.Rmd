@@ -16,7 +16,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
 # Introduction
 
-This notebook provides practical guidelines for predictive soil mapping using machine learning (ML). The specifics can, and should of course be, modified to fit the purpose of the specific predictive soil mapping tasks of interest. Our main intent here is to provide a reproducible, generalized mapping framework and some of the associated ML computing workflows in [R](https://www.r-project.org/). The actual data and workflows should also be readily transferable to other computing environments if needed. The notebook itself is maintained on [Github](), and you can fork and modify it from there as you see fit.
+This notebook provides practical guidelines for predictive soil mapping using machine learning (ML). The specifics can, and should of course be, modified to fit the purpose of the specific predictive soil mapping tasks of interest. Our main intent here is to provide a reproducible, generalized mapping framework and some of the associated ML computing workflows in [R](https://www.r-project.org/). The actual data and workflows should also be readily transferable to other computing environments if needed. The notebook itself is maintained on [Github](https://github.com/mgwalsh/Soils/blob/master/PSM_guide.Rmd), and you can fork and modify it from there as you see fit.
 
 The first section of the notebook sets up georeferenced soil survey, remote sensing and GIS data of Rwanda for spatial analyses  and predictions. We focus on **Rwanda's croplands**, which are the primary [Region of Interest (ROI)](https://en.wikipedia.org/wiki/Region_of_interest) and the target for various land management interventions of the [RwaSIS project](https://minagri.prod.risa.rw/updates/news-details/rwanda-launches-soil-information-service-project-to-improve-agriculture-productivity). Based on a recent high-resolution [GeoSurvey (2019)](https://osf.io/w5e6c/), croplands are currently estimated to occupy ~68% of Rwanda's overall land area (of ~2.37 Mha). The gridded data offer several advantages including: Africa-wide coverage and consistency, and a robust analysis process that ensures high quality predictions for use in your soil mapping applications.
 
@@ -258,7 +258,7 @@ saveRDS(clist, fname)
 
 ## {-}
 
-# Model ensemble predictions
+# Model ensembles
 
 The main point here is not to evaluate a *best individual model* but rather to evaluate the combination of the previously fitted models against a 20% [hold-out](https://en.wikipedia.org/wiki/Training,_validation,_and_test_sets) validation dataset. This provides robust statistical estimates of how the different models should be weighted against one-another. 
 
