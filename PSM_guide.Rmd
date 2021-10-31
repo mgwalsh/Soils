@@ -237,8 +237,7 @@ mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
 # Specify model training controls
-tc <- trainControl(method = "cv", number = 10, classProbs = T,
-                   summaryFunction = twoClassSummary, allowParallel = TRUE, savePredictions="final")
+tc <- trainControl(method = "cv", number = 10, allowParallel = TRUE, savePredictions="final")
 
 # Fit 4 additional calibration models using all of the gridded features
 clist <- caretList(fcal, lcal,
@@ -251,7 +250,7 @@ clist <- caretList(fcal, lcal,
 gl.pred <- predict(grids, clist$glmStepAIC, type = "prob")
 rf.pred <- predict(grids, clist$rf, type = "prob")
 xt.pred <- predict(grids, clist$xgbTree, type = "prob")
-nn.pred <- predict(grids, clist$nnet, type = "prob")
+cu.pred <- predict(grids, clist$nnet, type = "prob")
 stopCluster(mc)
 fname <- paste("./Wetchem/Results/", labs, "_clist.rds", sep = "")
 saveRDS(clist, fname)
