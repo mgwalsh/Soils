@@ -49,7 +49,6 @@ invisible(lapply(packages, library, character.only = TRUE))
 The following chunk then downloads the data that we have assembled, which are needed for running this particular example. Specifically, it assembles georeferenced field observations of soil measurements, e.g. (pH, soil carbon and soil nutrient composition) and links these to remote sensing and GIS images represented by the `grids` feature stack. We focus on predicting the topsoil pH measurements here, but the approach is equally applicable to any given  [Georeferenced](https://en.wikipedia.org/wiki/Georeferencing) soil property or measurement under consideration.
 
 ```{r}
-# Data downloads -----------------------------------------------------------
 # Create a data folder in  your current working directory
 dir.create("Wetchem", showWarnings=F)
 setwd("./Wetchem")
@@ -119,11 +118,11 @@ gsdat <- gsdat[sample(1:nrow(gsdat)), ]
 The following chunk then writes out the randomized dataframe `RW_soil_data.csv` into your `./Wetchem/Results` directory, if you'd like to process those outputs in software other than R. It also generates a location map of where those soil samples were obtained.
 
 ```{r}
-# Write data frame --------------------------------------------------------
+# Write data frame
 dir.create("./Wetchem/Results", showWarnings = F)
 write.csv(gsdat, "./Wetchem/Results/RW_soil_data.csv", row.names = F)
 
-# Soil sample locations ---------------------------------------------------
+# Soil sample locations
 w <- leaflet() %>%
   setView(lng = mean(gsdat$lon), lat = mean(gsdat$lat), zoom = 8) %>%
   addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
@@ -131,7 +130,7 @@ w <- leaflet() %>%
 w ## plot widget 
 ```
 
-# Machine-learning-based predictive mapping with `caret` and `caretEnsemble`
+# Machine-learning-based predictive mapping with `caret` and `caretEnsemble` {.tabset .tabset-pills}
 
 The following chunks predict topsoil soil pH values using contrasting machine learning algorithms (MLAs) with varying remote sensing and GIS (feature) inputs using the [`caret`](https://topepo.github.io/caret/) package. The generalized MLA prediction workflow is shown in the figure below. This approach has won a lot of data science competitions e.g., at [Kaggle](https://www.kaggle.com/). You may want to take a look there. They have some fantastic data science resources, courses and challenges openly available.
 
@@ -166,9 +165,9 @@ fcal <- gs_cal[,24:48,52:79]
 
 Note that we are using topsoil (0-20 cm) pH as an example in this context. You can substitute other soil properties like (C, N, P, K, etc.) as labels, in the `labs` variable. You may want to transform those `labs` variables prior to model fitting, and perhaps also to tune the respective models to better represent the distributional and/or compositional attributes of the individual soil properties, should the need arise. Anyhow, those additional variables are also included in the `RW_soil_data.csv` data file for you to try.
 
-## Spatial trend model ([mgcv](https://cran.r-project.org/web/packages/mgcv/mgcv.pdf))
+## Spatial trend
 
-This is a simple spatially smoothed *generalized additive model* applying the `gam` function on the pH values at different sampling locations in Rwanda, based only on their georeference. It is similar to ordinary kriging with cross-validation ... but it is simpler and much faster to compute in this context.
+This is a simple spatially smoothed *generalized additive model* applying the `gam` function on the pH values at different sampling locations in Rwanda, based only on their georeference. It is similar to ordinary kriging with cross-validation but it is simpler and much faster to compute in this context.
 
 ```{r}
 # select locational covariates
@@ -195,7 +194,7 @@ fname <- paste("./Wetchem/Results/", labs, "_gm.rds", sep = "")
 saveRDS(gm, fname)
 ```
 
-## Central place theory model ([MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf))
+## Central places
 
 Central places are influential variables for places where human impacts occur. They are correlated with both extraction and deposition of soil nutrients and toxic elements, soil erosion and deposition, acidification and many other soil disturbance processes. The model below focuses on central place indicators such as distances to roads and settlements, surface water sources, cell towers and electricity networks among other anthropic factors.
 
@@ -224,111 +223,41 @@ fname <- paste("./Wetchem/Results/", labs, "_gl1.rds", sep = "")
 saveRDS(gl1, fname)
 ```
 
-## GLM model with all the spatial features ([MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf))
+## Ensemble MLAs
 
-This model is very similar to the central place theory model above, but it contains all of the 56 spatial features and then backward selects from those to generate a prediction via a generalized linear model. Alternatively (or additionally) you could also try regularized regression with e.g., [glmnet](https://cran.r-project.org/web/packages/glmnet/index.html) here. In practice, the results will be very similar for this particular dataset.
+This chunk fits 4 additional models that use the that use all of gridded calibration data with 10-fold cross-validation. You can learn more about how these algorithms work by following links at: 
+[MASS](https://cran.r-project.org/web/packages/MASS/index.html),
+[randomForest](https://www.rdocumentation.org/packages/randomForest/versions/4.6-14/topics/randomForest), [xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/)
+and [nnet](https://cran.r-project.org/web/packages/nnet/nnet.pdf). You can use `caretEnsemble` instead of `caret` as long as the feature variables (`grids` in this case), and the `trainControl` methods are the same for each model in the `caretList` function. This shortens the script-length of this notebook but does not otherwise affect the overall `caret` functionality. Note however that the calculations take a bit of time to run on a normal 8-core, 16 Gb memory computer. This is not a big problem for a relatively small ROI like Rwanda, but it might be computationally challenging for larger countries like the DRC, Tanzania or Ethiopia. I fit these models with 10-fold cross-validation and default-tuning of the relevant [hyperparameters](https://en.wikipedia.org/wiki/Hyperparameter_(machine_learning)).
 
-```{r, results='hide'}
-# start doParallel to parallelize model fitting
+```{r, warning = FALSE, results='hide'}
+# Start doParallel to parallelize model fitting
+set.seed(seed)
 mc <- makeCluster(detectCores())
 registerDoParallel(mc)
 
-# control setup
-set.seed(seed)
-tc <- trainControl(method="cv", allowParallel=T)
+# Specify model training controls
+tc <- trainControl(method = "cv", number = 10, classProbs = T,
+                   summaryFunction = twoClassSummary, allowParallel = TRUE, savePredictions="final")
 
-# model training
-gl2 <- train(fcal, lcal,
-             method = "glmStepAIC",
-             preProc = c("center", "scale"),
-             metric = "RMSE",
-             trControl = tc)
+# Fit 4 additional calibration models using all of the gridded features
+clist <- caretList(fcal, lcal,
+                   trControl = tc,
+                   tuneList = NULL,
+                   methodList = c("glmStepAIC", "rf", "xgbTree", "cubist"),
+                   preProcess = c("center","scale"),
+                   metric = "RMSE")
 
-gl2.pred <- predict(grids, gl2) ## spatial predictions
+gl.pred <- predict(grids, clist$glmStepAIC, type = "prob")
+rf.pred <- predict(grids, clist$rf, type = "prob")
+xt.pred <- predict(grids, clist$xgbTree, type = "prob")
+nn.pred <- predict(grids, clist$nnet, type = "prob")
 stopCluster(mc)
-fname <- paste("./Wetchem/Results/", labs, "_gl2.rds", sep = "")
-saveRDS(gl2, fname)
+fname <- paste("./Wetchem/Results/", labs, "_clist.rds", sep = "")
+saveRDS(clist, fname)
 ```
 
-## Random forest ([randomForest](https://cran.r-project.org/web/packages/randomForest/randomForest.pdf))
-
-The below is a bagging chunk that uses [Breiman & Cutler's](https://link.springer.com/article/10.1023/A:1010933404324) algorithm with all of the feature data. A good, short article to look at for reference in context here is [Barnard et al.](https://www.researchgate.net/publication/331328203_Can't_see_the_random_forest_for_the_decision_trees_selecting_predictive_models_for_restoration_ecology).
-
-```{r, results='hide'}
-# start doParallel to parallelize model fitting
-mc <- makeCluster(detectCores())
-registerDoParallel(mc)
-
-# control setup
-set.seed(seed)
-tc <- trainControl(method = "cv", allowParallel = T)
-tg <- expand.grid(mtry = seq(5,10, by=1)) ## model tuning steps
-
-# model training
-rf <- train(fcal, lcal,
-            preProc = c("center","scale"),
-            method = "rf",
-            ntree = 501,
-            metric = "RMSE",
-            tuneGrid = tg,
-            trControl = tc)
-
-rf.pred <- predict(grids, rf) ## spatial predictions
-stopCluster(mc)
-fname <- paste("./Wetchem/Results/", labs, "_rf.rds", sep = "")
-saveRDS(rf, fname)
-```
-
-## Extreme gradient boosting ([xgboost](https://www.kaggle.com/rtatman/machine-learning-with-xgboost-in-r/))
-
-This next chunk represents one of the *boosting* techniques that can be used for both regression or classification. It is similar to the `randomForest` MLA above, but uses a boosting technique that emphasizes successful predictions rather than penalizing poor predictions via *bagging*. There is a wide-array of literature around the so-called *greedy algorithms*. Very good descriptions of these are provided in [Hastie et al, 2009](https://web.stanford.edu/~hastie/ElemStatLearn/).
-
-```{r, results='hide'}
-# start doParallel to parallelize model fitting
-mc <- makeCluster(detectCores())
-registerDoParallel(mc)
-
-# control setup
-set.seed(seed)
-tc <- trainControl(method = "cv", allowParallel = T)
-
-# model training
-xb <- train(fcal, lcal, 
-            method = "xgbTree", 
-            preProc = c("center", "scale"),
-            trControl = tc,
-            metric = "RMSE")
-
-xb.pred <- predict(grids, xb) ## spatial predictions
-stopCluster(mc)
-fname <- paste("./Wetchem/Results/", labs, "_xb.rds", sep = "")
-saveRDS(xb, fname)
-```
-
-## Cubist ([Cubist](https://cran.r-project.org/web/packages/Cubist/Cubist.pdf))
-
-Cubist is an extension of the [Quinlan, 1992](https://www.scirp.org/(S(i43dyn45teexjx455qlt3d2q))/reference/ReferencesPapers.aspx?ReferenceID=1865452) algorithm. The implementation in R can only be used for regression problems, but in those contexts it tends to be an influential contender (also here) in terms of prediction performance.
-
-```{r, results='hide'}
-# start doParallel to parallelize model fitting
-mc <- makeCluster(detectCores())
-registerDoParallel(mc)
-
-# control setup
-set.seed(seed)
-tc <- trainControl(method="repeatedcv", number=10, repeats=3, allowParallel = T)
-# tg <- needs tuning
-
-cu <- train(fcal, lcal, 
-            method = "cubist", 
-            trControl = tc,
-            metric = "RMSE")
-
-cu.pred <- predict(grids, cu) ## spatial predictions
-stopCluster(mc)
-fname <- paste("./Wetchem/Results/", labs, "_cu.rds", sep = "")
-saveRDS(cu, fname)
-```
+## {-}
 
 # Model ensemble predictions
 
