@@ -1,0 +1,217 @@
+---
+title: Assessing soil aggregate stability from laser diffraction particle size data
+author: M.G. Walsh and A. Sila
+date: "Last compiled: `r format(Sys.time(), '%d, %B, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    fig_caption: true
+    css: style.css
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+# Introduction
+
+[Soil aggregate stability](https://www.sciencedirect.com/topics/agricultural-and-biological-sciences/aggregate-stability) refers to the ability of soil aggregates to resist disintegration when disruptive forces associated with e.g., tillage operations and erosion occur. Aggregate stability indicates how well soils can resist compaction, wind abrasion, rainfall detachment and atmospheric and/or overland transport. It is a dynamic structural soil property, which is important for water infiltration, retention and drainage, soil aeration, microbial activity, organic matter storage and stabilization and plant root growth, among others. When unstable soil aggregates disintegrate e.g., during tillage operations and/or rainstorms, dispersed particles fill soil pore spaces. Plow layer compaction, hardpans and soil crusts can develop. Once such structures are formed, infiltration is reduced, which can result in increased runoff, erosion and reduced water availability for plant growth. Typically, the associated processes will occur in reinforcing feedback loops in landscapes. Changes in aggregate stability can be used as early indicators of soil degradation or recovery and to monitor the effects and impacts of land management interventions. However, conventional approaches that use techniques such as wet sieving and weighing or hydrometer methods are time consuming, labor intensive and expensive. This has largely precluded the operational use of these approaches in landscape assessment and monitoring applications. 
+
+[Laser diffraction particle size analysis (LDPSA)](https://wiki.anton-paar.com/en/laser-diffraction-for-particle-sizing/) under different dispersion treatments in e.g., in air, water and/or sodium hexametaphosphate, with or without [sonication](https://www.sciencedirect.com/topics/engineering/sonication) can serve as indicators of soil particle size distributions and aggregate stability for environmental and engineering purposes. The big advantage of LDPSA is that it can be performed rapidly (in <5 minutes) using small (<5 g) quantities of soil. The method works by passing a representative soil sample through a laser beam, which scatters the incident light onto a Fourier lens. The lens focuses the scattered light onto a detector array using an inversion algorithm, and a particle size distribution is inferred from the collected data. [Mie theory](https://en.wikipedia.org/wiki/Mie_scattering) is applied to provide a compositionally-based distribution of particle sizes based on the correlation between the intensity and angle of the light that is scattered. The approach generates compositional data [CoDa](https://link.springer.com/book/10.1007/978-3-642-36809-7), which are vectors where all the components are positive numbers that are constrained by a closure form, meaning that they sum up to a constant (e.g., 1 or 100%).
+
+*The main goal of this notebook is to illustrate starter code for assessing soil aggregate stability in landscapes. It does not go into the details of LDPSA data collections or the associated laboratory procedures. Instead, it focuses on the associated statistical workflows that are needed to generate potentially useful inferences and predictions from populations of LDPSA measurements. We apply [Multilevel models]() here. *
+
+# Data setup
+
+To actually run this notebook, you will need to load the packages indicated in the chunk directly below. The notebook itself is maintained on [Github](), and you can fork and modify it from there as you see fit.
+
+```{r}
+# Package names
+packages <- c("osfr", "tidyverse", "compositions", "leaflet", "ggplot2", "ggtern", "arm")
+
+# Install packages
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+  install.packages(packages[!installed_packages])
+}
+
+# Load packages
+invisible(lapply(packages, library, character.only = TRUE))
+```
+
+The data needed for running this notebook can be obtained from the Open Science Framework [here](https://osf.io/yr8ua/). We shall use topsoil (0-20 cm) and co-located subsoil (20-50 cm) data that were collected as part of the AfSIS project. The data were sampled in 60, 10 × 10 km  sentinel landscapes [(see e.g., Vagen et. al., 2015)](https://www.sciencedirect.com/science/article/pii/S0016706115300082) in proportion to their occurrence in the major [Köppen-Geiger](http://koeppen-geiger.vu-wien.ac.at/) climate zones of Africa excluding deserts, urban and other non-photosynthetically active land areas. Each sentinel site represents a 100 km^2^ area, with a total of 160 soil profile sampling locations within each sentinel landscape. A randomly selected ~10% subset of (n = 955 / 9600) soil profiles were analyzed with LDPSA.
+
+```{r, results = 'hide'}
+# Create a data folder in your current working directory
+dir.create("ldpsa", showWarnings = F)
+setwd("./ldpsa")
+dir.create("Results", showWarnings = F)
+
+# LDPSA data download from https://osf.io/yr8ua/
+osf_retrieve_file("yr8ua") %>% osf_download(conflicts = "overwrite")
+unzip("LDPSA_60.zip", overwrite = T)
+```
+
+The following chunk reads in the data, calculates the *Isometric Log Ratio* ([ilr]()) transform and the *Mean Weight Diameter* ([mwd]()) for the soil particle size fraction data in different dispersal media (water or Calgon) and sonication time treatments. These will be the main indicators (labels) that are used to model and interpret soil aggregate stability in this notebook.
+
+```{r}
+ldps <- read.table("./ldpsa/LDPSA_60.csv", header=T, sep=",")
+
+# Select relevant texture fractions
+ldps <- subset(ldps, disp == "calgon" | disp == "water")
+fractions <- c("sand", "silt", "clay")
+cdat <- as.data.frame(acomp(ldps[fractions], total=100))
+
+# Isometric log ratio (ilr) transforms
+bpart <- t(matrix(c( 1,-1,-1,
+                     0, 1,-1), ncol=3, nrow=2, byrow=T))
+
+idat <- as.data.frame(ilr(cdat, V=bpart))
+names(idat) <- c("ilr1", "ilr2")
+ldps <- cbind(ldps, idat)
+
+# Mean Weight Diameter calculation (micrometers)
+ldps$mwd <- exp(0.01*(ldps$clay*log(0.001) + ldps$silt*log(0.026) + ldps$sand*log(1.025)))*1000
+```
+
+# Data profiling
+
+## Spatial distribution of soil sampling locations
+
+```{r}
+loc <- subset(ldps, trt == "c4", select=c(ssid, lat, lon)) ## reference soil sample locations
+
+# Soil sample locations
+w <- leaflet() %>%
+  setView(lng = mean(loc$lon), lat = mean(loc$lat), zoom = 4) %>%
+  addProviderTiles(providers$OpenStreetMap.Mapnik) %>%
+  addCircleMarkers(loc$lon, loc$lat, clusterOptions = markerClusterOptions())
+w ## plot widget 
+```
+
+## Soil texture fractions by treatment combinations
+
+```{r}
+water <- subset(ldps, disp == "water", select=c(sand, clay, silt, stime, mwd)) 
+
+wtex_son <- ggtern(
+  data = water, aes(x = sand, y = clay, z = silt))+
+  geom_point(aes(color = stime), size= 1, alpha = 0.5)+
+  scale_color_continuous(low = "dodgerblue", high = "tomato")+
+  labs(color = "Sonication time (minutes)")+
+  theme_bw()+
+  theme(legend.justification = c(0, 1), 
+        legend.position      = c(0, 1))
+
+wtex_mwd <- ggtern(
+  data = water, aes(x = sand, y = clay, z = silt))+
+  geom_point(aes(color = mwd), size = 1, alpha = 0.5)+
+  scale_color_continuous(low="dodgerblue", high="tomato")+
+  labs(color="MWD (microns)")+
+  theme_bw()+
+  theme(legend.justification = c(0, 1), 
+        legend.position      = c(0, 1))
+```
+
+Note that an identical chunk is replicated for the samples that were dispersed in Calgon. This is not included in the html here to keep the text concise. However, it is included in the actual R-markdown doc on [Github](). The chunks generate initial ternary plots using the `ggtern` package in R-markdown. The figures appear convincing in that in that as a whole they show that the particle dispersion in both water and Calgon work in the anticipated dispersion direction in response to the dispersion media and sonication treatments.
+
+```{r, echo = FALSE}
+calgon <- subset(ldps, disp == "calgon", select=c(sand, clay, silt, stime, mwd))
+
+ctex_son <- ggtern(
+  data = calgon, aes(x = sand, y = clay, z = silt))+
+  geom_point(aes(color = stime), size= 1, alpha = 0.5)+
+  scale_color_continuous(low = "dodgerblue", high = "tomato")+
+  labs(color = "Sonication time (minutes)")+
+  theme_bw()+
+  theme(legend.justification = c(0, 1), 
+        legend.position      = c(0, 1))
+
+ctex_mwd <- ggtern(
+  data = calgon, aes(x = sand, y = clay, z = silt))+
+  geom_point(aes(color = mwd), size = 1, alpha = 0.5)+
+  scale_color_continuous(low="dodgerblue", high="tomato")+
+  labs(color="MWD (microns)")+
+  theme_bw()+
+  theme(legend.justification = c(0, 1), 
+        legend.position      = c(0, 1))
+```
+
+```{r, echo = FALSE, fig.align = "center", fig.show = 'hold', out.width = "50%", fig.cap = "Ternary plots of the particle size distributions of LDPSA samples dispersed in either in water (top) or sodium hexametaphosphate (Calgon, bottom). Color coded by sonication time (`mwd`, left), and aggregate stability index (`stime`, right)."}
+
+wtex_mwd
+wtex_son
+ctex_mwd
+ctex_son
+```
+
+## Treatment endpoint indicator distributions
+
+```{r, fig.align = "center", fig.show='hold', fig.cap = "Empirical cumulative distribution functions (ECDF) of treatment endpoints for soil aggregate stability indicators. The treatment shown in red was dispersed in Calgon with 4 minutes of sonication; for the treatment in blue, samples were dispersed in water without sonication."}
+
+# Select treatment endpoints
+c4 <- subset(ldps, trt=="c4", select=c(sand, silt, clay, ilr1, ilr2, mwd)) 
+w1 <- subset(ldps, trt=="w1", select=c(sand, silt, clay, ilr1, ilr2, mwd)) 
+
+# Sand
+par(mfrow=c(2,3), pty="s", mar=c(2,4,1,2))
+plot(ecdf(c4$sand), main="", xlab="Sand (%)", ylab="ECDF", xlim=c(0, 100),
+     verticals=T, lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
+abline(0.5,0, lty=1, col="grey")
+plot(ecdf(w1$sand), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.points=F)
+
+# Silt
+plot(ecdf(c4$silt), main="", xlab="Silt (%)", ylab="", xlim=c(0, 100), verticals=T,
+     lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
+abline(0.5,0, lty=1, col="grey")
+plot(ecdf(w1$silt), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.points=F)
+
+# Clay
+plot(ecdf(c4$clay), main="", xlab="Clay (%)", ylab="", xlim=c(0, 100), verticals=T,
+     lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
+abline(0.5,0, lty=1, col="grey")
+plot(ecdf(w1$clay), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.points=F)
+
+# Mean weight diameter
+plot(ecdf(c4$mwd), main="", xlab="MWD (microns)", ylab="ECDF", xlim=c(0, 800),
+     verticals=T, lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
+abline(0.5,0, lty=1, col="grey")
+plot(ecdf(w1$mwd), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.points=F)
+
+# ILR1 (sand | silt, clay)
+plot(ecdf(c4$ilr1), main="", xlab="ILR1 (sand | silt, clay)", ylab="",
+     xlim=c(-10, 7), verticals=T, lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
+abline(0.5,0, lty=1, col="grey")
+plot(ecdf(w1$ilr1), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.points=F)
+
+# ILR2 (silt | clay)
+plot(ecdf(c4$ilr2), main="", xlab="ILR2 (silt | clay)", ylab="",
+     xlim=c(-5, 2.5), verticals=T, lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
+abline(0.5,0, lty=1, col="grey")
+plot(ecdf(w1$ilr2), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.points=F)
+```
+
+## Aggregate stability / dispersion index
+
+```{r}
+# Select treatment endpoint subset
+end <- subset(ldps, trt=="c4" | trt=="w1", 
+              select=c(site, pid, ssid, trt, topsub, sand, silt, clay, ilr1, ilr2, mwd))
+end$trt <- ifelse(end$trt == "w1", 0, 1)
+
+# Fit initial aggregate stability / dispersion index with <glm>
+asi <- glm(trt ~ factor(topsub)+ilr1*ilr2, family = binomial, data = end)
+fit <- predict(asi, end)
+end <- cbind(end, fit)
+summary(asi)
+```
+
+## Landscape-level aggregate stability
+
+```{r}
+m0 <- glmer(trt~ilr1*ilr2+(1|site), family = binomial, data = end)
+summary(m0)
+```
+
+# Takeaways
