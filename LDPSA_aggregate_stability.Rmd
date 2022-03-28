@@ -7,28 +7,32 @@ output:
     toc: true
     toc_depth: 2
     fig_caption: true
+    keep_md: true
+    number_sections: true
     css: style1.css
 ---
 
 ```{r, echo = FALSE}
-knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
 # Introduction
 
-[Soil aggregate stability](https://www.sciencedirect.com/topics/agricultural-and-biological-sciences/aggregate-stability) refers to the ability of soil aggregates to resist disintegration when disruptive forces associated with e.g., tillage operations and erosion occur. Aggregate stability indicates how well soils can resist compaction, wind abrasion, rainfall detachment and atmospheric and/or overland transport. It is a dynamic structural soil property, which is important for water infiltration, retention and drainage, soil aeration, microbial activity, organic matter storage and stabilization and plant root growth, among others. When unstable soil aggregates disintegrate e.g., during tillage operations or rainstorms, dispersed particles fill soil pore spaces. Plow layer compaction, hardpans and soil crusts can develop. Once such structures are formed, infiltration is reduced, which can result in increased runoff, erosion and reduced water availability for plant growth. Typically, the associated processes will occur in reinforcing feedback loops in landscapes. Changes in aggregate stability can be used as early indicators of soil degradation or recovery and to monitor the effects and impacts of land management interventions. However, conventional approaches that use techniques such as wet sieving and weighing, slake tests or hydrometer and pipetting methods are time consuming and labor intensive. This has largely precluded their operational use in landscape-level assessment and monitoring applications. 
+[Soil aggregate stability](https://www.sciencedirect.com/science/article/pii/B0123485304005324?via%3Dihub) refers to the ability of soil aggregates to resist disintegration when disruptive forces associated with e.g., tillage operations and erosion occur. Aggregate stability indicates how well soils can resist compaction, wind abrasion, rainfall detachment and atmospheric and/or overland transport. It is a dynamic structural soil property, which is important for water infiltration, retention and drainage, soil aeration, microbial activity, organic matter storage and stabilization and plant root growth, among others. When soil aggregates disintegrate e.g., during tillage operations or rainstorms, dispersed particles fill soil pore spaces causing plow layer compaction, hardpans and soil crusts to develop. Once such structures are formed, infiltration is reduced, which can result in increased runoff, erosion and reduced water availability for plant growth. Typically, the associated processes will occur in reinforcing feedback loops in landscapes. Changes in aggregate stability can be used as early indicators of soil degradation or recovery and to monitor the effects and impacts of land management interventions. However, conventional approaches that use techniques such as wet sieving and weighing, slake tests or hydrometer and pipetting methods are time consuming and labor intensive. This has largely precluded their operational use in landscape-level assessment and monitoring applications. 
 
-[Laser diffraction particle size analysis (LDPSA)](https://wiki.anton-paar.com/en/laser-diffraction-for-particle-sizing/) under different dispersion treatments in e.g., in air, water and/or sodium hexametaphosphate ([calgon](https://pubchem.ncbi.nlm.nih.gov/compound/Calgon)), with or without [sonication](https://www.sciencedirect.com/topics/engineering/ultrasonication) can serve as indicators of soil particle size distributions and aggregate stability for environmental, ecological and engineering purposes. The big advantage of LDPSA is that it can be performed rapidly (in < 5 minutes) using small (< 5 g) quantities of soil. The method works by passing a soil sample through a laser beam, which scatters the incident light onto a Fourier lens. The lens focuses the scattered laser light onto a detector array using an inversion algorithm, and a particle size distribution is inferred from the collected data. [Mie theory](https://en.wikipedia.org/wiki/Mie_scattering) is applied to provide a compositionally-based distribution of particle sizes based on the correlation between the intensity and the angle of the light that is scattered. The approach generates compositional data ([CoDa](https://link.springer.com/book/10.1007/978-3-642-36809-7)), which are data where all the components are positive numbers that are constrained by a closure form, meaning that they sum up to a constant (e.g., 1 or 100%). Modeling CoDa requires log ratio transformations to retain this inherent closure constraint (see e.g., [Greenacre, 2021](https://www.annualreviews.org/doi/pdf/10.1146/annurev-statistics-042720-124436)).
+[Laser diffraction particle size analysis (LDPSA)](https://wiki.anton-paar.com/en/laser-diffraction-for-particle-sizing/) under different dispersion treatments in e.g., in air, water and/or sodium hexametaphosphate ([calgon](https://pubchem.ncbi.nlm.nih.gov/compound/Calgon)), with or without [sonication](https://www.sciencedirect.com/topics/engineering/ultrasonication) can serve as indicators of soil particle size distributions and aggregate stability for environmental, ecological and engineering purposes. The big advantage of LDPSA is that it can be performed rapidly (in < 5 minutes) using small (< 5 g) quantities of soil. The method works by passing a soil sample through a laser beam, which scatters the incident light onto a Fourier lens. The lens focuses the scattered laser light onto a detector array using an inversion algorithm, and a particle size distribution is inferred from the collected data. [Mie theory](https://en.wikipedia.org/wiki/Mie_scattering) is applied to provide a compositionally-based distribution of particle sizes based on the correlation between the intensity and the angle of the light that is scattered. The approach generates compositional data ([CoDa](https://link.springer.com/book/10.1007/978-3-642-36809-7)), which are data that sum up to a constant (e.g., 1 or 100%). Modeling CoDa requires log ratio transformations to retain this inherent structure
+Modeling CoDa requires log ratio transformations to retain this inherent closure constraint (see e.g., [Greenacre, 2021](https://www.annualreviews.org/doi/pdf/10.1146/annurev-statistics-042720-124436)).
 
 The main goal of this notebook is to illustrate a workflow for assessing soil aggregate stability in landscapes. It does not go into the details of LDPSA data collections or the associated laboratory analysis procedures (for method references see e.g., [Kerry et.al., (2009)](https://www.sciencedirect.com/science/article/abs/pii/S0016706109002067?via%3Dihub)). Instead, it focuses on the associated statistical steps that are needed to generate potentially useful inferences and predictions for populations of LDPSA measurements in landscapes. We demonstrate [random-effects models](https://www.sciencedirect.com/topics/medicine-and-dentistry/random-effects-model) and [meta-regression](https://www.sciencedirect.com/topics/medicine-and-dentistry/meta-regression) approaches in this context, which take both the CoDa and the ordinal nature of the laboratory dispersal treatments into account.
 
-# Data setup
+# Initial data setup
 
-To actually run this notebook, you will need to load the packages indicated in the chunk directly below. The notebook itself is maintained on [Github](), and you can fork and modify it from there as you see fit.
+To actually run this notebook, you will need to load the packages indicated in the chunk directly below. The notebook itself is maintained on [Github](https://github.com/mgwalsh/Soils/blob/master/LDPSA_aggregate_stability.Rmd), and you can fork and modify it from there as you see fit.
 
-```{r}
+```{r class.source = 'fold-show'}
 # Package names
-packages <- c("osfr", "tidyverse", "compositions", "leaflet", "ggtern", "DT", "ordinal", "metafor")
+packages <- c("osfr", "tidyverse", "compositions", "leaflet", "ggtern", "ordinal", "metafor",
+              "arm", "quantreg")
 
 # Install packages
 installed_packages <- packages %in% rownames(installed.packages())
@@ -40,7 +44,7 @@ if (any(installed_packages == FALSE)) {
 invisible(lapply(packages, library, character.only = TRUE))
 ```
 
-The data needed for running this notebook can be obtained from the Africa Soil Information Service [Open Science Framework](https://www.cos.io/products/osf) repo [here](https://osf.io/yr8ua/). The next chunk reads in the data, calculates the *Isometric Log Ratio* ([ilr]()) transforms and the *Mean Weight Diameter* ([mwd]()) for the soil particle size fractions in different dispersants (air, water or calgon) and sonication time treatments. These will be the LDPSA indicators that are used to model and interpret soil aggregate stability in this notebook.
+The data needed for running this notebook can be obtained from the Africa Soil Information Service [Open Science Framework](https://www.cos.io/products/osf) repo [here](https://osf.io/yr8ua/). The next chunk reads in the data, calculates the *Isometric Log Ratio* ([ilr](https://www.rdocumentation.org/packages/compositions/versions/2.0-4/topics/ilr)) transforms and the *Mean Weight Diameter* ([mwd](https://www.sciencedirect.com/science/article/abs/pii/S0341816220302587)) for the soil particle size fractions in different dispersants (air, water or calgon) and sonication time treatments. These will be the LDPSA indicators that are used to model and interpret soil aggregate stability in this notebook.
 
 ```{r, results = 'hide'}
 # Create a data folder in your current working directory
@@ -68,9 +72,11 @@ ldps <- cbind(ldps, idat)
 # Mean Weight Diameter calculation (micrometers)
 ldps$mwd <- exp(0.01*(ldps$clay*log(0.001) + ldps$silt*log(0.026) + ldps$sand*log(1.025)))*1000
 
-# load and merge moderator variables
+# load and merge covariates
 cvar <- read.table("LDPSA_covar.csv", header=T, sep=",")
+oxid <- read.table("LDPSA_oxides.csv", header=T, sep=",")
 ldps <- merge(ldps, cvar, by="ssid")
+ldps <- merge(ldps, oxid, by="ssid")
 
 # Display dataframe structure
 str(ldps)
@@ -93,17 +99,27 @@ The data also contain the following main grouping factors for the random-effects
 * georeferenced soil profile id in site, `pid` = `r length(unique(ldps$pid))`
 * soil sample id in profile, `ssid` = `r length(unique(ldps$ssid))`
 
-Finally the data also contain the following moderator variables:
+Finally, the data also contain the following covariate measurements that we shall use in subsequent mixed-effects modeling:
 
-* available water holding capacities (`awc1` at field capacity & `awc2` at wilting point, m^3^ m^-3^)
 * pH (in water)
 * electrical conductivity (`ec`, dS m^-1^)
-* effective cation exchange capacity (`ecec`, cmol~c~ kg^-1^)
+* extractable cation exchange capacity (`ecec`, cmol~c~ kg^-1^)
 * soil organic carbon content (`soc`, g kg^-1^)
+* isometric log ratio of CaO + Na~2~O | Al~2~O~3~, K~2~O proportions (`V1`)
+* isometric log Al~2~O~3~ | K~2~O proportions (`V2`)
+
+Note that the last two covariate measurements are metal oxide ratios, which are frequently used to describe chemical weathering or alteration patterns in soils (see e.g., [Price and Velbel, 2003](https://www.researchgate.net/publication/222417686_Chemical_weathering_indices_applied_to_weathering_profiles_developed_on_heterogeneous_felsic_metamorphic_parent_rocks)). You can find the code for doing the relevant calculations with X-Ray Fluorescence measurements at [Github](https://github.com/mgwalsh/Soils/blob/master/XRF_data_setup.R).
+
+```{r weathering sequence, echo=FALSE, fig.align="center", fig.cap="**Figure 1:** Compositional XRF measurements of metal oxides related to chemical weathering dynamics in soils in relation to compositional measurements of pure clay minerals (labeled crosses) and the Upper Continental Crust (UCC) standard.", out.width = '60%'}
+
+knitr::include_graphics("./ldpsa/oxides.png")
+```
+
+The ternary diagram in Figure 1 can be interpreted as potential soil chemical weathering sequences with an ultimate entropic end-state described by the Al~2~O~3~ archetype (in red). Soils in this category are geologically old and often problematic for agricultural management in terms of their mineralogy, nutrient reserves and physical properties.
 
 ## Spatial distribution of soil samples
 
-```{r}
+```{r class.source = 'fold-hide'}
 # Select soil sample  locations 
 loc <- subset(ldps, trt == "c4", select=c(ssid, lat, lon))
 
@@ -139,9 +155,9 @@ wtex_mwd <- ggtern(
         legend.position      = c(0, 1))
 ```
 
-Note that an identical chunk is replicated for the samples that were dispersed in calgon. This is not included in the html here to keep the text concise. However, it is included in the actual R-markdown doc on [Github](). The chunks generate ternary plots using the `ggtern` package in R-markdown. The figures appear convincing in that as a whole they show that dispersion in both water and calgon work in the expected direction in response to the combination of the dispersant and the sonication treatments.
+Note that an identical chunk is replicated for the samples that were dispersed in calgon. This is not included in the html here to keep the text concise. However, it is included in the actual R-markdown doc on [Github](https://github.com/mgwalsh/Soils/blob/master/LDPSA_aggregate_stability.Rmd). The chunks generate ternary plots using the `ggtern` package in R-markdown. The figures appear convincing in that as a whole they show that dispersion in both water and calgon work in the expected direction in response to the combination of the dispersant and the sonication treatments.
 
-```{r, echo = FALSE}
+```{r, class.source = 'fold-hide'}
 calgon <- subset(ldps, disp == "calgon", select=c(sand, clay, silt, stime, mwd))
 
 ctex_son <- ggtern(
@@ -163,7 +179,7 @@ ctex_mwd <- ggtern(
         legend.position      = c(0, 1))
 ```
 
-```{r, echo = FALSE, fig.align = "center", fig.show = 'hold', out.width = "50%", fig.cap = "**Figure 1:** Ternary plots of the particle size distributions of LDPSA samples dispersed in either in water (top) or calgon (bottom). Color coded by mean weight diameter (`mwd`, left), and sonication time (`stime`, right)."}
+```{r, echo = FALSE, fig.align = "center", fig.show = 'hold', out.width = "50%", fig.cap = "**Figure 2:** Ternary plots of the particle size distributions of LDPSA samples dispersed in either in water (top) or calgon (bottom). Color coded by mean weight diameter (`mwd`, left), and sonication time (`stime`, right)."}
 
 wtex_mwd
 wtex_son
@@ -171,15 +187,17 @@ ctex_mwd
 ctex_son
 ```
 
-```{r, echo = FALSE, fig.align = "center", fig.show='hold', fig.cap = "**Figure 2:** Empirical cumulative distributions of LDPSA treatment in calgon, water qnd air. The subsamples shown in red were dispersed in calgon with 4 minutes of sonication; the subsamples in blue were dispersed in water without sonication, and the subsamples in green were dispersed in air without sonication."}
+The next chunk produces cumulative empirical cumulative distributions of the variables of potential interest in differentiating between the main LDPSA dispersion treatments. 
 
-# Select dispersion treatment endpoints
+```{r class.source = 'fold-hide', fig.align = "center", fig.show='hold', fig.cap = "**Figure 3:** Empirical cumulative distributions of LDPSA treatment in calgon, water and air. Subsamples shown in red were dispersed in calgon with 4 minutes of sonication; subsamples in blue were dispersed in water without sonication; subsamples in green were dispersed in air."}
+
+# Select dispersion treatments
 c4 <- subset(ldps, trt=="c4", select=c(sand, silt, clay, ilr1, ilr2, mwd)) 
 w1 <- subset(ldps, trt=="w1", select=c(sand, silt, clay, ilr1, ilr2, mwd))
 air <- subset(ldps, trt=="a", select=c(sand, silt, clay, ilr1, ilr2, mwd)) 
 
 # Sand
-par(mfrow=c(2,3), pty="s", mar=c(2,4,1,2))
+par(mfrow=c(2,3), mar=c(4,2,2,2))
 plot(ecdf(c4$sand), main="", xlab="Sand (%)", ylab="ECDF", xlim=c(0, 100),
      verticals=T, lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
 abline(0.5,0, lty=1, col="grey")
@@ -222,19 +240,22 @@ plot(ecdf(w1$ilr2), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.point
 plot(ecdf(air$ilr2), add=T, verticals=T, lty=1, lwd=2, col="dark green", do.points=F)
 ```
 
-The message conveyed by the graphs above is that 4 minutes of sonication in calgon is quite effective in destroying air-dry soil aggregates. The two isometric log ratios of the particle size data (`ilr1` & `ilr2`) and the mean weight diameter (`mwd`) graphs also demonstrate the ordinality of these treatments quite well. Subsamples analyzed in air were minimally dispersed; subsamples analyzed in water (without sonication) were moderately dispersed, and subsamples dispersed in calgon with 4 minutes of sonication were strongly dispersed.
+The main message conveyed by Figures 2 & 3 is that 4 minutes of sonication in calgon is quite effective in destroying both air-dry and water-dispersed soil aggregates. The two isometric log ratios of the particle size data (`ilr1` & `ilr2`) and the mean weight diameter (`mwd`) graphs also demonstrate the ordinality of these treatments quite well. Subsamples analyzed in air were minimally dispersed; subsamples analyzed in water (without sonication) were moderately dispersed, and subsamples dispersed in calgon with 4 minutes of sonication were maximally dispersed.
 
 ## Calculation of cumulative link indices
+
+In the next chunks we calculate a dispersion/flocculation index using (see at: [cumulative link models](https://rdrr.io/cran/ordinal/f/inst/doc/clm_article.pdf)), which take the ordinality (shown in Figure 3) of the dispersal treatments into account. The intent of this is to standardize the relevant LDPSA treatment effects relative to the calgon + sonication (`c4`) treatment. 
 
 ```{r}
 # Select dispersal treatment subset
 ldps_end <- subset(ldps, trt=="c4" | trt=="w1" | trt=="a", 
-                   select=c(site, pid, ssid, trt, topsub, sand, silt, clay, ilr1, ilr2, mwd))
+                   select=c(site, pid, ssid, trt, topsub, sand, silt, clay, ilr1, ilr2, mwd, awc1, awc2,
+                            ph, ec, ecec, soc))
 
 # Set dispersal treatment as an ordered factor
 ldps_end$trt <- factor(ldps_end$trt, ordered = TRUE, levels = c("c4", "w1", "a"))
 
-# Fit clms
+# Fit clms and calculate cumulative link index (cli) 
 cl0 <- clm(trt~log(mwd), data = ldps_end)
 cl1 <- clm(trt~ilr1+ilr2, data = ldps_end)
 cl2 <- clm(trt~ilr1*ilr2, data = ldps_end)
@@ -242,15 +263,13 @@ wgt <- as.vector(coef(cl1))
 ldps_end$cli <- wgt[3]*ldps_end$ilr1 + wgt[4]*ldps_end$ilr2
 ```
 
-```{r, echo = FALSE, results = 'hide'}
+This next chunk compares model fits.
+
+```{r}
 anova(cl0, cl1, cl2)
 ```
 
-```{r, echo = FALSE, results = 'hide'}
-site <- clmm(trt~ilr1+ilr2 + (1|site), data = ldps_end)
-summary(site)
-anova(cl1, site)
-```
+The main thing to notice is that based on the model fits indexing on the (geometric) mean weight diameter (`mwd`), as is common practice in soil aggregate stability studies, does not provide an optimal separation of the dispersion treatments on the ordinal (cumulative-link) scale that is proposed here. So, we will not consider it any further in this notebook.
 
 ```{r}
 # merge to wide format
@@ -261,7 +280,7 @@ w1 <- aggregate(w1$cli, list(w1$site, w1$pid), FUN = mean)
 air <- subset(ldps_end, trt=="a")
 air <- aggregate(air$cli, list(air$site, air$pid), FUN = mean)
 
-# calculate soil profile-level deltas from the c4 housekeeping treatment
+# calculate soil profile-level deltas relative to the c4 housekeeping treatment
 del <- merge(c4, w1, by = "Group.2")
 del <- merge(del, air, by = "Group.2")
 del <- del[c(2,1,3,5,7)]
@@ -269,23 +288,41 @@ names(del) <- c("site","profile","c4","w1","air")
 del$dw <- del$w1 - del$c4
 del$da <- del$air - del$c4
 
-# calculate dispersion/flocculation index (dfi)
+# calculate dispersion/flocculation index (dfi) and binary encoding
 del$dfi <- del$dw - del$da
+del$cfi <- ifelse(del$dw > del$da, 1, 0)
 ```
 
-```{r, fig.align ="center", fig.show='hold', out.width="50%", fig.cap="**Figure 3:** Empirical cumulative distributions of delta index values relative to dispersion in calgon with 4 minutes of sonication (Δc4). The subsamples shown in green were dispersed in air; the subsamples in blue were dispersed in water. In red the dispersion/flocculation index (DFI) i.e., the difference between subsamples dispersed in water and in air (normalized by their Δc4 values)."}
+```{r, echo=FALSE, results='hide'}
+# aggregate profile-level covariates
+ph <- aggregate(ldps$ph, list(ldps$pid), FUN = mean)
+ec <- aggregate(ldps$ec, list(ldps$pid), FUN = mean)
+ecec <- aggregate(ldps$ecec, list(ldps$pid), FUN = mean)
+soc <- aggregate(ldps$soc, list(ldps$pid), FUN = mean)
+v1 <- aggregate(ldps$V1, list(ldps$pid), FUN = mean)
+v2 <- aggregate(ldps$V2, list(ldps$pid), FUN = mean)
+
+# merge covariates
+cov <- merge(ph, ec, by="Group.1")
+cov <- merge(cov, ecec, by="Group.1")  
+cov <- merge(cov, soc, by="Group.1")  
+cov <- merge(cov, v1, by="Group.1")  
+cov <- merge(cov, v2, by="Group.1")
+
+names(cov) <- c("profile","ph","ec","ecec","soc","v1","v2")
+del <- merge(del, cov, by="profile")
+```
+
+We can then plot the initial dispersion / flocculation index results with this next chunk.
+
+```{r, fig.align ="center", fig.show='hold', out.width="50%", fig.cap="**Figure 4:** Distributions of dispersion/flocculation index values in air or water relative to dispersion in calgon with sonication (Δc4)."}
 
 # cumulative distributions of delta values 
 par(pty="s", mar=c(4,4,1,1))
 
-plot(ecdf(del$da), main="", xlab="Δc4 cumulative link index", ylab="ECDF",
-     xlim=c(-5, 15), verticals=T, lty=1, lwd=2, cex.lab=1.3, col="dark green", do.points=F)
-plot(ecdf(del$dw), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.points=F)
-abline(0.5,0, lty=1, col="grey")
-w <- quantile(del$dw, probs = 0.5)
-a <- quantile(del$da, probs = 0.5)
-abline(v = w, lty=1, col = "dark grey")
-abline(v = a, lty=1, col = "dark grey")
+plot(dw~da, del, xlim = c(-2,15), ylim = c(-2,15),
+     xlab = expression("Δc4"[air]), ylab = expression("Δc4"[water]), cex.lab = 1.3)
+abline(c(0,1), col="tomato", lwd = 2)
 
 # cumulative distribution of dw - da
 plot(ecdf(del$dfi), main="", xlab=expression(paste("DFI ",("Δc4"[water] - "Δc4"[air]))), ylab="ECDF",
@@ -296,17 +333,128 @@ m <- quantile(del$dfi, probs = 0.5)
 abline(v = m, lty=1, col = "dark grey")
 ```
 
-# Landscape-level aggregate stabilities
+Note that in Figure 4, ~80% of soil profiles falling below the 1:1 DFI reference line (in red) on the left-side of the figure are expected to **disperse** in water to varying degrees; whereas, the ~20% of samples above the reference line appear to **flocculate** (aggregate) upon dispersal in water. This may just be noise in the measurements; however, flocculation can and does occur under certain circumstances, e.g., in river deltas, estuaries, wetlands and rice paddies (see: [Lamb et al., 2020](https://www.nature.com/articles/s41561-020-0602-5)).
+
+# Landscape-level soil aggregate stabilities
+
+## Fixed-effects
+
+Fixed-effects regressions assume a non-hierarchical data structure; i.e., instances where data points are not nested or grouped in higher order categories (such as soil profiles within landscapes). We initially model the values in air (Δc4~air~) and in water (Δc4~water~) to assess the population-level effects of the included covariates.
 
 ```{r}
+# Δc4 in air
+da0 <- lm(da~v1*v2, data = del)
+da1 <- lm(da~ph+log(ec)+log(ecec)+log(soc), data = del)
+da2 <- lm(da~ph+log(ec)+log(ecec)+log(soc)+v1*v2, data = del)
+da_anova <- anova(da0, da1, da2)
+del$da2 <- fitted(da2, del)
+
+# Δc4 in water
+dw0 <- lm(dw~v1*v2, data = del)
+dw1 <- lm(dw~ph+log(ec)+log(ecec)+log(soc), data = del)
+dw2 <- lm(dw~ph+log(ec)+log(ecec)+log(soc)+v1*v2, data = del)
+dw_anova <- anova(dw0, dw1, dw2)
+del$dw2 <- fitted(dw2, del)
+```
+
+We can plot the selected model fits with:
+
+```{r, fig.align ="center", fig.show='hold', out.width="50%", fig.cap="**Figure 5:** Fitted vs observed cumulative link index values in air or water relative to dispersion in calgon with sonication (Δc4) based on fixed effects models."}
+
+par(pty="s", mar=c(4,4,1,1))
+plot(dw~dw2, xlim = c(-5,16), ylim = c(-5,16), xlab=expression(paste("Fitted ", ("Δc4"[water]))),
+     ylab=expression(paste("Measured ", ("Δc4"[water]))), cex.lab=1.3, data=del)
+abline(c(0,1), col="tomato", lwd=2)
+
+plot(da~da2, xlim = c(-5,16), ylim = c(-5,16), xlab=expression(paste("Fitted ", ("Δc4"[air]))),
+     ylab=expression(paste("Measured ", ("Δc4"[air]))), cex.lab=1.3, data=del)
+abline(c(0,1), col="tomato", lwd=2)
+```
+
+## Random-effects
+
+```{r}
+# calculate site-level dw values
 dn <- aggregate(del$dfi, list(del$site), FUN = length)
 dm <- aggregate(del$dfi, list(del$site), FUN = mean)
 ds <- aggregate(del$dfi, list(del$site), FUN = sd)
-sdel <- cbind(dn, dm[2], ds[2])
-names(sdel) <- c("site", "n", "yi", "sd")
+res <- cbind(dn, dm[2], ds[2])
+names(res) <- c("site", "n", "yi", "sd")
+res$vi <- (res$sd / sqrt(res$n))^2
 ```
 
-# Takeaways
+```{r}
+rew <- rma(yi, vi, data = res)
+rew
+```
 
-Dispersion/flocculation are chemical processes that are primarily driven by the balance of cations in the soil. Calcium has very high flocculation power, whereas sodium and potassium cause dispersion. The general balance between Ca and Mg compared to sodium is what determines aggregate stability. The use of fertilizers, over-application of compost, or the use of poor irrigation water—will cause dispersion. Alternatively, too little calcium may be the issue, making soil testing and mineral amendments of utmost importance in low pH soils.
+```{r, fig.align = 'center', fig.height = 12, fig.cap = "**Figure 4:** Forest plot showing the site-level differences in the dispersion / flocculation index (DFI) values. Note that the dashed line around the RE model polygon (diamond) at the bottom of the plot indicates the 95% prediction interval for the combined outcomes, which includes 0."}
+
+op <- par(cex=0.9, font=4)
+par(mar=c(4,4,1,1))
+
+forest(rew, header="Site", slab = res$site,
+       xlab =expression(paste("DFI ",("Δc4"[water] - "Δc4"[air]))), digits = 1, addpred=TRUE)
+```
+
+## Mixed-effects
+
+```{r}
+# mixed-model with site-level random effects
+dfi0 <- lmer(dfi~da2+dw2 + (1|site), data = del)
+dfi1 <- lmer(dfi~da2*dw2 + (1|site), data = del)
+mix_anova <- anova(dfi0, dfi1)
+del$dfit <- fitted(dfi0, del)
+
+# quantile regression
+dfiq <- rq(dfi~dfit, tau=c(0.025,0.5,0.975), data = del)
+```
+
+```{r, fig.align ="center", out.width="60%", fig.cap="**Figure 6:** Profile-level fitted vs observed DFI values (Δc4~water~ - Δc4~air~). The blue lines represent the 95% quantile interval of the measured DFI values."}
+
+par(pty="s", mar=c(4,4,1,1))
+plot(dfi~dfit, xlim=c(-11,6), ylim=c(-11,6), 
+     xlab = expression(paste("Fitted DFI ",("Δc4"[water] - "Δc4"[air]))),
+     ylab = expression(paste("Measured DFI ",("Δc4"[water] - "Δc4"[air]))), cex.lab=1.3,
+     data = del)
+curve(dfiq$coefficients[2]*x+dfiq$coefficients[1], add=T, from=-9, to=5, col="dodgerblue", lwd=2)
+curve(dfiq$coefficients[4]*x+dfiq$coefficients[3], add=T, from=-9, to=5, col="tomato", lwd=2)
+curve(dfiq$coefficients[6]*x+dfiq$coefficients[5], add=T, from=-9, to=5, col="dodgerblue", lwd=2)
+abline(c(0,1), col="light grey")
+```
+
+We can also plot the site-level random intercepts with:
+
+```{r}
+site <- data.frame(ranef(dfi0))
+site <- site[3:5]
+names(site) <- c("site", "yi", "si")
+site$vi <- site$si^2
+
+# summarize random effects
+ran <- rma(yi-1.5, vi, data = site)
+```
+
+```{r, fig.align = 'center', fig.height = 12, fig.cap = "**Figure 7:** Forest plot showing the site-level differences in modeled dispersion / flocculation index (DFI) values."}
+
+op <- par(cex=0.9, font=4)
+par(mar=c(4,4,1,1))
+
+forest(ran, header="Site", slab = site$site,
+       xlab = expression(paste("Fitted DFI ",("Δc4"[water] - "Δc4"[air]))), digits = 1, addpred=TRUE)
+```
+
+# Takeaways and next steps
+
+**The main takeaways from this notebook are the following:**
+
+* Laser diffraction particle size analyses (LDPSA) with different dispersion treatment regimes provide rapid, precise and cost-effective measurements for quantifying soil aggregate stability of landscapes. In this notebook, we propose a new dispersion/flocculation index (DFI), which normalizes dispersion in water and air to an internal standard based on dispersion in calgon with 4 minutes of sonication. 
+
+* Soil aggregate dispersion and flocculation are physical chemistry processes that are strongly associated with the balance of CaO, Na~2~O, Al~2~O~3~ and K~2~O oxides in soils, and soil organic matter content. As this notebook shows, these soil properties are predictive of the soil aggregate stability of African landscapes. 
+
+**Next steps:**
+
+* Development of predictive models ...
+
+Any questions or comments are most welcome via [AFSIS](mailto:mgw.africasoils.info). The notebook itself is maintained on [Github](https://github.com/mgwalsh/Soils/blob/master/LDPSA_aggregate_stability.Rmd), and you can fork and modify it from there as you see fit.
 
