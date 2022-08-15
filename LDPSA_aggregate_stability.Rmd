@@ -52,7 +52,7 @@ setwd("./ldpsa")
 dir.create("Results", showWarnings = F)
 
 # LDPSA data download from https://osf.io/yr8ua/
-osf_retrieve_file("yr8ua") %>% osf_download(conflicts = "skip")
+osf_retrieve_file("yr8ua") %>% osf_download(conflicts="skip")
 unzip("LDPSA_60.zip", overwrite = T)
 ldps <- read.table("LDPSA_60.csv", header=T, sep=",")
 
@@ -78,7 +78,7 @@ ldps <- merge(ldps, cvar, by="ssid")
 ldps <- merge(ldps, oxid, by="ssid")
 
 # Display dataframe structure
-str(ldps)
+glimpse(ldps)
 ```
 
 ## Data dictionary
@@ -90,7 +90,7 @@ The data were sampled from 60, 10 × 10 km sentinel sites (or landscapes, [Vagen
 
 We shall be using only 3 laboratory treatments here to describe, model and interpret soil aggregate stability. Those treatments include:
 
-* dispersal in calgon (with 4 minutes of sonication, `trt = c4`). These are the housekeeping or ([internal reference](https://link.springer.com/article/10.1007/s00769-013-0955-1)) LDPSA measurements.
+* dispersal in calgon (with 4 minutes of sonication, `trt = c4`). These are the housekeeping or ([endogenous control](https://link.springer.com/article/10.1007/s00769-013-0955-1)) LDPSA measurements.
 * dispersal in water (without sonication, `trt = w1`), and
 * dispersal in air (without sonication, `trt = a`).
 
@@ -109,7 +109,7 @@ Finally, the data also contain the following covariate measurements that we shal
 * isometric log ratio of CaO + Na~2~O \| Al~2~O~3~, K~2~O proportions (`v1`)
 * isometric log Al~2~O~3~ \| K~2~O proportions (`v2`)
 
-Note that the last two covariate measurements are oxide ratios, which are frequently used to describe chemical weathering or alteration patterns in soils (see e.g., [Price and Velbel, 2003](https://www.researchgate.net/publication/222417686_Chemical_weathering_indices_applied_to_weathering_profiles_developed_on_heterogeneous_felsic_metamorphic_parent_rocks)). You can find the code for doing the relevant calculations with X-Ray Fluorescence measurements at [Github](https://github.com/mgwalsh/Soils/blob/master/XRF_data_setup.R).
+Note that the last two covariate measurements are oxide ratios, which are often used to describe chemical weathering or alteration patterns in soils (see e.g., [Price and Velbel, 2003](https://www.researchgate.net/publication/222417686_Chemical_weathering_indices_applied_to_weathering_profiles_developed_on_heterogeneous_felsic_metamorphic_parent_rocks)). You can find the code for doing the relevant calculations with X-Ray Fluorescence measurements at [Github](https://github.com/mgwalsh/Soils/blob/master/XRF_data_setup.R).
 
 ```{r weathering sequence, echo=FALSE, fig.align="center", fig.cap="**Figure 1:** Compositional XRF measurements of metal oxides related to chemical weathering dynamics in soils in relation to compositional measurements of pure clay minerals (labeled crosses) and the Upper Continental Crust (UCC) standard.", out.width = '60%'}
 
@@ -200,50 +200,54 @@ air <- subset(ldps, trt=="a", select=c(sand, silt, clay, ilr1, ilr2, mwd))
 # Sand
 par(mfrow=c(2,3), mar=c(4,2,2,2))
 plot(ecdf(c4$sand), main="", xlab="Sand (%)", ylab="ECDF", xlim=c(0, 100),
-     verticals=T, lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
+     verticals=T, lty=1, lwd=1, cex.lab=1.3, col="tomato", do.points=F)
 abline(0.5,0, lty=1, col="grey")
-plot(ecdf(w1$sand), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.points=F)
-plot(ecdf(air$sand), add=T, verticals=T, lty=1, lwd=2, col="dark green", do.points=F)
+plot(ecdf(w1$sand), add=T, verticals=T, lty=1, lwd=1, col="dodgerblue", do.points=F)
+plot(ecdf(air$sand), add=T, verticals=T, lty=1, lwd=1, col="dark green", do.points=F)
 
 # Silt
 plot(ecdf(c4$silt), main="", xlab="Silt (%)", ylab="", xlim=c(0, 100), verticals=T,
-     lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
+     lty=1, lwd=1, cex.lab=1.3, col="tomato", do.points=F)
 abline(0.5,0, lty=1, col="grey")
-plot(ecdf(w1$silt), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.points=F)
-plot(ecdf(air$silt), add=T, verticals=T, lty=1, lwd=2, col="dark green", do.points=F)
+plot(ecdf(w1$silt), add=T, verticals=T, lty=1, lwd=1, col="dodgerblue", do.points=F)
+plot(ecdf(air$silt), add=T, verticals=T, lty=1, lwd=1, col="dark green", do.points=F)
 
 # Clay
 plot(ecdf(c4$clay), main="", xlab="Clay (%)", ylab="", xlim=c(0, 100), verticals=T,
-     lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
+     lty=1, lwd=1, cex.lab=1.3, col="tomato", do.points=F)
 abline(0.5,0, lty=1, col="grey")
-plot(ecdf(w1$clay), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.points=F)
-plot(ecdf(air$clay), add=T, verticals=T, lty=1, lwd=2, col="dark green", do.points=F)
+plot(ecdf(w1$clay), add=T, verticals=T, lty=1, lwd=1, col="dodgerblue", do.points=F)
+plot(ecdf(air$clay), add=T, verticals=T, lty=1, lwd=1, col="dark green", do.points=F)
 
 # Mean weight diameter
 plot(ecdf(c4$mwd), main="", xlab="MWD (microns)", ylab="ECDF", xlim=c(0, 800),
-     verticals=T, lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
+     verticals=T, lty=1, lwd=1, cex.lab=1.3, col="tomato", do.points=F)
 abline(0.5,0, lty=1, col="grey")
-plot(ecdf(w1$mwd), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.points=F)
-plot(ecdf(air$mwd), add=T, verticals=T, lty=1, lwd=2, col="dark green", do.points=F)
+plot(ecdf(w1$mwd), add=T, verticals=T, lty=1, lwd=1, col="dodgerblue", do.points=F)
+plot(ecdf(air$mwd), add=T, verticals=T, lty=1, lwd=1, col="dark green", do.points=F)
 
 # ILR1 (sand | silt, clay)
 plot(ecdf(c4$ilr1), main="", xlab="ILR1 (sand | silt, clay)", ylab="",
-     xlim=c(-6, 6), verticals=T, lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
+     xlim=c(-6, 6), verticals=T, lty=1, lwd=1, cex.lab=1.3, col="tomato", do.points=F)
 abline(0.5,0, lty=1, col="grey")
-plot(ecdf(w1$ilr1), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.points=F)
-plot(ecdf(air$ilr1), add=T, verticals=T, lty=1, lwd=2, col="dark green", do.points=F)
+plot(ecdf(w1$ilr1), add=T, verticals=T, lty=1, lwd=1, col="dodgerblue", do.points=F)
+plot(ecdf(air$ilr1), add=T, verticals=T, lty=1, lwd=1, col="dark green", do.points=F)
 
 # ILR2 (silt | clay)
 plot(ecdf(c4$ilr2), main="", xlab="ILR2 (silt | clay)", ylab="",
-     xlim=c(-4, 4), verticals=T, lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
+     xlim=c(-4, 4), verticals=T, lty=1, lwd=1, cex.lab=1.3, col="tomato", do.points=F)
 abline(0.5,0, lty=1, col="grey")
-plot(ecdf(w1$ilr2), add=T, verticals=T, lty=1, lwd=2, col="dodgerblue", do.points=F)
-plot(ecdf(air$ilr2), add=T, verticals=T, lty=1, lwd=2, col="dark green", do.points=F)
+plot(ecdf(w1$ilr2), add=T, verticals=T, lty=1, lwd=1, col="dodgerblue", do.points=F)
+plot(ecdf(air$ilr2), add=T, verticals=T, lty=1, lwd=1, col="dark green", do.points=F)
 ```
 
-The main message conveyed by Figures 2 & 3 is that 4 minutes of sonication in calgon is quite effective in destroying both air-dry and water-dispersed soil aggregates. The two isometric log ratios of the particle size data (`ilr1` & `ilr2`) and the mean weight diameter (`mwd`) graphs also demonstrate the ordinality of these treatments quite well. Subsamples analyzed in air were minimally dispersed; subsamples analyzed in water (without sonication) were moderately dispersed, and subsamples dispersed in calgon with 4 minutes of sonication were maximally dispersed.
+```{r, echo = FALSE, results = 'hide'}
+dev.off()
+```
 
-## Calculation of cumulative link indices
+The main message conveyed by Figures 2 & 3 is that 4 minutes of sonication in calgon is quite effective in destroying both air-dry and water-dispersed soil aggregates. The two isometric log ratios of the particle size data (`ilr1` & `ilr2`) and the mean weight diameter (`mwd`) graphs also demonstrate the ordinality of these treatments quite well. Subsamples analyzed in air were minimally dispersed; subsamples analyzed in water (without sonication) were moderately dispersed, and subsamples dispersed in calgon with 4 minutes of sonication (the endogenous controls) were maximally dispersed.
+
+## Encoding treatment effects with cumulative link indices
 
 In the next chunks we calculate a dispersion / flocculation index using (see at: [cumulative link models](https://rdrr.io/cran/ordinal/f/inst/doc/clm_article.pdf)), which takes the ordinality (shown in Figure 3) of the dispersal treatments into account. The intent of this is to standardize the relevant LDPSA treatment effects relative to the calgon + sonication (`c4`) treatment.
 
@@ -312,9 +316,12 @@ cov <- merge(cov, v2, by="Group.1")
 
 names(cov) <- c("profile","ph","ec","ecec","soc","v1","v2")
 del <- merge(del, cov, by="profile")
+
+# Write-out dataframe for reuse
+write.csv(del, "./ldpsa/Results/DFI_data.csv", row.names = FALSE)
 ```
 
-We can then plot the initial dispersion / flocculation index results with this next chunk.
+We can then plot the initial dispersion / flocculation index (DFI) results with this next chunk.
 
 ```{r, fig.align ="center", fig.show='hold', out.width="50%", fig.cap="**Figure 4:** Distributions of dispersion / flocculation index values in air or water relative to dispersion in calgon with sonication (Δc4)."}
 
@@ -327,7 +334,7 @@ abline(c(0,1), col="tomato", lwd = 2)
 
 # cumulative distribution of dw - da
 plot(ecdf(del$dfi), main="", xlab ="DFI (Δ water - Δ air)", ylab="ECDF",
-     xlim=c(-10, 5), verticals=T, lty=1, lwd=2, cex.lab=1.3, col="tomato", do.points=F)
+     xlim=c(-10, 5), verticals=T, lty=1, lwd=1, cex.lab=1.3, col="tomato", do.points=F)
 abline(0.5,0, lty=1, col = "dark gray")
 abline(v = 0, lty=1, col = "dark gray")
 m <- quantile(del$dfi, probs = 0.5)
@@ -338,9 +345,9 @@ Note that in Figure 4, ~80% of soil profiles falling below the 1:1 DFI reference
 
 # Landscape-level soil aggregate stabilities
 
-## Fixed-effects
+## Fixed-effects models
 
-Fixed-effects regressions assume a non-hierarchical data structure; i.e., instances where data points are not nested or grouped in higher order categories (e.g. soil profiles within landscapes). We initially model the values in air (Δ air) and in water (Δ water) to assess the population-level effects of the included covariates.
+Fixed-effects regressions assume that there is no hierarchical structure in the data; i.e., instances where data points are not nested, grouped or correlated in higher order categories (e.g. soil profiles within landscapes). We initially model the values in air (Δ air) and in water (Δ water) to assess the population-level effects of the included covariates.
 
 ```{r}
 # Δ air
@@ -374,33 +381,24 @@ plot(da~da2_fit, xlim = c(-5,16), ylim = c(-5,16),
 abline(c(0,1), col="tomato", lwd=2)
 ```
 
-## Mixed-effects
+## Random and mixed-effects models
 
-Fixed-effects models such as those shown in section ... fail to recognize the intraclass correlation effects of clustering. Here is a simple example:
-
-```{r}
-dfi0 <- lmer(dfi~1 + (1|site), data = del)
-display(dfi0)
-```
-
-Alternatively in mixed-effects (or multilevel) models the data being analysed are drawn from a hierarchy of different (sub)populations whose differences relate to that hierarchy. In this context, a mixed effects model that takes site (landscape) level differences can be as expressed as:
+Fixed-effects models such as those shown in section 3.1 fail to recognize the intra-class correlations of clustering. Alternatively in random and mixed-effects (or multilevel) models the data being analysed are drawn from a hierarchy of different (sub)populations whose differences relate to that hierarchy. In this context, a mixed effects model that takes site (landscape) level differences can be as expressed as:
 
 $$
 \text{DFI}_{ij} = (\beta_0 + u_i) + \beta_1 \text{(dw2_fit)}_{ij} + \beta_2 \text{(da2_fit)}_{ij} + e_{ij} \\
 u_i \sim N(0, \sigma^2_i), \ e_{ij} \sim N(0,\sigma^2_{ij})
 $$
 
-Note that the expression contains both fixed-effects fits (from the fixed-effects regression above), as well as two random-effects. The $u_i$ term is a site-level random effect. It measures the difference between the average DFI value of the *i*^th^ site and the average DFI value in the population of sites. The $e_{ij}$ term is a profile-specific random effect. It expresses the difference between the *j*^th^ profile DFI value from the average DFI of the *i*^th^ site. We can calculate these differences and plot them with the following chunks.
+Note that the expression contains both fixed-effects fits (from the fixed-effects regression above), as well as two random-effects. The $u_i$ term is a site-level random effect. It measures the difference between the average DFI value of the *i*^th^ site and the average DFI value in the population of sites. The $e_{ij}$ term is a profile-specific random (residual) effect. It expresses the difference between the *j*^th^ profile DFI value from the average DFI of the *i*^th^ site. We can calculate these differences and plot them with the following chunks.
 
 ```{r}
-# mixed-models with site-level random effects
+# random effects models
+dfi0 <- lmer(dfi~ 1 + (1|site), data = del)
 dfi1 <- lmer(dfi~da2_fit+dw2_fit + (1|site), data = del)
 dfi2 <- lmer(dfi~da2_fit*dw2_fit + (1|site), data = del)
 mix_anova <- anova(dfi0, dfi1, dfi2)
 del$dfit <- fitted(dfi1, del)
-
-# quantile regression
-dfiq <- rq(dfi~dfit, tau=c(0.025,0.5,0.975), data = del)
 ```
 
 ```{r, fig.align ="center", out.width="60%", fig.cap="**Figure 6:** Profile-level fitted vs observed DFI values. The blue lines represent the 95% quantile interval of the measured DFIs."}
@@ -410,10 +408,7 @@ plot(dfi~dfit, xlim=c(-11,6), ylim=c(-11,6),
      xlab = expression(paste("Fitted DFI ",("Δc4"[water] - "Δc4"[air]))),
      ylab = expression(paste("Measured DFI ",("Δc4"[water] - "Δc4"[air]))), cex.lab=1.3,
      data = del)
-curve(dfiq$coefficients[2]*x+dfiq$coefficients[1], add=T, from=-9, to=5, col="dodgerblue", lwd=2)
-curve(dfiq$coefficients[4]*x+dfiq$coefficients[3], add=T, from=-9, to=5, col="tomato", lwd=2)
-curve(dfiq$coefficients[6]*x+dfiq$coefficients[5], add=T, from=-9, to=5, col="dodgerblue", lwd=2)
-abline(c(0,1), col="light grey")
+abline(c(0,1), col="tomato")
 ```
 
 ```{r}
@@ -433,21 +428,15 @@ We can also plot the site-level random intercepts with:
 op <- par(cex=0.9, font=4)
 par(mar=c(4,4,1,1))
 
-forest(ran, header="Site", slab = site$site,
+forest(ran, header="Site", slab = site,
        xlab = expression(paste("Fitted DFI ",("Δc4"[water] - "Δc4"[air]))), digits = 1,
        addpred = TRUE)
 ```
 
-# Takeaways and next steps
-
-**The main takeaways from this notebook are the following:**
+# Main takeaways
 
 * Laser diffraction particle size analyses (LDPSA) with different dispersion treatment regimes provide rapid, precise and cost-effective measurements for quantifying soil aggregate stability of landscapes. In this notebook, we propose a new dispersion/flocculation index (DFI), which normalizes dispersion in water and air to an internal standard based on dispersion in calgon with 4 minutes of sonication.
 
-* Soil aggregate dispersion and flocculation are physical chemistry processes that are strongly associated with the balance of CaO, Na~2~O, Al~2~O~3~ and K~2~O oxides in soils, and soil organic matter content. As this notebook shows, these soil properties are predictive of the soil aggregate stability of African landscapes.
-
-**Next steps:**
-
-* Development of predictive models ...
+* Soil aggregate dispersion and flocculation are physical processes that are strongly associated with the balance of CaO, Na~2~O, Al~2~O~3~ and K~2~O oxides, and soil organic matter content in a diverse range of African soils.
 
 Any questions or comments are most welcome via [AFSIS](mailto:mgw.africasoils.info). The notebook itself is maintained on [Github](https://github.com/mgwalsh/Soils/blob/master/LDPSA_aggregate_stability.Rmd), and you can fork and modify it from there as you see fit.
