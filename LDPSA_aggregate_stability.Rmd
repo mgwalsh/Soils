@@ -20,7 +20,13 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
 [Soil aggregate stability](https://www.sciencedirect.com/science/article/pii/B0123485304005324?via%3Dihub) refers to the ability of soil aggregates to resist disintegration when disruptive forces associated with e.g., tillage operations and erosion occur. Aggregate stability indicates how well soils can resist compaction, wind abrasion, rainfall detachment and atmospheric and/or overland transport. It is a dynamic soil physical chemistry property, which is important for water infiltration, retention and drainage, soil aeration, microbial activity, organic matter storage and stabilization and plant root growth, among others. When soil aggregates disintegrate e.g., during tillage operations or rainstorms, dispersed particles fill soil pore spaces causing plow layer compaction, hardpans and soil crusts to develop. Once such structures are formed, infiltration is reduced, which can result in increased runoff, erosion and reduced water availability for plant growth. Typically, the associated processes will occur in reinforcing feedback loops in landscapes. Changes in aggregate stability can be used as early indicators of soil degradation or recovery and to monitor the effects and impacts of land management interventions. However, conventional approaches that use techniques such as wet sieving and weighing, slake tests or hydrometer and pipetting methods are time consuming and labor intensive. This has largely precluded their operational use in landscape-level assessment and monitoring applications.
 
-[Laser diffraction particle size analysis (LDPSA)](https://wiki.anton-paar.com/en/laser-diffraction-for-particle-sizing/) under different dispersion treatments in e.g., in air, water and/or sodium hexametaphosphate ([calgon](https://pubchem.ncbi.nlm.nih.gov/compound/Calgon)), with or without [sonication](https://www.sciencedirect.com/topics/engineering/ultrasonication) can serve as indicators of soil particle size distributions and aggregate stability for environmental, ecological and engineering purposes. The big advantage of LDPSA is that it can be performed rapidly (in < 5 minutes) using small (< 5 g) quantities of soil. The method works by passing a soil sample through a laser beam, which scatters the incident light onto a Fourier lens. The lens focuses the scattered laser light onto a detector array using an inversion algorithm, and a particle size distribution is inferred from the collected data. [Mie theory](https://en.wikipedia.org/wiki/Mie_scattering) is applied to provide a compositionally-based distribution of particle sizes based on the correlation between the intensity and the angle of the light that is scattered. The approach generates compositional data ([CoDa](https://link.springer.com/book/10.1007/978-3-642-36809-7)), which are data that sum up to a constant (e.g., 1 or 100%). Modeling CoDa requires log ratio transformations to retain this inherent structure Modeling CoDa requires log ratio transformations to retain this inherent closure constraint (see e.g., [Greenacre, 2021](https://www.annualreviews.org/doi/pdf/10.1146/annurev-statistics-042720-124436)).
+<br>
+```{r mixed_photos, echo=FALSE, fig.align="center", fig.cap="**Examples of extremely dispersive, sodic soils in Northern Tanzania.**", out.width = '80%'}
+
+knitr::include_graphics("./ldpsa/Photos_erosion.png")
+```
+
+[Laser diffraction particle size analysis (LDPSA)](https://wiki.anton-paar.com/en/laser-diffraction-for-particle-sizing/) under different dispersion treatments in e.g., in air, water and/or sodium hexametaphosphate ([calgon](https://pubchem.ncbi.nlm.nih.gov/compound/Calgon)), with or without [sonication](https://www.sciencedirect.com/topics/engineering/ultrasonication) can serve as indicators of soil particle size distributions and aggregate stability for environmental, ecological and engineering purposes. The big advantage of LDPSA is that it can be performed rapidly (in < 5 minutes) using small (< 5 g) quantities of soil. The method works by passing a soil sample through a laser beam, which scatters the incident light onto a Fourier lens. The lens focuses the scattered laser light onto a detector array using an inversion algorithm, and a particle size distribution is inferred from the collected data. [Mie theory](https://en.wikipedia.org/wiki/Mie_scattering) is applied to provide a compositionally-based distribution of particle sizes based on the correlation between the intensity and the angle of the light that is scattered. The approach generates compositional data ([CoDa](https://link.springer.com/book/10.1007/978-3-642-36809-7)), which are data that sum up to a constant (e.g., 1 or 100%). Modeling CoDa requires log ratio transformations to retain this inherent closure constraint (see e.g., [Greenacre, 2021](https://www.annualreviews.org/doi/pdf/10.1146/annurev-statistics-042720-124436)).
 
 The main goal of this notebook is to illustrate a workflow for assessing soil aggregate stability in landscapes. It is about using linear models to estimate experimental dispersion treatment effects and the uncertainty in those estimates. It does not go into the details of LDPSA data collections or the associated laboratory analysis procedures (for method references see e.g., [Kerry et.al., (2009)](https://www.sciencedirect.com/science/article/abs/pii/S0016706109002067?via%3Dihub). Instead, it focuses on the associated statistical steps that are needed to generate potentially useful inferences and predictions for populations of LDPSA measurements in landscapes in this context, which take both the CoDa and the ordinal nature of the laboratory dispersal treatments into account.
 
@@ -265,7 +271,7 @@ cl0 <- clm(trt~log(mwd), data = ldps_end)
 cl1 <- clm(trt~ilr1+ilr2, data = ldps_end)
 cl2 <- clm(trt~ilr1*ilr2, data = ldps_end)
 wgt <- as.vector(coef(cl1))
-ldps_end$cli <- wgt[3]*ldps_end$ilr1 + wgt[4]*ldps_end$ilr2
+ldps_end$cli <- wgt[3]*ldps_end$ilr1 + wgt[4]*ldps_end$ilr2 # cumulative link index
 ```
 
 We can then compare the respective model fits with:
@@ -343,11 +349,71 @@ abline(v = m, lty=1, col = "dark grey")
 
 Note that in Figure 4, ~80% of soil profiles falling below the 1:1 DFI reference line (in red) on the left-side of the figure are expected to **disperse** in water to varying degrees; whereas, the ~20% of samples above the reference line appear to **flocculate** (aggregate) upon dispersal in water. This may just be noise in the measurements; however, flocculation can and does occur under certain circumstances, e.g., in river deltas, estuaries, wetlands and rice paddies (see: [Lamb et al., 2020](https://www.nature.com/articles/s41561-020-0602-5)).
 
+# EDA with graphical interaction models
+
+The purpose of this section of the notebook is to further clarify any existing relationships/dependencies, between our proposed dispersion/flocculation index and the main covariates that are used in this notebook. It is not intended as a formal [causal analysis](https://en.wikipedia.org/wiki/Causal_analysis) and is primarily to assist with variable selections in any subsequent statistical or predictive modeling tasks. 
+
+To run this section you will initially need to install the relevant packages. This is a bit of an art form depending on the version of R that you are currently running. Both the [`gRim`](https://cran.r-project.org/web/packages/gRim/index.html) and [`statnet`](https://statnet.org/) packages that we shall be using for these analyses and their visualization have dependencies to other packages e.g., [`bioconductor`](http://www.bioconductor.org/install/), which can be a bit tricky depending on their versioning cycle on [CRAN](https://cran.r-project.org/). The next chunks are what worked for us using our current `R.Version()`, but this might change and you may need to adjust accordingly depending on your setup.
+
+```{r, results = 'hide'}
+# Install <bioconductor> first ... see: http://www.bioconductor.org/install/
+# do this only once
+# if (!requireNamespace("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+# BiocManager::install(version = "3.13")
+
+# note that this will query you in the console as to whether to update other associated packages ... (a/s/n). Reply with n if all of the listed packages are up to date.
+
+# Then install and load gRbase, gRim and statnet 
+packages <- c("gRbase", "gRim", "statnet")
+
+# Install packages
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+  install.packages(packages[!installed_packages])
+}
+
+# Load packages
+invisible(lapply(packages, library, character.only = TRUE))
+```
+
+Similarly, the [`statnet`](https://www.rdocumentation.org/packages/statnet/versions/2019.6) package, which we will use for graphical model visualization currently may have some specific installation requirements that you can track on their [Github](https://statnet.org/).
+
+We start with a saturated model and then fit the relevant interactions with a [backward selection](https://www.statology.org/backward-selection/) procedure.
+
+```{r, results = 'hide'}
+# Select and transform variables
+gvars <- del[ ,c(8,10:15)]
+gvars$soc <- log(gvars$soc)
+gvars$ec <- log(gvars$ec)
+gvars$ecec <- log(gvars$ecec)
+
+mm0 <- cmod(~.^., data = gvars)
+mm1 <- backward(mm0, k=log(nrow(gvars)))
+mmf <- ugList(terms(mm1), result="matrix")
+net <- as.network(x = mmf, directed = FALSE, loops = FALSE, matrix.type = "adjacency")
+```
+
+This next chunk produces the associated interaction graph.
+
+```{r, fig.align = "center", fig.height = 4, fig.cap = "**Figure 5:** Interaction graph of covariate soil properties associated with the proposed dispersion/flocculation index (DFI)."}
+
+par(mar=c(0,0,0,0))
+plot.network(net, vertex.col = "light grey", vertex.cex = 7, displaylabels = T, 
+             label.pos = 5)
+```
+
+Under the given graphical interaction model assumptions, the corresponding maximal cliques (variable groupings) of the graph (shown in Figure 5) can be identified with:
+
+```{r}
+getCliques(mmf)
+```
+
 # Landscape-level soil aggregate stabilities
 
 ## Fixed-effects models
 
-Fixed-effects regressions assume that there is no hierarchical structure in the data; i.e., instances where data points are not nested, grouped or correlated in higher order categories (e.g. soil profiles within landscapes). We initially model the values in air (Δ air) and in water (Δ water) to assess the population-level effects of the included covariates.
+Fixed-effects regressions (similar to those used in Section 3) assume that there is no hierarchical structure in the data; i.e., instances where data points are not nested, grouped or correlated in higher order categories (e.g. soil profiles within landscapes). We initially model the values in air (Δ air) and in water (Δ water) to assess the population-level effects of the included covariates.
 
 ```{r}
 # Δ air
@@ -367,7 +433,7 @@ del$dw2_fit <- fitted(dw2, del)
 
 We can plot the selected model fits with:
 
-```{r, fig.align ="center", fig.show='hold', out.width="50%", fig.cap="**Figure 5:** Fitted vs observed cumulative link index values in air or water relative to dispersion in the calgon with sonication (`c4`) treatment based on fixed effects models."}
+```{r, fig.align ="center", fig.show='hold', out.width="50%", fig.cap="**Figure 6:** Fitted vs observed cumulative link index values in air or water relative to dispersion in the calgon with sonication (`c4`) treatment based on fixed effects models."}
 
 par(pty="s", mar=c(4,4,1,1))
 plot(dw~dw2_fit, xlim = c(-5,16), ylim = c(-5,16), 
@@ -401,7 +467,7 @@ mix_anova <- anova(dfi0, dfi1, dfi2)
 del$dfit <- fitted(dfi1, del)
 ```
 
-```{r, fig.align ="center", out.width="60%", fig.cap="**Figure 6:** Profile-level fitted vs observed DFI values. The blue lines represent the 95% quantile interval of the measured DFIs."}
+```{r, fig.align ="center", out.width="60%", fig.cap="**Figure 7:** Profile-level fitted vs observed DFI values. The blue lines represent the 95% quantile interval of the measured DFIs."}
 
 par(pty="s", mar=c(4,4,1,1))
 plot(dfi~dfit, xlim=c(-11,6), ylim=c(-11,6), 
@@ -423,7 +489,7 @@ ran <- rma(yi-1.5, vi, data = site)
 
 We can also plot the site-level random intercepts with:
 
-```{r, fig.align = 'center', fig.height = 12, fig.cap = "**Figure 7:** Forest plot showing the site-level differences in modeled dispersion / flocculation index (DFI) values."}
+```{r, fig.align = 'center', fig.height = 12, fig.cap = "**Figure 8:** Forest plot showing the site-level differences in modeled dispersion / flocculation index (DFI) values. Soils on sites with DFI > 0 will tend to flocculate in water. Soils on sites with DFI < 0 will tend to disperse."}
 
 op <- par(cex=0.9, font=4)
 par(mar=c(4,4,1,1))
@@ -435,8 +501,12 @@ forest(ran, header="Site", slab = site,
 
 # Main takeaways
 
-* Laser diffraction particle size analyses (LDPSA) with different dispersion treatment regimes provide rapid, precise and cost-effective measurements for quantifying soil aggregate stability of landscapes. In this notebook, we propose a new dispersion/flocculation index (DFI), which normalizes dispersion in water and air to an internal standard based on dispersion in calgon with 4 minutes of sonication.
+* Laser diffraction particle size analyses (LDPSA) with different dispersion treatment regimes provide rapid, precise and cost-effective measurements for quantifying soil aggregate stability of landscapes. 
 
-* Soil aggregate dispersion and flocculation are physical processes that are strongly associated with the balance of CaO, Na~2~O, Al~2~O~3~ and K~2~O oxides, and soil organic matter content in a diverse range of African soils.
+* In this notebook, we propose a new dispersion/flocculation index (DFI), which normalizes dispersion in water and air to an internal standard based on dispersion in calgon with 4 minutes of sonication.
+
+* Soil aggregate dispersion and flocculation are physical processes that are strongly site (landscape) dependent and are associated with the balance of CaO, Na~2~O, Al~2~O~3~ and K~2~O oxides, and soil organic matter content over a highly diverse range of African soils.
 
 Any questions or comments are most welcome via [AFSIS](mailto:mgw.africasoils.info). The notebook itself is maintained on [Github](https://github.com/mgwalsh/Soils/blob/master/LDPSA_aggregate_stability.Rmd), and you can fork and modify it from there as you see fit.
+
+
